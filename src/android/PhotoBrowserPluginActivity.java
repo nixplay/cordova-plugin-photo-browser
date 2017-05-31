@@ -20,6 +20,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private ArrayList<String> _captions;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+
+    }
+    @Override
+    protected void init(){
         if(!Fresco.hasBeenInitialized()) {
             Fresco.initialize(this);
         }
@@ -46,8 +52,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             e.printStackTrace();
 
         }
-        super.onCreate(savedInstanceState);
-
+        super.init();
     }
     @Override
     public List<String> photoBrowserPhotos(PhotoBrowserBasicActivity activity) {
