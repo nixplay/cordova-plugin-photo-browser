@@ -6,7 +6,7 @@
 //
 //
 
-#import "MWPhotoBrowserCordova.h"
+#import "PhotoBrowserPlugin.h"
 #import "MWPhotoBrowser.h"
 #import "MWGridViewController.h"
 #import "TextInputViewController.h"
@@ -60,7 +60,7 @@ enum Orientation {
     LEFT_BOTTOM = 7,
     RIGHT_BOTTOM = 8,
 };
-@implementation MWPhotoBrowserCordova
+@implementation PhotoBrowserPlugin
 @synthesize callbackId;
 @synthesize photos = _photos;
 @synthesize thumbs = _thumbs;
@@ -217,7 +217,7 @@ enum Orientation {
         dialogAppearance.titleColor            =  [UIColor blackColor];
         dialogAppearance.messageColor            =  [UIColor darkGrayColor];
         
-        __weak MWPhotoBrowserCordova *weakSelf = self;
+        __weak PhotoBrowserPlugin *weakSelf = self;
         __block NSArray * titles =  [_actionSheetDicArray valueForKey:KEY_LABEL];
         __block NSArray * actions =  [_actionSheetDicArray valueForKey:KEY_ACTION];
         
@@ -348,7 +348,7 @@ enum Orientation {
 }
 
 -(void) buildDialogWithCancelText:(NSString*)cancelText confirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
-    __weak MWPhotoBrowserCordova *weakSelf = self;
+    __weak PhotoBrowserPlugin *weakSelf = self;
     
     
     PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
@@ -380,7 +380,7 @@ enum Orientation {
     textViewVC.messageString = message;
     textViewVC.placeholderString = placeholder;
     
-    __weak MWPhotoBrowserCordova *weakSelf = self;
+    __weak PhotoBrowserPlugin *weakSelf = self;
     PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES completion:^{
         
     }];
@@ -832,7 +832,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                         }
                     }
                     else {
-                        NSError* err = [NSError errorWithDomain:@"MWPhotoBrowserCordova" code:403 userInfo:@{NSLocalizedDescriptionKey:@"Photo Library is not allowed to access"} ];
+                        NSError* err = [NSError errorWithDomain:@"PhotoBrowserPlugin" code:403 userInfo:@{NSLocalizedDescriptionKey:@"Photo Library is not allowed to access"} ];
                         completeBlock(nil, err, YES);
                     }
                 }];

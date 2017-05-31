@@ -14,7 +14,7 @@
 #import <IQKeyboardManager/IQKeyboardManager.h>
 #import <IQKeyboardManager/IQTextView.h>
 #import <SDWebImage/SDWebImageManager.h>
-@interface MWPhotoBrowserCordova : CDVPlugin <MWPhotoBrowserDelegate,UINavigationControllerDelegate, CAAnimationDelegate, UITextViewDelegate, SDWebImageManagerDelegate> {
+@interface PhotoBrowserPlugin : CDVPlugin <MWPhotoBrowserDelegate,UINavigationControllerDelegate, CAAnimationDelegate, UITextViewDelegate, SDWebImageManagerDelegate> {
 
     NSMutableDictionary* _callbackIds;
     NSMutableDictionary* _actionSheetDicArray;
