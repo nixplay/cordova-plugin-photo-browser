@@ -32,7 +32,7 @@
     <config-file parent="/*" target="res/xml/config.xml">
       <feature name="PhotoBrowserPlugin">
         <param name="android-package" value="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin"/>
-        
+        <param name="android-package" value="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPluginActivity"/>
       </feature>
     </config-file>
     <source-file src="src/android/PhotoBrowserPlugin.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
