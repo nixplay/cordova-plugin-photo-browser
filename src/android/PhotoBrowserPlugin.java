@@ -41,7 +41,7 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
             long totalMegs = mi.totalMem / 1048576L;
             System.out.println("[NIX] totalMegs: " + totalMegs);
 
-            Intent intent = new Intent(cordova.getActivity(), CordovaPhotoBrowser.class);
+            Intent intent = new Intent(cordova.getActivity(), PhotoBrowserPluginActivity.class);
 
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             this.cordova.startActivityForResult(this, intent, 0);
