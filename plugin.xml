@@ -34,6 +34,9 @@
         <param name="android-package" value="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin"/>
       </feature>
     </config-file>
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    </config-file>
     <activity
       android:name="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPluginActivity"
       android:screenOrientation="portrait"
@@ -41,7 +44,7 @@
     </activity>
     <source-file src="src/android/PhotoBrowserPlugin.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/PhotoBrowserPluginActivity.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
-    <framework src="com.github.fishkingsin:androidphotobrowser:0.0.2"/>
+    <framework src="com.github.fishkingsin:androidphotobrowser:0.0.3"/>
     
     <config-file target="res/values/styles.xml" parent="/resources">
       <style name="AppTheme" parent="Theme.AppCompat.Light">

@@ -1,9 +1,11 @@
 package com.creedon.cordova.plugin.photobrowser;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import com.creedon.androidphotobrowser.PhotoBrowserActivity;
 import com.creedon.androidphotobrowser.PhotoBrowserBasicActivity;
+import com.creedon.androidphotobrowser.common.data.models.CustomImage;
 import com.creedon.cordova.plugin.photobrowser.data.Demo;
 import com.facebook.drawee.backends.pipeline.Fresco;
 
@@ -19,6 +21,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private ArrayList<String> _previewUrls;
     private ArrayList<String> _thumbnailUrls;
     private ArrayList<String> _captions;
+    private String name;
+    private FakeR f;
+    private Context context;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if(!Fresco.hasBeenInitialized()) {
@@ -29,7 +35,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
     @Override
     protected void init(){
-
+        f = new FakeR(getApplicationContext());
+        context = getApplicationContext();
 
 
         listener = this;
@@ -44,7 +51,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 JSONArray data = jsonObject.getJSONArray("data");
                 JSONArray captions = jsonObject.getJSONArray("captions");
                 String id = jsonObject.getString("id");
-                String name = jsonObject.getString("name");
+                name = jsonObject.getString("name");
                 int count = jsonObject.getInt("count");
                 String type = jsonObject.getString("type");
                 String albumType = jsonObject.getString("albumType");
@@ -52,7 +59,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                 _previewUrls = new ArrayList<String>();
                 _thumbnailUrls = new ArrayList<String>();
-
+                _captions = new ArrayList<String>();
                 for (int i = 0; i < images.length(); i++) {
                     _previewUrls.add(images.getString(i));
                 }
@@ -62,7 +69,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 for (int i = 0; i < captions.length(); i++) {
                     _captions.add(captions.getString(i));
                 }
-                
+
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -112,10 +119,37 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
     @Override
     public String getActionBarTitle() {
-        return "Album";
+        return this.name;
     }
     @Override
     public String getSubtitle() {
-        return "Subtitle";
+        return new StringBuilder()
+                .append(this._previewUrls.size())
+                .append(context.getResources().getString(f.getId("string", "PHOTOS")))
+                        .toString();
+
+    }
+
+    @Override
+    public List<CustomImage> getCustomImages(PhotoBrowserActivity photoBrowserActivity) {
+        try {
+            List<CustomImage> images = new ArrayList<CustomImage>();
+            ArrayList<String> previewUrls = (ArrayList<String>) listener.photoBrowserPhotos(this);
+
+            ArrayList<String> captions = (ArrayList<String>) listener.photoBrowserPhotoCaptions(this);
+
+
+            try {
+                for (int i = 0; i < previewUrls.size(); i++) {
+                    images.add(new CustomImage(previewUrls.get(i), captions.get(i)));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return images;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 }
