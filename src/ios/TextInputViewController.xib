@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12120" systemVersion="16E195" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="TextInputViewController">
+            <connections>
+                <outlet property="textInputField" destination="Oox-B5-6b9" id="Vzh-oV-uA9"/>
+                <outlet property="titleLabel" destination="18I-kW-jFQ" id="Qbb-jo-yJE"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="290" height="118"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fj7-92-DgH">
+                    <rect key="frame" x="0.0" y="0.0" width="290" height="118"/>
+                    <subviews>
+                        <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" verticalCompressionResistancePriority="749" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Album name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Oox-B5-6b9">
+                            <rect key="frame" x="8" y="70" width="274" height="32"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="32" id="LBx-PN-bSZ"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <textInputTraits key="textInputTraits"/>
+                        </textField>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="d3N-Fb-YLr">
+                            <rect key="frame" x="0.0" y="53" width="290" height="1"/>
+                            <color key="backgroundColor" white="0.9167131696428571" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="1" id="hU3-Hj-05L"/>
+                            </constraints>
+                        </view>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Edit Album name" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="18I-kW-jFQ">
+                            <rect key="frame" x="8" y="8" width="274" height="37"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="0.80000000000000004" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstItem="Oox-B5-6b9" firstAttribute="centerX" secondItem="fj7-92-DgH" secondAttribute="centerX" id="Ash-mR-o7j"/>
+                        <constraint firstItem="d3N-Fb-YLr" firstAttribute="centerX" secondItem="18I-kW-jFQ" secondAttribute="centerX" id="INv-eJ-pTA"/>
+                        <constraint firstAttribute="trailing" secondItem="18I-kW-jFQ" secondAttribute="trailing" constant="8" id="Iq9-81-041"/>
+                        <constraint firstItem="18I-kW-jFQ" firstAttribute="leading" secondItem="fj7-92-DgH" secondAttribute="leading" constant="8" id="KSF-x1-JXj"/>
+                        <constraint firstItem="d3N-Fb-YLr" firstAttribute="top" secondItem="18I-kW-jFQ" secondAttribute="bottom" constant="8" id="Lgy-wR-yVI"/>
+                        <constraint firstAttribute="trailing" secondItem="Oox-B5-6b9" secondAttribute="trailing" constant="8" id="NSi-HB-JoZ"/>
+                        <constraint firstItem="18I-kW-jFQ" firstAttribute="centerX" secondItem="fj7-92-DgH" secondAttribute="centerX" id="NpT-eF-0Hs"/>
+                        <constraint firstItem="18I-kW-jFQ" firstAttribute="top" secondItem="fj7-92-DgH" secondAttribute="top" constant="8" id="QrJ-FH-FpL"/>
+                        <constraint firstItem="Oox-B5-6b9" firstAttribute="top" secondItem="d3N-Fb-YLr" secondAttribute="bottom" constant="16" id="TbO-xk-x1B"/>
+                        <constraint firstItem="Oox-B5-6b9" firstAttribute="leading" secondItem="fj7-92-DgH" secondAttribute="leading" constant="8" id="fbF-SW-FYb"/>
+                        <constraint firstAttribute="bottom" secondItem="Oox-B5-6b9" secondAttribute="bottom" constant="16" id="q0n-9c-Ov1"/>
+                        <constraint firstItem="d3N-Fb-YLr" firstAttribute="leading" secondItem="fj7-92-DgH" secondAttribute="leading" id="t0W-OJ-bhA"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rcl-Co-5Ha">
+                    <rect key="frame" x="0.0" y="117" width="290" height="1"/>
+                    <color key="backgroundColor" red="0.38347494602203369" green="0.69254213571548462" blue="0.90259414911270142" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="1" id="s4w-CX-SMm"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="fj7-92-DgH" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="8oY-jz-nmW"/>
+                <constraint firstItem="fj7-92-DgH" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="H7F-mg-cl7"/>
+                <constraint firstItem="rcl-Co-5Ha" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="anm-rH-f8p"/>
+                <constraint firstAttribute="trailing" secondItem="fj7-92-DgH" secondAttribute="trailing" id="dsP-IC-tLI"/>
+                <constraint firstItem="rcl-Co-5Ha" firstAttribute="width" secondItem="fj7-92-DgH" secondAttribute="width" id="gAS-iH-o60"/>
+                <constraint firstAttribute="bottom" secondItem="fj7-92-DgH" secondAttribute="bottom" id="nLn-x2-tXd"/>
+                <constraint firstAttribute="bottom" secondItem="rcl-Co-5Ha" secondAttribute="bottom" id="sXg-Q4-3Uf"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="32" y="48"/>
+        </view>
+    </objects>
+</document>
