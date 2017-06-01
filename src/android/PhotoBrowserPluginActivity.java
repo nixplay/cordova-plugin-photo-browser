@@ -2,10 +2,14 @@ package com.creedon.cordova.plugin.photobrowser;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import com.creedon.androidphotobrowser.PhotoBrowserActivity;
 import com.creedon.androidphotobrowser.PhotoBrowserBasicActivity;
 import com.creedon.androidphotobrowser.common.data.models.CustomImage;
+import com.creedon.androidphotobrowser.common.views.ImageOverlayView;
 import com.creedon.cordova.plugin.photobrowser.data.Demo;
 import com.facebook.drawee.backends.pipeline.Fresco;
 
@@ -17,24 +21,95 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements PhotoBrowserBasicActivity.PhotoBrowserListener {
+public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements PhotoBrowserBasicActivity.PhotoBrowserListener, ImageOverlayView.ImageOverlayVieListener {
     private ArrayList<String> _previewUrls;
     private ArrayList<String> _thumbnailUrls;
     private ArrayList<String> _captions;
     private String name;
     private FakeR f;
     private Context context;
-
+    private JSONArray actionSheet;
+    final private static String DEFAULT_ACTION_ADD = "add";
+    final private static String DEFAULT_ACTION_SELECT = "select";
+    final private static String DEFAULT_ACTION_ADDTOPLAYLIST = "addToPlaylist";
+    final private static String DEFAULT_ACTION_RENAME = "rename";
+    final private static String DEFAULT_ACTION_DELETE = "delete";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if(!Fresco.hasBeenInitialized()) {
+        if (!Fresco.hasBeenInitialized()) {
             Fresco.initialize(this);
         }
         super.onCreate(savedInstanceState);
 
     }
+
     @Override
-    protected void init(){
+    public boolean onCreatePanelMenu(int featureId, Menu menu) {
+
+        if (!selectionMode) {
+            //TODO build aaction menu from custom data
+            for (int i = 0; i < actionSheet.length(); i++) {
+                try {
+                    JSONObject object = actionSheet.getJSONObject(i);
+                    String label = object.getString("label");
+                    String action = object.getString("action");
+                    menu.add(0, i, 1, label);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            setupToolBar();
+        } else {
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
+            setupToolBar();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        if (item.getItemId() == android.R.id.home) {
+            if (!selectionMode) {
+                finish();
+            }
+
+        } else if (item.getTitle() != null) {
+
+            for (int i = 0; i < actionSheet.length(); i++) {
+                try {
+                    JSONObject object = actionSheet.getJSONObject(i);
+                    String label = object.getString("label");
+                    if(label.equals(item.getTitle())) {
+                        String action = object.getString("action");
+                        if(action.equals(DEFAULT_ACTION_ADD)){
+                            addPhotos();
+                        }else if(action.equals(DEFAULT_ACTION_RENAME)){
+                            editAlbumName();
+                        }else if(action.equals(DEFAULT_ACTION_ADDTOPLAYLIST)){
+                            addAlbumToPlaylist();
+                        }else if(action.equals(DEFAULT_ACTION_DELETE)){
+                            deleteAlbum();
+                        }else if(action.equals(DEFAULT_ACTION_SELECT)){
+                            setupSelectionMode(!selectionMode);
+                        }
+                        break;
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+        return false;
+
+    }
+
+    @Override
+    protected void init() {
         f = new FakeR(getApplicationContext());
         context = getApplicationContext();
 
@@ -54,9 +129,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 name = jsonObject.getString("name");
                 int count = jsonObject.getInt("count");
                 String type = jsonObject.getString("type");
-                String albumType = jsonObject.getString("albumType");
-                JSONArray actionSheet = jsonObject.getJSONArray("actionSheet");
-
+                try {
+                    actionSheet = jsonObject.getJSONArray("actionSheet");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 _previewUrls = new ArrayList<String>();
                 _thumbnailUrls = new ArrayList<String>();
                 _captions = new ArrayList<String>();
@@ -75,7 +152,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 e.printStackTrace();
             }
 
-        }else {
+        } else {
 
             String jsonString = Demo.getFlickrs();
             try {
@@ -87,8 +164,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     _previewUrls.add(array.getJSONObject(i).getString("previewUrl"));
                     _thumbnailUrls.add(array.getJSONObject(i).getString("thumbnailUrl"));
                 }
-//            rowListItem = thumbnailUrls;
-//            posters = previewUrls.toArray(new String[0]);
                 _captions = new ArrayList<String>(Arrays.asList(Demo.getDescriptions()));
 
             } catch (JSONException e) {
@@ -98,6 +173,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
         super.init();
     }
+
     @Override
     public List<String> photoBrowserPhotos(PhotoBrowserBasicActivity activity) {
         return _previewUrls;
@@ -117,17 +193,27 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public List<String> photoBrowserPhotoCaptions(PhotoBrowserBasicActivity photoBrowserBasicActivity) {
         return _captions;
     }
+
     @Override
     public String getActionBarTitle() {
         return this.name;
     }
+
     @Override
     public String getSubtitle() {
-        return new StringBuilder()
-                .append(this._previewUrls.size())
-                .append(context.getResources().getString(f.getId("string", "PHOTOS")))
-                        .toString();
-
+        if (this._previewUrls == null) {
+            return new StringBuilder()
+                    .append(0)
+                    .append(" ")
+                    .append(context.getResources().getString(f.getId("string", "PHOTOS")))
+                    .toString();
+        } else {
+            return new StringBuilder()
+                    .append(this._previewUrls.size())
+                    .append(" ")
+                    .append(context.getResources().getString(f.getId("string", "PHOTOS")))
+                    .toString();
+        }
     }
 
     @Override
@@ -147,9 +233,46 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 e.printStackTrace();
             }
             return images;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+
+    private void addPhotos() {
+
+    }
+
+    private void addAlbumToPlaylist() {
+
+    }
+
+    private void editAlbumName() {
+
+    }
+
+    private void deleteAlbum() {
+
+    }
+
+    private void deletePhotos() {
+//TODO delete photos from list
+    }
+
+    private void deletePhoto() {
+
+//TODO delete photo from list
+//        delete image from liste , dismiss image viewer, reload again
+    }
+
+    @Override
+    public void onDownloadButtonPressed(JSONObject data) {
+
+    }
+
+    @Override
+    public void onTrashButtonPressed(JSONObject data) {
+
     }
 }

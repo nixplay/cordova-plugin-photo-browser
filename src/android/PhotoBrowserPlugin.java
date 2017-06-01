@@ -20,6 +20,7 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        this.callbackContext = callbackContext;
         if (action.equals("showGallery")) {
             JSONObject options = args.getJSONObject(0);
             JSONArray images = options.getJSONArray("images");
@@ -30,7 +31,6 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
             String name = options.getString("name");
             int count = options.getInt("count");
             String type = options.getString("type");
-            String albumType = options.getString("albumType");
             JSONArray actionSheet = options.getJSONArray("actionSheet");
 /*
 0 = {LinkedHashMap$LinkedHashMapEntry@7684} "images" -> "["https:\/\/nixplay-rnd-original.s3.amazonaws.com\/2018\/2018_106533b2bcc1d60a771406bf10759b58_PREVIEW.jpg?Signature=%2BtaFBYvRZF0d4TQoK4jXNGu2sjQ%3D&Expires=1496224800&AWSAccessKeyId=AKIAIDQQLEZE235GX5QQ&response-expires=Wed%2C%2031%20May%202017%2010%3A00%3A00%20GMT&response-cache-control=max-age%3D86400","https:\/\/nixplay-rnd-original.s3.amazonaws.com\/2018\/2018_fc988f1af1e59ee04104c43c775c3bb7_PREVIEW.jpg?Signature=KSMdfC0RFw%2F0asblyqRvWxnV51w%3D&Expires=1496224800&AWSAccessKeyId=AKIAIDQQLEZE235GX5QQ&response-expires=Wed%2C%2031%20May%202017%2010%3A00%3A00%20GMT&response-cache-control=max-age%3D86400","https:\/\/nixplay-rnd-original.s3.amazonaws.com\/2018\/2018_841eb5e47fd28b76631f0ca099b7d784_PREVIEW.jpg?Signature=ZIaWpn%2F0Ab23E9VgqfuxT740Eh4%3D&Expires=1496224800&AWSAccessKeyId=AKIAIDQQLEZE235GX5QQ&response-expires=Wed%2C%2031%20May%202017%2010%3A00%3A00%20GMT&response-cache-control=max-age%3D86400"]"
@@ -58,7 +58,7 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
 
     private void showGallery(JSONObject options, CallbackContext callbackContext) {
         if (options != null && options.length() > 0) {
-            this.callbackContext = callbackContext;
+
 
             ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
             ActivityManager activityManager = (ActivityManager) this.cordova.getActivity().getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
@@ -96,10 +96,9 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
                 this.callbackContext.error("Error");
             this.callbackContext.error(error);
         } else if (resultCode == Activity.RESULT_CANCELED) {
-            JSONArray res = new JSONArray();
-            if (res == null)
-                this.callbackContext.error("Cancel");
-            this.callbackContext.success(res);
+
+            this.callbackContext.error("Cancel");
+
         } else {
             this.callbackContext.error("error");
         }
