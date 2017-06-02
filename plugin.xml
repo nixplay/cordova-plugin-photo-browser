@@ -44,6 +44,7 @@
     </activity>
     <source-file src="src/android/PhotoBrowserPlugin.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/PhotoBrowserPluginActivity.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
+    <source-file src="src/android/FakeR.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <framework src="com.github.fishkingsin:androidphotobrowser:0.0.3"/>
     
     <config-file target="res/values/styles.xml" parent="/resources">
