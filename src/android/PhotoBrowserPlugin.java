@@ -96,11 +96,14 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
                 this.callbackContext.error("Error");
             this.callbackContext.error(error);
         } else if (resultCode == Activity.RESULT_CANCELED) {
-
-            this.callbackContext.error("Cancel");
+            JSONObject res = new JSONObject();
+            if(this.callbackContext != null )
+                this.callbackContext.error(res);
 
         } else {
-            this.callbackContext.error("error");
+            JSONObject res = new JSONObject();
+            if(this.callbackContext != null )
+                this.callbackContext.error(res);
         }
 
     }
