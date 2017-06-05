@@ -25,6 +25,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private ArrayList<String> _previewUrls;
     private ArrayList<String> _thumbnailUrls;
     private ArrayList<String> _captions;
+    private ArrayList<JSONObject> _data;
     private String name;
     private FakeR f;
     private Context context;
@@ -70,11 +71,23 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        if (item.getItemId() == android.R.id.home) {
+        int id = item.getItemId();
+        if ( id == android.R.id.home) {
             if (!selectionMode) {
                 finish();
             }
 
+        } else if (id == com.creedon.androidphotobrowser.R.id.delete) {
+            try {
+                deletePhotos();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            //TODO delete item
+        } else if (id == com.creedon.androidphotobrowser.R.id.send) {
+            addAlbumToPlaylist();
+        } else if (id == com.creedon.androidphotobrowser.R.id.download) {
+            downloadPhotos();
         } else if (item.getTitle() != null) {
 
             for (int i = 0; i < actionSheet.length(); i++) {
@@ -145,6 +158,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 }
                 for (int i = 0; i < captions.length(); i++) {
                     _captions.add(captions.getString(i));
+                }
+                for (int i = 0; i < data.length(); i++) {
+                    _data.add(data.getJSONObject(i));
                 }
 
 
@@ -256,8 +272,36 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     }
 
-    private void deletePhotos() {
+    private void downloadPhotos() {
+
+    }
+
+    private void deletePhotos() throws JSONException {
 //TODO delete photos from list
+        ArrayList<String> fetchedDatas = new ArrayList<String>();
+        ArrayList<JSONObject> tempDatas = new ArrayList<JSONObject>();
+        ArrayList<String> tempPreviews = new ArrayList<String>();
+        ArrayList<String> tempCations = new ArrayList<String>();
+        ArrayList<String> tempThumbnails = new ArrayList<String>();
+        for(int i = 0 ; i < selections.length ; i++){
+            //add to temp lsit if not selected
+            if(!selections[i]){
+                tempDatas.add(_data.get(i));
+                tempPreviews.add(_previewUrls.get(i));
+                tempCations.add(_captions.get(i));
+                tempThumbnails.add(_thumbnailUrls.get(i));
+            }else{
+                JSONObject object = tempDatas.get(i);
+                String id = object.getString("id");
+
+                fetchedDatas.add(id);
+            }
+        }
+        _data = (ArrayList<JSONObject>) tempDatas.clone();
+        _previewUrls = (ArrayList<String>) tempPreviews.clone();
+        _captions = (ArrayList<String>) tempCations.clone();
+        _thumbnailUrls = (ArrayList<String>) tempThumbnails.clone();
+
     }
 
     private void deletePhoto() {
