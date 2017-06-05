@@ -150,6 +150,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 _previewUrls = new ArrayList<String>();
                 _thumbnailUrls = new ArrayList<String>();
                 _captions = new ArrayList<String>();
+                _data = new ArrayList<JSONObject>();
                 for (int i = 0; i < images.length(); i++) {
                     _previewUrls.add(images.getString(i));
                 }
@@ -285,7 +286,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         ArrayList<String> tempThumbnails = new ArrayList<String>();
         for(int i = 0 ; i < selections.length ; i++){
             //add to temp lsit if not selected
-            if(!selections[i]){
+            if(selections[i].equals("0")){
                 tempDatas.add(_data.get(i));
                 tempPreviews.add(_previewUrls.get(i));
                 tempCations.add(_captions.get(i));
