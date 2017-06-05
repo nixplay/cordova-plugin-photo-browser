@@ -292,7 +292,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 tempCations.add(_captions.get(i));
                 tempThumbnails.add(_thumbnailUrls.get(i));
             }else{
-                JSONObject object = tempDatas.get(i);
+                JSONObject object = _data.get(i);
                 String id = object.getString("id");
 
                 fetchedDatas.add(id);
