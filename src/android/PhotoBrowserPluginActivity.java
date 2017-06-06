@@ -1,7 +1,13 @@
 package com.creedon.cordova.plugin.photobrowser;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -11,17 +17,47 @@ import com.creedon.androidphotobrowser.PhotoBrowserBasicActivity;
 import com.creedon.androidphotobrowser.common.data.models.CustomImage;
 import com.creedon.androidphotobrowser.common.views.ImageOverlayView;
 import com.creedon.cordova.plugin.photobrowser.data.Demo;
+import com.facebook.common.executors.CallerThreadExecutor;
+import com.facebook.common.references.CloseableReference;
+import com.facebook.datasource.BaseDataSubscriber;
+import com.facebook.datasource.DataSource;
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.imagepipeline.image.CloseableBitmap;
+import com.facebook.imagepipeline.image.CloseableImage;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements PhotoBrowserBasicActivity.PhotoBrowserListener, ImageOverlayView.ImageOverlayVieListener {
+    private static final String TAG = PhotoBrowserPluginActivity.class.getSimpleName();
+    private static final float MAX = 100;
+
+    interface PhotosDownloadListener {
+
+        void onPregress(float progress);
+
+        void onComplete();
+
+        void onFailed(Error err);
+    }
+
+    private static final String LOG_TAG = PhotoBrowserPluginActivity.class.getSimpleName();
+    private static final String KEY_ORIGINALURL = "originalUrl";
     private ArrayList<String> _previewUrls;
     private ArrayList<String> _thumbnailUrls;
     private ArrayList<String> _captions;
@@ -35,8 +71,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     final private static String DEFAULT_ACTION_ADDTOPLAYLIST = "addToPlaylist";
     final private static String DEFAULT_ACTION_RENAME = "rename";
     final private static String DEFAULT_ACTION_DELETE = "delete";
+    ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         if (!Fresco.hasBeenInitialized()) {
             Fresco.initialize(this);
         }
@@ -72,7 +111,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         int id = item.getItemId();
-        if ( id == android.R.id.home) {
+        if (id == android.R.id.home) {
             if (!selectionMode) {
                 finish();
             }
@@ -87,24 +126,28 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         } else if (id == com.creedon.androidphotobrowser.R.id.send) {
             addAlbumToPlaylist();
         } else if (id == com.creedon.androidphotobrowser.R.id.download) {
-            downloadPhotos();
+            try {
+                downloadPhotos();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         } else if (item.getTitle() != null) {
 
             for (int i = 0; i < actionSheet.length(); i++) {
                 try {
                     JSONObject object = actionSheet.getJSONObject(i);
                     String label = object.getString("label");
-                    if(label.equals(item.getTitle())) {
+                    if (label.equals(item.getTitle())) {
                         String action = object.getString("action");
-                        if(action.equals(DEFAULT_ACTION_ADD)){
+                        if (action.equals(DEFAULT_ACTION_ADD)) {
                             addPhotos();
-                        }else if(action.equals(DEFAULT_ACTION_RENAME)){
+                        } else if (action.equals(DEFAULT_ACTION_RENAME)) {
                             editAlbumName();
-                        }else if(action.equals(DEFAULT_ACTION_ADDTOPLAYLIST)){
+                        } else if (action.equals(DEFAULT_ACTION_ADDTOPLAYLIST)) {
                             addAlbumToPlaylist();
-                        }else if(action.equals(DEFAULT_ACTION_DELETE)){
+                        } else if (action.equals(DEFAULT_ACTION_DELETE)) {
                             deleteAlbum();
-                        }else if(action.equals(DEFAULT_ACTION_SELECT)){
+                        } else if (action.equals(DEFAULT_ACTION_SELECT)) {
                             setupSelectionMode(!selectionMode);
                         }
                         break;
@@ -124,6 +167,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     protected void init() {
         f = new FakeR(getApplicationContext());
+        progressDialog = new ProgressDialog(this);
         context = getApplicationContext();
 
 
@@ -256,6 +300,19 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         return null;
     }
 
+    @Override
+    protected ImageViewer.OnImageChangeListener getImageChangeListener() {
+        return new ImageViewer.OnImageChangeListener() {
+            @Override
+            public void onImageChange(int position) {
+                CustomImage image = getImages().get(position);
+                overlayView.setShareText(image.getUrl());
+                overlayView.setDescription(image.getDescription());
+                overlayView.setData(_data.get(position));
+            }
+        };
+    }
+
 
     private void addPhotos() {
 
@@ -273,7 +330,52 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     }
 
-    private void downloadPhotos() {
+    private void downloadPhotos() throws JSONException {
+//TODO download photos
+
+        ArrayList<String> fetchedDatas = new ArrayList<String>();
+
+
+        for (int i = 0; i < selections.length; i++) {
+            //add to temp lsit if not selected
+            if (selections[i].equals("1")) {
+                JSONObject object = _data.get(i);
+                String id = object.getString(KEY_ORIGINALURL);
+                fetchedDatas.add(id);
+            }
+        }
+
+
+        if (fetchedDatas.size() > 0) {
+            String title = getString(f.getId("string","DOWNLOADING"));
+            progressDialog.setMessage(title);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//            progressDialog.setIndeterminateDrawable(new CircularProgressDrawable(MaterialProgressBar.DETERMINATE_CIRCULAR_PROGRESS_STYLE_NORMAL,getApplicationContext()));
+            progressDialog.setIndeterminate(true);
+            progressDialog.setMax((int) MAX);
+            progressDialog.setProgress(0);
+            progressDialog.show();
+            downloadWithURLS(fetchedDatas, fetchedDatas.size(), new PhotosDownloadListener() {
+                @Override
+                public void onPregress(float progress) {
+                    //TODO handle proess
+                    progressDialog.setProgress((int) (progress*MAX));
+                }
+
+                @Override
+                public void onComplete() {
+                    //TODO handle proess
+                    progressDialog.dismiss();
+                }
+
+                @Override
+                public void onFailed(Error err) {
+//TODO handle proess
+                    progressDialog.dismiss();
+                }
+
+            });
+        }
 
     }
 
@@ -284,14 +386,14 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         ArrayList<String> tempPreviews = new ArrayList<String>();
         ArrayList<String> tempCations = new ArrayList<String>();
         ArrayList<String> tempThumbnails = new ArrayList<String>();
-        for(int i = 0 ; i < selections.length ; i++){
+        for (int i = 0; i < selections.length; i++) {
             //add to temp lsit if not selected
-            if(selections[i].equals("0")){
+            if (selections[i].equals("0")) {
                 tempDatas.add(_data.get(i));
                 tempPreviews.add(_previewUrls.get(i));
                 tempCations.add(_captions.get(i));
                 tempThumbnails.add(_thumbnailUrls.get(i));
-            }else{
+            } else {
                 JSONObject object = _data.get(i);
                 String id = object.getString("id");
 
@@ -302,7 +404,32 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         _previewUrls = (ArrayList<String>) tempPreviews.clone();
         _captions = (ArrayList<String>) tempCations.clone();
         _thumbnailUrls = (ArrayList<String>) tempThumbnails.clone();
+    }
 
+    private void downloadWithURLS(final ArrayList<String> fetchedDatas, final int counts, final PhotosDownloadListener _photosDownloadListener) {
+        Log.d(TAG, "going to download "+fetchedDatas.get(0));
+        downloadPhotoWithURL(fetchedDatas.get(0), new PhotosDownloadListener() {
+            @Override
+            public void onPregress(float progress) {
+                float PROGRESS = (counts-fetchedDatas.size())/counts + progress;
+                _photosDownloadListener.onPregress(PROGRESS);
+            }
+
+            @Override
+            public void onComplete() {
+                fetchedDatas.remove(0);
+                if(fetchedDatas.size()>0) {
+                    downloadWithURLS(fetchedDatas, counts , _photosDownloadListener);
+                }else{
+                    _photosDownloadListener.onComplete();
+                }
+            }
+
+            @Override
+            public void onFailed(Error err) {
+                _photosDownloadListener.onFailed(err);
+            }
+        });
     }
 
     private void deletePhoto() {
@@ -313,11 +440,142 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public void onDownloadButtonPressed(JSONObject data) {
+        //Save image to camera roll
+        try {
+            if (data.getString(KEY_ORIGINALURL) != null) {
+                String title = getString(f.getId("string","DOWNLOADING"));
+                progressDialog.setMessage(title);
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressDialog.setIndeterminate(true);
+                progressDialog.setMax((int) MAX);
+                progressDialog.setProgress(0);
+                progressDialog.show();
+                downloadPhotoWithURL(data.getString(KEY_ORIGINALURL), new PhotosDownloadListener() {
+                    @Override
+                    public void onPregress(float progress) {
+                        progressDialog.setProgress((int) (MAX*progress));
+                    }
 
+                    @Override
+                    public void onComplete() {
+//dimiss dialog
+                        progressDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onFailed(Error err) {
+///pop failed
+                        progressDialog.dismiss();
+                    }
+                });
+            }
+        } catch (JSONException e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    private void downloadPhotoWithURL(String string, @NonNull final PhotosDownloadListener photosDownloadListener) {
+        final Uri uri = Uri.parse(string);
+        ImageRequest request = ImageRequestBuilder.newBuilderWithSource(uri)
+                .build();
+
+        DataSource<CloseableReference<CloseableImage>> dataSource = Fresco.getImagePipeline()
+                .fetchDecodedImage(request, this);
+        CallerThreadExecutor executor = CallerThreadExecutor.getInstance();
+        dataSource.subscribe(
+                new BaseDataSubscriber<CloseableReference<CloseableImage>>() {
+                    @Override
+                    protected void onNewResultImpl(DataSource<CloseableReference<CloseableImage>> dataSource) {
+                        if (!dataSource.isFinished()) {
+                            return;
+                        }
+
+                        CloseableReference<CloseableImage> closeableImageRef = dataSource.getResult();
+                        Bitmap bitmap = null;
+                        if (closeableImageRef != null &&
+                                closeableImageRef.get() instanceof CloseableBitmap) {
+                            bitmap = ((CloseableBitmap) closeableImageRef.get()).getUnderlyingBitmap();
+                        }
+
+                        try {
+                            String filePath = getPicturesPath(uri.toString());
+                            File file = new File(filePath);
+                            OutputStream outStream = null;
+                            try {
+                                outStream = new FileOutputStream(file);
+                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100,
+                                        outStream);
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            } finally {
+                                try {
+                                    outStream.flush();
+                                    outStream.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                            photosDownloadListener.onComplete();
+                            //TODO notify file saved
+
+                        } finally {
+                            CloseableReference.closeSafely(closeableImageRef);
+                        }
+                    }
+
+                    @Override
+                    protected void onFailureImpl(DataSource<CloseableReference<CloseableImage>> dataSource) {
+                        //TODO notify failed download
+                        Error err = new Error("Failed to download");
+
+                        photosDownloadListener.onFailed(err);
+                    }
+
+                    @Override
+                    public void onProgressUpdate(DataSource<CloseableReference<CloseableImage>> dataSource) {
+                        boolean isFinished = dataSource.isFinished();
+                        float progress = dataSource.getProgress();
+                        photosDownloadListener.onPregress(progress);
+//                        onProgressUpdateInternal(id, dataSource, progress, isFinished);
+                    }
+
+
+                }
+                , executor);
+    }
+
+    private String getPicturesPath(String urlString) {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        //TODO dirty handle, may find bettery way handel data type
+        int slashIndex = urlString.lastIndexOf("/");
+        int jpgIndex = urlString.indexOf("?");
+        String fileName = "";
+        if(slashIndex>0 && jpgIndex > 0 ) {
+            fileName = urlString.substring(slashIndex + 1, jpgIndex);
+        }
+        String imageFileName = (!fileName.equals("")) ? fileName : "IMG_" + timeStamp + (urlString.contains(".jpg") ? ".jpg" : ".png");
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+        String galleryPath = storageDir.getAbsolutePath() + "/" + imageFileName;
+        return galleryPath;
     }
 
     @Override
     public void onTrashButtonPressed(JSONObject data) {
 
     }
+
+    @Override
+    public void onCaptionchnaged(JSONObject data, String caption) {
+
+    }
+
+    @Override
+    public void onCloseButtonClicked() {
+        imageViewer.onDismiss();
+    }
+
+
 }
