@@ -2,6 +2,7 @@ package com.creedon.cordova.plugin.photobrowser;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -46,6 +47,7 @@ import java.util.List;
 public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements PhotoBrowserBasicActivity.PhotoBrowserListener, ImageOverlayView.ImageOverlayVieListener {
     private static final String TAG = PhotoBrowserPluginActivity.class.getSimpleName();
     private static final float MAX = 100;
+    private CallerThreadExecutor currentExecutor;
 
     interface PhotosDownloadListener {
 
@@ -168,6 +170,20 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     protected void init() {
         f = new FakeR(getApplicationContext());
         progressDialog = new ProgressDialog(this);
+        String title = getString(f.getId("string", "DOWNLOADING"));
+        progressDialog.setMessage(title);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setCancelable(false);
+        progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                if (currentExecutor != null) {
+                    currentExecutor.shutdown();
+                }
+            }
+        });
+
         context = getApplicationContext();
 
 
@@ -347,31 +363,44 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
 
         if (fetchedDatas.size() > 0) {
-            String title = getString(f.getId("string","DOWNLOADING"));
-            progressDialog.setMessage(title);
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-//            progressDialog.setIndeterminateDrawable(new CircularProgressDrawable(MaterialProgressBar.DETERMINATE_CIRCULAR_PROGRESS_STYLE_NORMAL,getApplicationContext()));
-            progressDialog.setIndeterminate(true);
+
             progressDialog.setMax((int) MAX);
             progressDialog.setProgress(0);
             progressDialog.show();
             downloadWithURLS(fetchedDatas, fetchedDatas.size(), new PhotosDownloadListener() {
                 @Override
-                public void onPregress(float progress) {
+                public void onPregress(final float progress) {
                     //TODO handle proess
-                    progressDialog.setProgress((int) (progress*MAX));
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            int v = (int) (progress * MAX);
+                            progressDialog.setProgress(v);
+
+                        }
+                    });
                 }
 
                 @Override
                 public void onComplete() {
-                    //TODO handle proess
-                    progressDialog.dismiss();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressDialog.dismiss();
+                        }
+                    });
                 }
 
                 @Override
                 public void onFailed(Error err) {
-//TODO handle proess
-                    progressDialog.dismiss();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressDialog.dismiss();
+                        }
+                    });
+
                 }
 
             });
@@ -380,7 +409,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     private void deletePhotos() throws JSONException {
-//TODO delete photos from list
+
         ArrayList<String> fetchedDatas = new ArrayList<String>();
         ArrayList<JSONObject> tempDatas = new ArrayList<JSONObject>();
         ArrayList<String> tempPreviews = new ArrayList<String>();
@@ -400,27 +429,56 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 fetchedDatas.add(id);
             }
         }
-        _data = (ArrayList<JSONObject>) tempDatas.clone();
-        _previewUrls = (ArrayList<String>) tempPreviews.clone();
-        _captions = (ArrayList<String>) tempCations.clone();
-        _thumbnailUrls = (ArrayList<String>) tempThumbnails.clone();
+        _data.clear();
+        _data.addAll(tempDatas);
+        _previewUrls.clear();
+        _previewUrls.addAll(tempPreviews);
+        _captions.clear();
+        _captions.addAll(tempCations);
+        _thumbnailUrls.clear();
+        _thumbnailUrls.addAll(tempThumbnails);
+        if(_previewUrls.size() == 0 ){
+
+            finishActivity(-1);
+        }else{
+            getRcAdapter().swap(_thumbnailUrls);
+        }
+//        todo notify changed
+    }
+    private void deletePhoto(int position, JSONObject data) {
+
+        _data.remove(position);
+        _previewUrls.remove(position);
+        _captions.remove(position);
+        _thumbnailUrls.remove(position);
+        imageViewer.onDismiss();
+
+        if(_previewUrls.size()==0){
+            finishActivity(-1);
+        }else {
+            showPicker(_previewUrls.size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition()-1: getCurrentPosition() );
+            getRcAdapter().swap(_thumbnailUrls);
+        }
+
+//        todo notify changed
+
     }
 
     private void downloadWithURLS(final ArrayList<String> fetchedDatas, final int counts, final PhotosDownloadListener _photosDownloadListener) {
-        Log.d(TAG, "going to download "+fetchedDatas.get(0));
+        Log.d(TAG, "going to download " + fetchedDatas.get(0));
         downloadPhotoWithURL(fetchedDatas.get(0), new PhotosDownloadListener() {
             @Override
             public void onPregress(float progress) {
-                float PROGRESS = (counts-fetchedDatas.size())/counts + progress;
+                float PROGRESS = (counts - fetchedDatas.size()) / counts + progress;
                 _photosDownloadListener.onPregress(PROGRESS);
             }
 
             @Override
             public void onComplete() {
                 fetchedDatas.remove(0);
-                if(fetchedDatas.size()>0) {
-                    downloadWithURLS(fetchedDatas, counts , _photosDownloadListener);
-                }else{
+                if (fetchedDatas.size() > 0) {
+                    downloadWithURLS(fetchedDatas, counts, _photosDownloadListener);
+                } else {
                     _photosDownloadListener.onComplete();
                 }
             }
@@ -432,42 +490,59 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         });
     }
 
-    private void deletePhoto() {
 
-//TODO delete photo from list
-//        delete image from liste , dismiss image viewer, reload again
-    }
 
     @Override
     public void onDownloadButtonPressed(JSONObject data) {
         //Save image to camera roll
         try {
             if (data.getString(KEY_ORIGINALURL) != null) {
-                String title = getString(f.getId("string","DOWNLOADING"));
-                progressDialog.setMessage(title);
-                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                progressDialog.setIndeterminate(true);
+
                 progressDialog.setMax((int) MAX);
                 progressDialog.setProgress(0);
                 progressDialog.show();
-                downloadPhotoWithURL(data.getString(KEY_ORIGINALURL), new PhotosDownloadListener() {
+                ArrayList<String> fetchedDatas = new ArrayList<String>();
+                fetchedDatas.add(data.getString(KEY_ORIGINALURL));
+                downloadWithURLS(fetchedDatas, fetchedDatas.size(), new PhotosDownloadListener() {
                     @Override
-                    public void onPregress(float progress) {
-                        progressDialog.setProgress((int) (MAX*progress));
+                    public void onPregress(final float progress) {
+                        //TODO handle proess
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                int v = (int) (progress * MAX);
+                                progressDialog.setProgress(v);
+                            }
+                        });
+
                     }
 
                     @Override
                     public void onComplete() {
-//dimiss dialog
-                        progressDialog.dismiss();
+                        //TODO handle proess
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressDialog.dismiss();
+                            }
+                        });
                     }
 
                     @Override
                     public void onFailed(Error err) {
-///pop failed
-                        progressDialog.dismiss();
+//TODO handle proess
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressDialog.dismiss();
+                            }
+                        });
                     }
+
                 });
+
             }
         } catch (JSONException e) {
 
@@ -483,10 +558,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         DataSource<CloseableReference<CloseableImage>> dataSource = Fresco.getImagePipeline()
                 .fetchDecodedImage(request, this);
         CallerThreadExecutor executor = CallerThreadExecutor.getInstance();
+        currentExecutor = executor;
         dataSource.subscribe(
                 new BaseDataSubscriber<CloseableReference<CloseableImage>>() {
                     @Override
                     protected void onNewResultImpl(DataSource<CloseableReference<CloseableImage>> dataSource) {
+                        currentExecutor = null;
                         if (!dataSource.isFinished()) {
                             return;
                         }
@@ -531,6 +608,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         Error err = new Error("Failed to download");
 
                         photosDownloadListener.onFailed(err);
+                        currentExecutor = null;
                     }
 
                     @Override
@@ -552,7 +630,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         int slashIndex = urlString.lastIndexOf("/");
         int jpgIndex = urlString.indexOf("?");
         String fileName = "";
-        if(slashIndex>0 && jpgIndex > 0 ) {
+        if (slashIndex > 0 && jpgIndex > 0) {
             fileName = urlString.substring(slashIndex + 1, jpgIndex);
         }
         String imageFileName = (!fileName.equals("")) ? fileName : "IMG_" + timeStamp + (urlString.contains(".jpg") ? ".jpg" : ".png");
@@ -564,7 +642,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public void onTrashButtonPressed(JSONObject data) {
-
+        deletePhoto(getCurrentPosition(), data);
     }
 
     @Override
