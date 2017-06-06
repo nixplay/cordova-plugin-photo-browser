@@ -32,18 +32,6 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
             int count = options.getInt("count");
             String type = options.getString("type");
             JSONArray actionSheet = options.getJSONArray("actionSheet");
-/*
-0 = {LinkedHashMap$LinkedHashMapEntry@7684} "images" -> "["https:\/\/nixplay-rnd-original.s3.amazonaws.com\/2018\/2018_106533b2bcc1d60a771406bf10759b58_PREVIEW.jpg?Signature=%2BtaFBYvRZF0d4TQoK4jXNGu2sjQ%3D&Expires=1496224800&AWSAccessKeyId=AKIAIDQQLEZE235GX5QQ&response-expires=Wed%2C%2031%20May%202017%2010%3A00%3A00%20GMT&response-cache-control=max-age%3D86400","https:\/\/nixplay-rnd-original.s3.amazonaws.com\/2018\/2018_fc988f1af1e59ee04104c43c775c3bb7_PREVIEW.jpg?Signature=KSMdfC0RFw%2F0asblyqRvWxnV51w%3D&Expires=1496224800&AWSAccessKeyId=AKIAIDQQLEZE235GX5QQ&response-expires=Wed%2C%2031%20May%202017%2010%3A00%3A00%20GMT&response-cache-control=max-age%3D86400","https:\/\/nixplay-rnd-original.s3.amazonaws.com\/2018\/2018_841eb5e47fd28b76631f0ca099b7d784_PREVIEW.jpg?Signature=ZIaWpn%2F0Ab23E9VgqfuxT740Eh4%3D&Expires=1496224800&AWSAccessKeyId=AKIAIDQQLEZE235GX5QQ&response-expires=Wed%2C%2031%20May%202017%2010%3A00%3A00%20GMT&response-cache-control=max-age%3D86400"]"
-1 = {LinkedHashMap$LinkedHashMapEntry@7685} "thumbnails" -> "["https:\/\/d2tu30k3qbci1d.cloudfront.net\/2018\/2018_106533b2bcc1d60a771406bf10759b58.jpg?Expires=1496224800&Signature=J0q7Ca-UdjfecuqetPG8cGe1vfVCJ6tDmbc8oFZVNgcnvLpSexTPSd-zu6cYuu6dso-0Ac1IVtljWjJaQAX8iJqtjJCpPj8IN3wICC0U26ee7W7rF7tQSCRG2-E9~jvUM5R0B86trTt3snfrLPG-IODCruXCltjCuUY2fw~pEpITSBPv0ztxJDEemDq6NZCUwqVbps8VUi2sL6RR9i8UcUSEO88IEfZCWOebdr2Pfir1PbRDvxcQxxAFmtmXZ6dn-rhtdBp65grl9c8mVWPjIymbJBty-GrW5v4Ih4K2nBJYLfSqaoXx6o9xaCfeEWBfiE6uCfCbhJJGBgTpZgGbQA__&Key-Pair-Id=APKAJTL2VMY3XS7W2VIA","https:\/\/dejf3pcvgnzwx.cloudfront.net\/2018\/2018_fc988f1af1e59ee04104c43c775c3bb7.jpg?Expires=1496224800&Signature=fDqO1Cp4w-eb6FWh1zr1Ms56rKcqhBTs1LKgL~OjDGBJCj9r~RxTAEGNrdaZio~CQG3FaapEtfECmBmd0c7m-SiBRPri9SmPICqX-MDsiRCYHcq0fDZvKA9JsO3hkUlMuORcGboKiwH-GTVwEQJbPD0iWw9G2r-2XGVa~fnTcHirVPVugHN958b-3XyhyJ8D4NmI28FmJJH-UC1vWkIg1pN5PRL5SkB1yKYVI9wZCmATyFcnefLLt7xZYE-OWPg~O36RV-0jM7u4Ci5MFGp-Vg0nVWg93IM19PA~xOwOJVmteVBgzn3CMsq5D6YzxlehZSVb9lBm7tC-UrsR965enQ__&Key-Pair-Id=APKAJTL2V
-2 = {LinkedHashMap$LinkedHashMapEntry@7686} "data" -> "[{"id":97102,"originalUrl":"https:\/\/nixplay-rnd-original.s3.amazonaws.com\/2018\/2018_106533b2bcc1d60a771406bf10759b58.jpg?Signature=i8sm0LBSLjXFKmNcuukaj8Oyb38%3D&Expires=1496224800&AWSAccessKeyId=AKIAIDQQLEZE235GX5QQ&response-expires=Wed%2C%2031%20May%202017%2010%3A00%3A00%20GMT&response-cache-control=max-age%3D86400","caption":" "},{"id":97103,"originalUrl":"https:\/\/nixplay-rnd-original.s3.amazonaws.com\/2018\/2018_fc988f1af1e59ee04104c43c775c3bb7.jpg?Signature=OxClr2%2BSkv7GhCTFtxbLg%2BPsmsg%3D&Expires=1496224800&AWSAccessKeyId=AKIAIDQQLEZE235GX5QQ&response-expires=Wed%2C%2031%20May%202017%2010%3A00%3A00%20GMT&response-cache-control=max-age%3D86400","caption":" "},{"id":97101,"originalUrl":"https:\/\/nixplay-rnd-original.s3.amazonaws.com\/2018\/2018_841eb5e47fd28b76631f0ca099b7d784.jpg?Signature=Y9ge0ebDf3wQ58U2Mx%2BR1oZvFQc%3D&Expires=1496224800&AWSAccessKeyId=AKIAIDQQLEZE235GX5QQ&response-expires=Wed%2C%2031%20May%202017%2010%3A00%3A00%20GMT&response-cache-control=
-3 = {LinkedHashMap$LinkedHashMapEntry@7687} "captions" -> "[" "," "," Hello Pug"]"
-4 = {LinkedHashMap$LinkedHashMapEntry@7688} "id" -> "14939"
-5 = {LinkedHashMap$LinkedHashMapEntry@7689} "name" -> "1 album"
-6 = {LinkedHashMap$LinkedHashMapEntry@7690} "count" -> "3"
-7 = {LinkedHashMap$LinkedHashMapEntry@7691} "type" -> "album"
-8 = {LinkedHashMap$LinkedHashMapEntry@7692} "albumType" -> "Web"
-9 = {LinkedHashMap$LinkedHashMapEntry@7693} "actionSheet" -> "[{"action":"add","label":"Add photos"},{"action":"select","label":"Select photos"},{"action":"addToPlaylist","label":"Add Album to Playlist"},{"action":"rename","label":"Edit Album Name"},{"action":"delete","label":"Delete Album"}]"
-* */
 
             this.showGallery(options, callbackContext);
             return true;
@@ -72,7 +60,6 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
             intent.putExtra("options",options.toString());
             this.cordova.startActivityForResult(this, intent, 0);
 
-//            callbackContext.success(message);
         } else {
             callbackContext.error("Expected one non-empty string argument.");
         }

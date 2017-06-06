@@ -429,14 +429,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 fetchedDatas.add(id);
             }
         }
-        _data.clear();
-        _data.addAll(tempDatas);
-        _previewUrls.clear();
-        _previewUrls.addAll(tempPreviews);
-        _captions.clear();
-        _captions.addAll(tempCations);
-        _thumbnailUrls.clear();
-        _thumbnailUrls.addAll(tempThumbnails);
+        _previewUrls = tempPreviews;
+        _data = tempDatas;
+        _captions = tempCations;
+        _thumbnailUrls = tempThumbnails ;
         if(_previewUrls.size() == 0 ){
 
             finishActivity(-1);
@@ -451,13 +447,14 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         _previewUrls.remove(position);
         _captions.remove(position);
         _thumbnailUrls.remove(position);
-        imageViewer.onDismiss();
 
         if(_previewUrls.size()==0){
             finishActivity(-1);
         }else {
+            imageViewer.onDismiss();
             showPicker(_previewUrls.size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition()-1: getCurrentPosition() );
-            getRcAdapter().swap(_thumbnailUrls);
+            ArrayList<String> list = (ArrayList<String>) _thumbnailUrls.clone();
+            getRcAdapter().swap(list);
         }
 
 //        todo notify changed
@@ -512,6 +509,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                             @Override
                             public void run() {
                                 int v = (int) (progress * MAX);
+                                //TODO can not show progress
                                 progressDialog.setProgress(v);
                             }
                         });
@@ -616,7 +614,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         boolean isFinished = dataSource.isFinished();
                         float progress = dataSource.getProgress();
                         photosDownloadListener.onPregress(progress);
-//                        onProgressUpdateInternal(id, dataSource, progress, isFinished);
+
                     }
 
 
@@ -647,7 +645,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public void onCaptionchnaged(JSONObject data, String caption) {
-
+        //TODO send caption
     }
 
     @Override
