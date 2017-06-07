@@ -1,13 +1,17 @@
 package com.creedon.cordova.plugin.photobrowser;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -47,8 +51,51 @@ import java.util.List;
 public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements PhotoBrowserBasicActivity.PhotoBrowserListener, ImageOverlayView.ImageOverlayVieListener {
     private static final String TAG = PhotoBrowserPluginActivity.class.getSimpleName();
     private static final float MAX = 100;
+    private static final int SAVE_PHOTO = 0x11;
     private CallerThreadExecutor currentExecutor;
+    private String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private ArrayList<String> pendingFetchDatas;
 
+    PhotoBrowserPluginActivity.PhotosDownloadListener photosDownloadListener = new PhotosDownloadListener() {
+        @Override
+        public void onPregress(final float progress) {
+            //TODO handle proess
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    int v = (int) (progress * MAX);
+                    //TODO can not show progress
+                    progressDialog.setProgress(v);
+                }
+            });
+
+        }
+
+        @Override
+        public void onComplete() {
+            //TODO handle proess
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressDialog.dismiss();
+                }
+            });
+        }
+
+        @Override
+        public void onFailed(Error err) {
+//TODO handle proess
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressDialog.dismiss();
+                }
+            });
+        }
+
+    };
     interface PhotosDownloadListener {
 
         void onPregress(float progress);
@@ -107,6 +154,23 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             setupToolBar();
         }
         return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        if (requestCode == SAVE_PHOTO) {
+
+            for (int r : grantResults) {
+                if (r == PackageManager.PERMISSION_GRANTED) {
+                    if (pendingFetchDatas != null) {
+                        downloadWithURLS(pendingFetchDatas, pendingFetchDatas.size(), this.photosDownloadListener);
+                    }
+                }
+            }
+
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -367,43 +431,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             progressDialog.setMax((int) MAX);
             progressDialog.setProgress(0);
             progressDialog.show();
-            downloadWithURLS(fetchedDatas, fetchedDatas.size(), new PhotosDownloadListener() {
-                @Override
-                public void onPregress(final float progress) {
-                    //TODO handle proess
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            int v = (int) (progress * MAX);
-                            progressDialog.setProgress(v);
-
-                        }
-                    });
-                }
-
-                @Override
-                public void onComplete() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressDialog.dismiss();
-                        }
-                    });
-                }
-
-                @Override
-                public void onFailed(Error err) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressDialog.dismiss();
-                        }
-                    });
-
-                }
-
-            });
+            downloadWithURLS(fetchedDatas, fetchedDatas.size(), this.photosDownloadListener);
         }
 
     }
@@ -432,15 +460,16 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         _previewUrls = tempPreviews;
         _data = tempDatas;
         _captions = tempCations;
-        _thumbnailUrls = tempThumbnails ;
-        if(_previewUrls.size() == 0 ){
+        _thumbnailUrls = tempThumbnails;
+        if (_previewUrls.size() == 0) {
 
             finishActivity(-1);
-        }else{
+        } else {
             getRcAdapter().swap(_thumbnailUrls);
         }
 //        todo notify changed
     }
+
     private void deletePhoto(int position, JSONObject data) {
 
         _data.remove(position);
@@ -448,11 +477,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         _captions.remove(position);
         _thumbnailUrls.remove(position);
 
-        if(_previewUrls.size()==0){
+        if (_previewUrls.size() == 0) {
             finishActivity(-1);
-        }else {
+        } else {
             imageViewer.onDismiss();
-            showPicker(_previewUrls.size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition()-1: getCurrentPosition() );
+            showPicker(_previewUrls.size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition() - 1 : getCurrentPosition());
             ArrayList<String> list = (ArrayList<String>) _thumbnailUrls.clone();
             getRcAdapter().swap(list);
         }
@@ -463,6 +492,20 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     private void downloadWithURLS(final ArrayList<String> fetchedDatas, final int counts, final PhotosDownloadListener _photosDownloadListener) {
         Log.d(TAG, "going to download " + fetchedDatas.get(0));
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(permissions, SAVE_PHOTO);
+            }
+            pendingFetchDatas = fetchedDatas;
+            return;
+        }
         downloadPhotoWithURL(fetchedDatas.get(0), new PhotosDownloadListener() {
             @Override
             public void onPregress(float progress) {
@@ -488,7 +531,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
 
-
     @Override
     public void onDownloadButtonPressed(JSONObject data) {
         //Save image to camera roll
@@ -500,46 +542,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 progressDialog.show();
                 ArrayList<String> fetchedDatas = new ArrayList<String>();
                 fetchedDatas.add(data.getString(KEY_ORIGINALURL));
-                downloadWithURLS(fetchedDatas, fetchedDatas.size(), new PhotosDownloadListener() {
-                    @Override
-                    public void onPregress(final float progress) {
-                        //TODO handle proess
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                int v = (int) (progress * MAX);
-                                //TODO can not show progress
-                                progressDialog.setProgress(v);
-                            }
-                        });
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        //TODO handle proess
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressDialog.dismiss();
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onFailed(Error err) {
-//TODO handle proess
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressDialog.dismiss();
-                            }
-                        });
-                    }
-
-                });
+                downloadWithURLS(fetchedDatas, fetchedDatas.size(), this.photosDownloadListener);
 
             }
         } catch (JSONException e) {
@@ -583,11 +586,15 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                         outStream);
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
+                                Error error = new Error(e.getMessage());
+                                photosDownloadListener.onFailed(error);
                             } finally {
                                 try {
                                     outStream.flush();
                                     outStream.close();
                                 } catch (IOException e) {
+                                    Error error = new Error(e.getMessage());
+                                    photosDownloadListener.onFailed(error);
                                     e.printStackTrace();
                                 }
 
