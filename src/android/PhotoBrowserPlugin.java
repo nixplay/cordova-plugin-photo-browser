@@ -74,7 +74,10 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK && data != null) {
+        if(resultCode == Constants.RESULT_ADD_PHOTO){
+
+        }
+        else if (resultCode == Activity.RESULT_OK && data != null) {
             JSONObject res = new JSONObject();
             this.callbackContext.success(res);
         } else if (resultCode == Activity.RESULT_CANCELED && data != null) {

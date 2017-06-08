@@ -31,6 +31,8 @@ import com.facebook.imagepipeline.image.CloseableBitmap;
 import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.flyco.dialog.listener.OnBtnClickL;
+import com.flyco.dialog.widget.NormalDialog;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import org.json.JSONArray;
@@ -96,6 +98,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
 
     };
+
     interface PhotosDownloadListener {
 
         void onPregress(float progress);
@@ -395,18 +398,62 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
 
     private void addPhotos() {
+//dismiss and send code
 
+        finishActivity(Constants.RESULT_ADD_PHOTO);
     }
 
     private void addAlbumToPlaylist() {
-
+//pop up ui for confirmation
     }
 
     private void editAlbumName() {
-
+//pop up ui for album name edit
     }
 
     private void deleteAlbum() {
+//pop up ui for confirmation
+        final NormalDialog dialog = new NormalDialog(this);
+        dialog.title(getString(f.getId("string", "DELETE_ALBUM")))
+                .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS")))
+                .btnNum(2)
+                .btnText(getString(f.getId("string", "CONFIRM")),
+                        getString(f.getId("string", "CANCEL")))
+                .show();
+
+        dialog.setOnBtnClickL(new OnBtnClickL() {
+            @Override
+            public void onBtnClick() {
+                setResult(RESULT_OK);
+                finishActivity(Constants.RESULT_DELETE_ALBUM);
+                dialog.dismiss();
+            }
+        }, new OnBtnClickL() {
+            @Override
+            public void onBtnClick() {
+
+                dialog.dismiss();
+            }
+        });
+//        NormalDialog dialog = new NormalDialog(getApplicationContext());
+//        dialog.setTitle(getString(f.getId("string","DELETE_ALBUM")));
+//
+//        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//            @Override
+//            public void onCancel(DialogInterface dialogInterface) {
+//
+//            }
+//        });
+//
+//        dialog.setOnBtnClickL(new OnBtnClickL() {
+//            @Override
+//            public void onBtnClick() {
+//                setResult(RESULT_OK);
+//                finishActivity(Constants.RESULT_DELETE_ALBUM);
+//            }
+//        });
+//        dialog.setCancelable(false);
+//        dialog.show();
 
     }
 
