@@ -184,10 +184,13 @@ enum Orientation {
     UINavigationController *nc = [[UINavigationController alloc] initWithRootViewController:browser];
     _navigationController = nc;
     
-    UIBarButtonItem *newBackButton = [[UIBarButtonItem alloc] initWithImage: OPTIONS_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(home:)];
-    newBackButton.tag = 0;
-    browser.navigationItem.rightBarButtonItem = newBackButton;
-    _rightBarbuttonItem = newBackButton;
+    UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithImage: OPTIONS_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(home:)];
+    newAddBackButton.tag = 0;
+//    browser.navigationItem.rightBarButtonItem = newBackButton;
+    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
+    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
+    browser.navigationController.navigationItem.rightBarButtonItems = @[addAttachButton,newAddBackButton];
+    _rightBarbuttonItem = newAddBackButton;
     
     _navigationController.delegate = self;
     

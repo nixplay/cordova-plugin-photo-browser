@@ -3,6 +3,7 @@ package com.creedon.cordova.plugin.photobrowser.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
@@ -19,10 +20,14 @@ public class Datum implements Serializable, Parcelable
 
     @SerializedName("id")
     @Expose
-    private Integer id;
+    private String id;
+
+    @Nullable
     @SerializedName("originalUrl")
     @Expose
     private String originalUrl;
+
+    @Nullable
     @SerializedName("caption")
     @Expose
     private String caption;
@@ -34,7 +39,7 @@ public class Datum implements Serializable, Parcelable
         })
         public Datum createFromParcel(Parcel in) {
             Datum instance = new Datum();
-            instance.id = ((Integer) in.readValue((Integer.class.getClassLoader())));
+            instance.id = ((String) in.readValue((String.class.getClassLoader())));
             instance.originalUrl = ((String) in.readValue((String.class.getClassLoader())));
             instance.caption = ((String) in.readValue((String.class.getClassLoader())));
             return instance;
@@ -48,11 +53,11 @@ public class Datum implements Serializable, Parcelable
     ;
     private final static long serialVersionUID = 6516892402532993702L;
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
