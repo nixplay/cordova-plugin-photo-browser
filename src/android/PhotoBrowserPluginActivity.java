@@ -467,7 +467,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
+                if (!hasFocus) {
                     //TODO submit name
                     //
                     photoData.setName(editText.getText().toString());
@@ -603,11 +603,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private void deletePhotos() throws JSONException {
 
         ArrayList<String> fetchedDatas = new ArrayList<String>();
-        ArrayList<Datum> tempDatas = new ArrayList<Datum
+        final ArrayList<Datum> tempDatas = new ArrayList<Datum
                 >();
-        ArrayList<String> tempPreviews = new ArrayList<String>();
-        ArrayList<String> tempCations = new ArrayList<String>();
-        ArrayList<String> tempThumbnails = new ArrayList<String>();
+        final ArrayList<String> tempPreviews = new ArrayList<String>();
+        final ArrayList<String> tempCations = new ArrayList<String>();
+        final ArrayList<String> tempThumbnails = new ArrayList<String>();
         for (int i = 0; i < selections.length; i++) {
             //add to temp lsit if not selected
             if (selections[i].equals("0")) {
@@ -622,16 +622,41 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 fetchedDatas.add(id);
             }
         }
-        photoData.setImages(tempPreviews);
-        photoData.setData(tempDatas);
-        photoData.setCaptions(tempCations);
-        photoData.setThumbnails(tempThumbnails);
-        if (photoData.getImages().size() == 0) {
+        if (fetchedDatas.size() > 0) {
+            final NormalDialog dialog = new NormalDialog(this);
+            dialog.title(getString(f.getId("string", "DELETE_PHOTOS")))
+                    .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS")))
+                    .btnNum(2)
+                    .btnText(getString(f.getId("string", "CONFIRM")),
+                            getString(f.getId("string", "CANCEL")))
+                    .show();
 
-            finishActivity(-1);
-        } else {
-            getRcAdapter().swap(photoData.getThumbnails());
+            dialog.setOnBtnClickL(new OnBtnClickL() {
+                @Override
+                public void onBtnClick() {
+
+                    dialog.dismiss();
+                    photoData.setImages(tempPreviews);
+                    photoData.setData(tempDatas);
+                    photoData.setCaptions(tempCations);
+                    photoData.setThumbnails(tempThumbnails);
+                    if (photoData.getImages().size() == 0) {
+
+                        finishActivity(-1);
+                    } else {
+                        getRcAdapter().swap(photoData.getThumbnails());
+                    }
+
+                }
+            }, new OnBtnClickL() {
+                @Override
+                public void onBtnClick() {
+
+                    dialog.dismiss();
+                }
+            });
         }
+
 
 //        todo notify changed
     }
@@ -814,8 +839,33 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     @Override
-    public void onTrashButtonPressed(JSONObject data) {
-        deletePhoto(getCurrentPosition(), data);
+    public void onTrashButtonPressed(final JSONObject data) {
+
+
+        final NormalDialog dialog = new NormalDialog(this);
+        dialog.title(getString(f.getId("string", "DELETE_PHOTOS")))
+                .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS")))
+                .btnNum(2)
+                .btnText(getString(f.getId("string", "CONFIRM")),
+                        getString(f.getId("string", "CANCEL")))
+                .show();
+
+        dialog.setOnBtnClickL(new OnBtnClickL() {
+            @Override
+            public void onBtnClick() {
+
+                dialog.dismiss();
+                deletePhoto(getCurrentPosition(), data);
+
+            }
+        }, new OnBtnClickL() {
+            @Override
+            public void onBtnClick() {
+
+                dialog.dismiss();
+            }
+        });
+
     }
 
     @Override
