@@ -50,6 +50,7 @@
 
 
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
+#define SELECTALL_TAG 0x31
 enum Orientation {
     TOP_LEFT = 1,
     TOP_RIGHT = 2,
@@ -201,7 +202,20 @@ enum Orientation {
     }];
     
 }
-
+-(void) selectAllPhotos:(UIBarButtonItem *)sender{
+    UIBarButtonItem *deselectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Deselect All" style:UIBarButtonItemStylePlain target:self action:@selector(deselectAllPhotos:)];
+    deselectAllButton.tag = SELECTALL_TAG;
+    _browser.navigationItem.leftBarButtonItem = deselectAllButton;
+    _leftBarbuttonItem = deselectAllButton;
+    //select all photos
+}
+-(void) deselectAllPhotos:(UIBarButtonItem *)sender{
+    UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Select All" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
+    selectAllButton.tag = SELECTALL_TAG;
+    _browser.navigationItem.leftBarButtonItem = selectAllButton;
+    _leftBarbuttonItem = selectAllButton;
+    //deselect all photo
+}
 -(void)home:(UIBarButtonItem *)sender
 {
     if(sender.tag == 0){
@@ -253,15 +267,7 @@ enum Orientation {
         [sheet showWithBlock:^(MKActionSheet *actionSheet, NSInteger buttonIndex) {
             
             if([[actions objectAtIndex:buttonIndex] isEqualToString:DEFAULT_ACTION_ADD]){
-                NSMutableDictionary *dictionary = [NSMutableDictionary new];
-                [dictionary setValue:[actions objectAtIndex:buttonIndex] forKey: KEY_ACTION];
-                [dictionary setValue:@(_id) forKey: KEY_ID];
-                [dictionary setValue:_type forKey: KEY_TYPE];
-                [dictionary setValue:@"add photo to album" forKey: @"description"];
-                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-                [pluginResult setKeepCallbackAsBool:NO];
-                [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-                [self photoBrowserDidFinishModalPresentation:_browser];
+                [self addPhotos:nil];
             }else if([[actions objectAtIndex:buttonIndex] isEqualToString:DEFAULT_ACTION_SELECT]){
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if(!_browser.displaySelectionButtons){
@@ -343,7 +349,7 @@ enum Orientation {
                 [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
             }
         }
-        
+        //add home back
     }
 }
 
@@ -539,11 +545,13 @@ enum Orientation {
     _browser = photoBrowser;
     _gridViewController = gridController;
     if(_rightBarbuttonItem != nil){
-        photoBrowser.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
+//        photoBrowser.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
+        
         [_rightBarbuttonItem setAction:@selector(home:)];
         [_rightBarbuttonItem setTarget:self];
-        photoBrowser.navigationController.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
-        
+//        photoBrowser.navigationController.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
+        UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
+        photoBrowser.navigationController.navigationItem.rightBarButtonItems = @[addAttachButton,_rightBarbuttonItem];
     }
     if(_textView != nil){
         [self resignKeyboard:_textView];
@@ -552,7 +560,17 @@ enum Orientation {
     [_browser hideToolBar];
     return YES;
 }
-
+- (void) addPhotos:(id) sender{
+    NSMutableDictionary *dictionary = [NSMutableDictionary new];
+    [dictionary setValue:DEFAULT_ACTION_ADD forKey: KEY_ACTION];
+    [dictionary setValue:@(_id) forKey: KEY_ID];
+    [dictionary setValue:_type forKey: KEY_TYPE];
+    [dictionary setValue:@"add photo to album" forKey: @"description"];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+    [pluginResult setKeepCallbackAsBool:NO];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    [self photoBrowserDidFinishModalPresentation:_browser];
+}
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser hideGridController:(MWGridViewController*)gridController{
     _browser = photoBrowser;
     _gridViewController = nil;
@@ -571,7 +589,7 @@ enum Orientation {
     _browser = photoBrowser;
     [photoBrowser.navigationController setNavigationBarHidden:NO animated:NO];
     navigationBar.barStyle = UIBarStyleDefault;
-    navigationBar.translucent = YES;
+    navigationBar.translucent = NO;
     photoBrowser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
     return YES;
 }
@@ -636,7 +654,10 @@ enum Orientation {
         UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash
                                                                                           target:self action:@selector(deletePhotos:)];
         
-        
+        UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Select All" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
+        selectAllButton  .tag = SELECTALL_TAG;
+        photoBrowser.navigationItem.leftBarButtonItem = selectAllButton;
+        _leftBarbuttonItem = selectAllButton;
         
         
         [items addObject:deleteBarButton];
@@ -649,6 +670,7 @@ enum Orientation {
             [items addObject:sendtoBarButton];
             
         }
+        //TODO add Select All at left
         
         return items;
     }else{
