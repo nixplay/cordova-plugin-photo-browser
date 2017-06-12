@@ -5,33 +5,84 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 
+import com.creedon.cordova.plugin.photobrowser.data.Datum;
+import com.creedon.cordova.plugin.photobrowser.data.PhotoData;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static org.apache.cordova.PluginResult.Status.OK;
 
 /**
  * This class echoes a string called from JavaScript.
  */
 public class PhotoBrowserPlugin extends CordovaPlugin {
 
+    public  static final String KEY_CAPTION = "caption";
+    public static final String KEY_TYPE = "type";
+    public static final String KEY_ID = "id";
+    public static final String KEY_PHOTO = "photo";
+    public static final String KEY_DESCRIPTION = "description";
+    public static final String KEY_ACTION_SEND = "send";
+    public static final String KEY_ACTION  = "action";
     private CallbackContext callbackContext;
+    private PhotoData photoData;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
         if (action.equals("showGallery")) {
             JSONObject options = args.getJSONObject(0);
-            JSONArray images = options.getJSONArray("images");
-            JSONArray thumbnails = options.getJSONArray("thumbnails");
-            JSONArray data = options.getJSONArray("data");
-            JSONArray captions = options.getJSONArray("captions");
-            String id = options.getString("id");
-            String name = options.getString("name");
-            int count = options.getInt("count");
-            String type = options.getString("type");
-            JSONArray actionSheet = options.getJSONArray("actionSheet");
+            photoData = PhotoData.getInstance(options);
+            photoData.setOnCaptionChangeListener(new PhotoData.PhotoDataListener(){
+
+                @Override
+                public boolean onCaptionChanged(Datum datum, String caption, String id, String type) {
+                    JSONObject res = new JSONObject();
+                    try {
+                        res.put(KEY_PHOTO,datum.toJSON());
+                        res.put(KEY_CAPTION,caption);
+                        res.put(KEY_ACTION,"editCaption");
+                        res.put(KEY_ID,id);
+                        res.put(KEY_TYPE,type);
+                        res.put(KEY_DESCRIPTION,"edit caption of photo");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                    PluginResult result = new PluginResult(OK,res);
+                    result.setKeepCallback(true);
+                    PhotoBrowserPlugin.this.callbackContext.sendPluginResult(result);
+
+                    return true;
+                }
+
+//                @Override
+//                public boolean onSendButtonClick(List<String>photoIDs, String albumId, String type) {
+//
+//                    JSONObject res = new JSONObject();
+//                    try {
+//
+//                        res.put(KEY_PHOTO,photoIDs);
+//                        res.put(KEY_ACTION,KEY_ACTION_SEND);
+//                        res.put(KEY_ID,albumId);
+//                        res.put(KEY_TYPE,type);
+//                        res.put(KEY_DESCRIPTION,"send photos to destination");
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                        return false;
+//                    }
+//                    PluginResult result = new PluginResult(OK,res);
+//                    result.setKeepCallback(true);
+//                    PhotoBrowserPlugin.this.callbackContext.sendPluginResult(result);
+//                    return true;
+//
+//                }
+            });
 
             this.showGallery(options, callbackContext);
             return true;
@@ -78,8 +129,25 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
 
         }
         else if (resultCode == Activity.RESULT_OK && data != null) {
-            JSONObject res = new JSONObject();
-            this.callbackContext.success(res);
+
+            String result = data.getStringExtra(Constants.RESULT);
+            if(result != null) {
+                JSONObject res = null;
+                try {
+                    res = new JSONObject(result);
+                    this.callbackContext.success(res);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }else{
+
+
+
+                PluginResult res = new PluginResult(OK);
+                res.setKeepCallback(false);
+                PhotoBrowserPlugin.this.callbackContext.sendPluginResult(res);
+            }
+
         } else if (resultCode == Activity.RESULT_CANCELED && data != null) {
             String error = data.getStringExtra("ERRORMESSAGE");
             if (error == null)
@@ -97,4 +165,6 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
         }
 
     }
+
+
 }

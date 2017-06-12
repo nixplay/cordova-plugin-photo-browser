@@ -14,4 +14,6 @@ package com.creedon.cordova.plugin.photobrowser;
 public class Constants {
     public static final int RESULT_ADD_PHOTO = 0x12;
     public static final int RESULT_DELETE_ALBUM = 0x13;
+    public static final int RESULT_SEND_PHOTOS = 0x14;
+    public static final String RESULT = "result";
 }

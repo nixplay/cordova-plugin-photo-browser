@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -16,12 +17,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.creedon.androidphotobrowser.PhotoBrowserActivity;
 import com.creedon.androidphotobrowser.PhotoBrowserBasicActivity;
 import com.creedon.androidphotobrowser.common.data.models.CustomImage;
 import com.creedon.androidphotobrowser.common.views.ImageOverlayView;
-import com.creedon.cordova.plugin.photobrowser.data.Demo;
+import com.creedon.cordova.plugin.photobrowser.data.ActionSheet;
+import com.creedon.cordova.plugin.photobrowser.data.Datum;
+import com.creedon.cordova.plugin.photobrowser.data.PhotoData;
 import com.facebook.common.executors.CallerThreadExecutor;
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.BaseDataSubscriber;
@@ -33,9 +37,9 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.flyco.dialog.listener.OnBtnClickL;
 import com.flyco.dialog.widget.NormalDialog;
+import com.rengwuxian.materialedittext.MaterialEditText;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,18 +50,24 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
+import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION_SEND;
+import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_DESCRIPTION;
+import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_PHOTO;
+import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_TYPE;
+
 public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements PhotoBrowserBasicActivity.PhotoBrowserListener, ImageOverlayView.ImageOverlayVieListener {
-    private static final String TAG = PhotoBrowserPluginActivity.class.getSimpleName();
-    private static final float MAX = 100;
-    private static final int SAVE_PHOTO = 0x11;
+    public static final String TAG = PhotoBrowserPluginActivity.class.getSimpleName();
+    public static final float MAX = 100;
+    public static final int SAVE_PHOTO = 0x11;
+    public static final String KEY_ID = "id";
     private CallerThreadExecutor currentExecutor;
     private String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private ArrayList<String> pendingFetchDatas;
-
+    PhotoData photoData;
     PhotoBrowserPluginActivity.PhotosDownloadListener photosDownloadListener = new PhotosDownloadListener() {
         @Override
         public void onPregress(final float progress) {
@@ -110,14 +120,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     private static final String LOG_TAG = PhotoBrowserPluginActivity.class.getSimpleName();
     private static final String KEY_ORIGINALURL = "originalUrl";
-    private ArrayList<String> _previewUrls;
-    private ArrayList<String> _thumbnailUrls;
-    private ArrayList<String> _captions;
-    private ArrayList<JSONObject> _data;
-    private String name;
+
     private FakeR f;
     private Context context;
-    private JSONArray actionSheet;
+
     final private static String DEFAULT_ACTION_ADD = "add";
     final private static String DEFAULT_ACTION_SELECT = "select";
     final private static String DEFAULT_ACTION_ADDTOPLAYLIST = "addToPlaylist";
@@ -140,15 +146,15 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         if (!selectionMode) {
             //TODO build aaction menu from custom data
-            for (int i = 0; i < actionSheet.length(); i++) {
-                try {
-                    JSONObject object = actionSheet.getJSONObject(i);
-                    String label = object.getString("label");
-                    String action = object.getString("action");
-                    menu.add(0, i, 1, label);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+
+            int index = 0;
+            for (ActionSheet actionSheet : photoData.getActionSheet()) {
+
+                String label = actionSheet.getLabel();
+                String action = actionSheet.getAction();
+                menu.add(0, index, 1, label);
+                index++;
+
             }
             setupToolBar();
         } else {
@@ -193,7 +199,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             }
             //TODO delete item
         } else if (id == com.creedon.androidphotobrowser.R.id.send) {
-            addAlbumToPlaylist();
+//            addAlbumToPlaylist();
+            try {
+                sendPhotos();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         } else if (id == com.creedon.androidphotobrowser.R.id.download) {
             try {
                 downloadPhotos();
@@ -202,35 +213,73 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             }
         } else if (item.getTitle() != null) {
 
-            for (int i = 0; i < actionSheet.length(); i++) {
-                try {
-                    JSONObject object = actionSheet.getJSONObject(i);
-                    String label = object.getString("label");
-                    if (label.equals(item.getTitle())) {
-                        String action = object.getString("action");
-                        if (action.equals(DEFAULT_ACTION_ADD)) {
-                            addPhotos();
-                        } else if (action.equals(DEFAULT_ACTION_RENAME)) {
-                            editAlbumName();
-                        } else if (action.equals(DEFAULT_ACTION_ADDTOPLAYLIST)) {
-                            addAlbumToPlaylist();
-                        } else if (action.equals(DEFAULT_ACTION_DELETE)) {
-                            deleteAlbum();
-                        } else if (action.equals(DEFAULT_ACTION_SELECT)) {
-                            setupSelectionMode(!selectionMode);
-                        }
-                        break;
-                    }
+            int index = 0;
+            for (ActionSheet actionSheet : photoData.getActionSheet()) {
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                String label = actionSheet.getLabel();
+                String action = actionSheet.getAction();
+                if (label.equals(item.getTitle())) {
+
+                    if (action.equals(DEFAULT_ACTION_ADD)) {
+                        try {
+                            addPhotos();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (action.equals(DEFAULT_ACTION_RENAME)) {
+                        editAlbumName();
+                    } else if (action.equals(DEFAULT_ACTION_ADDTOPLAYLIST)) {
+                        try {
+                            addAlbumToPlaylist();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (action.equals(DEFAULT_ACTION_DELETE)) {
+                        deleteAlbum();
+                    } else if (action.equals(DEFAULT_ACTION_SELECT)) {
+                        setupSelectionMode(!selectionMode);
+                    }
+                    break;
                 }
+
             }
         } else {
             return super.onOptionsItemSelected(item);
         }
         return false;
 
+    }
+
+    private void sendPhotos() throws JSONException {
+
+        ArrayList<String> fetchedDatas = new ArrayList<String>();
+
+
+        for (int i = 0; i < selections.length; i++) {
+            //add to temp lsit if not selected
+            if (selections[i].equals("1")) {
+                JSONObject object = photoData.getData().get(i).toJSON();
+                String id = object.getString(KEY_ID);
+                fetchedDatas.add(id);
+            }
+        }
+
+
+        if (fetchedDatas.size() > 0) {
+            JSONObject res = new JSONObject();
+            try {
+
+                res.put(KEY_PHOTO, fetchedDatas);
+                res.put(KEY_ACTION, KEY_ACTION_SEND);
+                res.put(KEY_ID, photoData.getId().toString());
+                res.put(KEY_TYPE, photoData.getType());
+                res.put(KEY_DESCRIPTION, "send photos to destination");
+                finishWithResult(res, Constants.RESULT_SEND_PHOTOS);
+            } catch (JSONException e) {
+                e.printStackTrace();
+
+            }
+        }
     }
 
     @Override
@@ -260,72 +309,59 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             Bundle bundle = getIntent().getExtras();
             String optionsJsonString = bundle.getString("options");
             try {
-                JSONObject jsonObject = new JSONObject(optionsJsonString);
-                JSONArray images = jsonObject.getJSONArray("images");
-                JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
-                JSONArray data = jsonObject.getJSONArray("data");
-                JSONArray captions = jsonObject.getJSONArray("captions");
-                String id = jsonObject.getString("id");
-                name = jsonObject.getString("name");
-                int count = jsonObject.getInt("count");
-                String type = jsonObject.getString("type");
-                try {
-                    actionSheet = jsonObject.getJSONArray("actionSheet");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                _previewUrls = new ArrayList<String>();
-                _thumbnailUrls = new ArrayList<String>();
-                _captions = new ArrayList<String>();
-                _data = new ArrayList<JSONObject>();
-                for (int i = 0; i < images.length(); i++) {
-                    _previewUrls.add(images.getString(i));
-                }
-                for (int i = 0; i < thumbnails.length(); i++) {
-                    _thumbnailUrls.add(thumbnails.getString(i));
-                }
-                for (int i = 0; i < captions.length(); i++) {
-                    _captions.add(captions.getString(i));
-                }
-                for (int i = 0; i < data.length(); i++) {
-                    _data.add(data.getJSONObject(i));
-                }
-
-
+                photoData = PhotoData.getInstance(new JSONObject(optionsJsonString));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+//            try {
+//                JSONObject jsonObject = new JSONObject(optionsJsonString);
+//                JSONArray images = jsonObject.getJSONArray("images");
+//                JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
+//                JSONArray data = jsonObject.getJSONArray("data");
+//                JSONArray captions = jsonObject.getJSONArray("captions");
+//                String id = jsonObject.getString("id");
+//                name = jsonObject.getString("name");
+//                int count = jsonObject.getInt("count");
+//                String type = jsonObject.getString("type");
+//                try {
+//                    actionSheet = jsonObject.getJSONArray("actionSheet");
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                _previewUrls = new ArrayList<String>();
+//                _thumbnailUrls = new ArrayList<String>();
+//                _captions = new ArrayList<String>();
+//                _data = new ArrayList<JSONObject>();
+//                for (int i = 0; i < images.length(); i++) {
+//                    _previewUrls.add(images.getString(i));
+//                }
+//                for (int i = 0; i < thumbnails.length(); i++) {
+//                    _thumbnailUrls.add(thumbnails.getString(i));
+//                }
+//                for (int i = 0; i < captions.length(); i++) {
+//                    _captions.add(captions.getString(i));
+//                }
+//                for (int i = 0; i < data.length(); i++) {
+//                    _data.add(data.getJSONObject(i));
+//                }
+//
+//
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
 
-        } else {
-
-            String jsonString = Demo.getFlickrs();
-            try {
-
-                JSONArray array = new JSONArray(jsonString);
-                _previewUrls = new ArrayList<String>();
-                _thumbnailUrls = new ArrayList<String>();
-                for (int i = 0; i < array.length(); i++) {
-                    _previewUrls.add(array.getJSONObject(i).getString("previewUrl"));
-                    _thumbnailUrls.add(array.getJSONObject(i).getString("thumbnailUrl"));
-                }
-                _captions = new ArrayList<String>(Arrays.asList(Demo.getDescriptions()));
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-
-            }
         }
         super.init();
     }
 
     @Override
     public List<String> photoBrowserPhotos(PhotoBrowserBasicActivity activity) {
-        return _previewUrls;
+        return photoData.getImages();
     }
 
     @Override
     public List<String> photoBrowserThumbnails(PhotoBrowserBasicActivity activity) {
-        return _thumbnailUrls;
+        return photoData.getThumbnails();
     }
 
     @Override
@@ -335,17 +371,17 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public List<String> photoBrowserPhotoCaptions(PhotoBrowserBasicActivity photoBrowserBasicActivity) {
-        return _captions;
+        return photoData.getCaptions();
     }
 
     @Override
     public String getActionBarTitle() {
-        return this.name;
+        return photoData.getName();
     }
 
     @Override
     public String getSubtitle() {
-        if (this._previewUrls == null) {
+        if (photoData.getImages() == null) {
             return new StringBuilder()
                     .append(0)
                     .append(" ")
@@ -353,7 +389,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     .toString();
         } else {
             return new StringBuilder()
-                    .append(this._previewUrls.size())
+                    .append(this.photoData.getImages().size())
                     .append(" ")
                     .append(context.getResources().getString(f.getId("string", "PHOTOS")))
                     .toString();
@@ -388,27 +424,98 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         return new ImageViewer.OnImageChangeListener() {
             @Override
             public void onImageChange(int position) {
-                CustomImage image = getImages().get(position);
-                overlayView.setShareText(image.getUrl());
-                overlayView.setDescription(image.getDescription());
-                overlayView.setData(_data.get(position));
+                overlayView.setDescription(photoData.getCaptions().get(position));
+                try {
+                    overlayView.setData(photoData.getData().get(position).toJSON());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         };
     }
 
 
-    private void addPhotos() {
+    private void addPhotos() throws JSONException {
 //dismiss and send code
-
-        finishActivity(Constants.RESULT_ADD_PHOTO);
+        JSONObject res = new JSONObject();
+        res.put(KEY_ACTION, DEFAULT_ACTION_ADD);
+        res.put(KEY_ID, photoData.getId().toString());
+        res.put(KEY_TYPE, photoData.getType());
+        res.put(KEY_DESCRIPTION, "add photo to album");
+        finishWithResult(res, Constants.RESULT_ADD_PHOTO);
     }
 
-    private void addAlbumToPlaylist() {
+    private void addAlbumToPlaylist() throws JSONException {
 //pop up ui for confirmation
+        JSONObject res = new JSONObject();
+        res.put(KEY_ACTION, DEFAULT_ACTION_ADDTOPLAYLIST);
+        res.put(KEY_ID, photoData.getId().toString());
+        res.put(KEY_TYPE, photoData.getType());
+        res.put(KEY_DESCRIPTION, "send photos to destination");
+        finishWithResult(res, Constants.RESULT_ADD_PHOTO);
+
+
     }
 
     private void editAlbumName() {
 //pop up ui for album name edit
+        final MaterialEditText editText = new MaterialEditText(context);
+        editText.setText(photoData.getName());
+        editText.setHint("Album Name");
+        editText.setMaxLines(1);
+        editText.setMaxCharacters(100);
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus){
+                    //TODO submit name
+                    //
+                    photoData.setName(editText.getText().toString());
+                    getSupportActionBar().setCustomView(null);
+                    getSupportActionBar().setTitle(photoData.getName());
+                }
+            }
+        });
+        getSupportActionBar().setCustomView(editText);
+        editText.requestFocus();
+
+        /*
+        NSMutableDictionary *dictionary = [NSMutableDictionary new];
+                        [dictionary setValue:[actions objectAtIndex:buttonIndex] forKey: KEY_ACTION];
+                        [dictionary setValue:@(_id) forKey: KEY_ID];
+                        [dictionary setValue:_type forKey: KEY_TYPE];
+                        [dictionary setValue:text forKey: KEY_NAME];
+                        [dictionary setValue:@"edit album name" forKey: @"description"];
+        * */
+        /*
+        JSONObject res = new JSONObject();
+        res.put(KEY_ACTION, DEFAULT_ACTION_RENAME);
+        res.put(KEY_ID, photoData.getId().toString());
+        res.put(KEY_TYPE, photoData.getType());
+        res.put(KEY_DESCRIPTION, "edit album name");
+        finishWithResult(res, Constants.RESULT_ADD_PHOTO);
+         */
+//        final EditTextDialog dialog = new EditTextDialog(this);
+//        dialog.title(getString(f.getId("string", "DELETE_ALBUM")))
+//                .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS")))
+//                .btnNum(2)
+//                .btnText(getString(f.getId("string", "CONFIRM")),
+//                        getString(f.getId("string", "CANCEL")))
+//                .show();
+//
+//        dialog.setOnBtnClickL(new OnBtnClickL() {
+//            @Override
+//            public void onBtnClick() {
+//
+//                dialog.dismiss();
+//            }
+//        }, new OnBtnClickL() {
+//            @Override
+//            public void onBtnClick() {
+//
+//                dialog.dismiss();
+//            }
+//        });
     }
 
     private void deleteAlbum() {
@@ -424,9 +531,19 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         dialog.setOnBtnClickL(new OnBtnClickL() {
             @Override
             public void onBtnClick() {
-                setResult(RESULT_OK);
-                finishActivity(Constants.RESULT_DELETE_ALBUM);
+
                 dialog.dismiss();
+
+                try {
+                    JSONObject res = new JSONObject();
+                    res.put(KEY_ACTION, DEFAULT_ACTION_DELETE);
+                    res.put(KEY_ID, photoData.getId().toString());
+                    res.put(KEY_TYPE, photoData.getType());
+                    res.put(KEY_DESCRIPTION, "delete album");
+                    finishWithResult(res, Constants.RESULT_DELETE_ALBUM);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }, new OnBtnClickL() {
             @Override
@@ -466,7 +583,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         for (int i = 0; i < selections.length; i++) {
             //add to temp lsit if not selected
             if (selections[i].equals("1")) {
-                JSONObject object = _data.get(i);
+                JSONObject object = photoData.getData().get(i).toJSON();
                 String id = object.getString(KEY_ORIGINALURL);
                 fetchedDatas.add(id);
             }
@@ -486,51 +603,55 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private void deletePhotos() throws JSONException {
 
         ArrayList<String> fetchedDatas = new ArrayList<String>();
-        ArrayList<JSONObject> tempDatas = new ArrayList<JSONObject>();
+        ArrayList<Datum> tempDatas = new ArrayList<Datum
+                >();
         ArrayList<String> tempPreviews = new ArrayList<String>();
         ArrayList<String> tempCations = new ArrayList<String>();
         ArrayList<String> tempThumbnails = new ArrayList<String>();
         for (int i = 0; i < selections.length; i++) {
             //add to temp lsit if not selected
             if (selections[i].equals("0")) {
-                tempDatas.add(_data.get(i));
-                tempPreviews.add(_previewUrls.get(i));
-                tempCations.add(_captions.get(i));
-                tempThumbnails.add(_thumbnailUrls.get(i));
+                tempDatas.add(photoData.getData().get(i));
+                tempPreviews.add(photoData.getImages().get(i));
+                tempCations.add(photoData.getCaptions().get(i));
+                tempThumbnails.add(photoData.getThumbnails().get(i));
             } else {
-                JSONObject object = _data.get(i);
-                String id = object.getString("id");
+                Datum object = photoData.getData().get(i);
+                String id = object.getId().toString();
 
                 fetchedDatas.add(id);
             }
         }
-        _previewUrls = tempPreviews;
-        _data = tempDatas;
-        _captions = tempCations;
-        _thumbnailUrls = tempThumbnails;
-        if (_previewUrls.size() == 0) {
+        photoData.setImages(tempPreviews);
+        photoData.setData(tempDatas);
+        photoData.setCaptions(tempCations);
+        photoData.setThumbnails(tempThumbnails);
+        if (photoData.getImages().size() == 0) {
 
             finishActivity(-1);
         } else {
-            getRcAdapter().swap(_thumbnailUrls);
+            getRcAdapter().swap(photoData.getThumbnails());
         }
+
 //        todo notify changed
     }
 
     private void deletePhoto(int position, JSONObject data) {
 
-        _data.remove(position);
-        _previewUrls.remove(position);
-        _captions.remove(position);
-        _thumbnailUrls.remove(position);
+        photoData.getData().remove(position);
+        photoData.getImages().remove(position);
+        photoData.getCaptions().remove(position);
+        photoData.getThumbnails().remove(position);
 
-        if (_previewUrls.size() == 0) {
+        if (photoData.getImages().size() == 0) {
             finishActivity(-1);
         } else {
             imageViewer.onDismiss();
-            showPicker(_previewUrls.size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition() - 1 : getCurrentPosition());
-            ArrayList<String> list = (ArrayList<String>) _thumbnailUrls.clone();
+            super.refreshCustomImage();
+            showPicker(photoData.getImages().size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition() - 1 : getCurrentPosition());
+            ArrayList<String> list = (ArrayList<String>) photoData.getThumbnails();
             getRcAdapter().swap(list);
+
         }
 
 //        todo notify changed
@@ -698,8 +819,16 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     @Override
-    public void onCaptionchnaged(JSONObject data, String caption) {
+    public void onCaptionChanged(JSONObject data, String caption) {
         //TODO send caption
+//        photoData.setCaption(getCurrentPosition(), caption);
+//        getImages().get(getCurrentPosition()).setDescription(caption);
+        if (photoData.setCaption(getCurrentPosition(), caption)) {
+
+        } else {
+            Log.e(TAG, "Error failed to set caption");
+        }
+
     }
 
     @Override
@@ -707,5 +836,43 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         imageViewer.onDismiss();
     }
 
+    @Override
+    public void onSendButtonClick(JSONObject data) {
+        ArrayList<String> ids = new ArrayList<String>();
+        try {
+            ids.add(data.getString("id"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject res = new JSONObject();
+        try {
+
+            res.put(KEY_PHOTO, photoData.getId().toString());
+            res.put(KEY_ACTION, KEY_ACTION_SEND);
+            res.put(KEY_ID, photoData.getId().toString());
+            res.put(KEY_TYPE, photoData.getType());
+            res.put(KEY_DESCRIPTION, "send photos to destination");
+            finishWithResult(res, Constants.RESULT_SEND_PHOTOS);
+        } catch (JSONException e) {
+            e.printStackTrace();
+
+        }
+    }
+
+    @Override
+    public void didEndEditing(JSONObject data, String s) {
+        photoData.setCaption(getCurrentPosition(), s);
+    }
+
+    void finishWithResult(JSONObject result, int request) {
+        Bundle conData = new Bundle();
+        conData.putString(Constants.RESULT, result.toString());
+        Intent intent = new Intent();
+        intent.putExtras(conData);
+        setResult(RESULT_OK, intent);
+        finishActivity(request);
+        finish();
+    }
 
 }
