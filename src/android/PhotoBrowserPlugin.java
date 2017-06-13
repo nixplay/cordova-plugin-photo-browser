@@ -15,6 +15,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import static org.apache.cordova.PluginResult.Status.OK;
 
 /**
@@ -29,10 +31,11 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
     public static final String KEY_DESCRIPTION = "description";
     public static final String KEY_ACTION_SEND = "send";
     public static final String KEY_ACTION  = "action";
-
+    public static final String KEY_PHOTOS ="photos";
     private static final String KEY_NAME = "name";
     public static final String DEFAULT_ACTION_RENAME = "rename";
     private static final String DEFAULT_ACTION_EDITCAPTION = "editCaption";
+    private static final String DEFAULT_ACTION_DELETEPHOTOS = "deletePhotos";
     private CallbackContext callbackContext;
     private PhotoData photoData;
 
@@ -75,6 +78,26 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
                         res.put(KEY_TYPE,type);
                         res.put(KEY_NAME,s);
                         res.put(KEY_DESCRIPTION,"edit album name");
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+
+                    }
+                    PluginResult result = new PluginResult(OK,res);
+                    result.setKeepCallback(true);
+                    PhotoBrowserPlugin.this.callbackContext.sendPluginResult(result);
+                }
+
+                @Override
+                public void onPhotoDeleted(ArrayList<String> deletedData, String id, String type) {
+                    JSONObject res = new JSONObject();
+                    try {
+
+                        res.put(KEY_ACTION,DEFAULT_ACTION_DELETEPHOTOS);
+                        res.put(KEY_ID,id);
+                        res.put(KEY_TYPE,type);
+                        res.put(KEY_PHOTOS, new JSONArray(deletedData));
+                        res.put(KEY_DESCRIPTION,"delete selected photos");
 
                     } catch (JSONException e) {
                         e.printStackTrace();

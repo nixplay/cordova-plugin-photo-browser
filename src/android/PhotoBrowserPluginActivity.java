@@ -2,7 +2,6 @@ package com.creedon.cordova.plugin.photobrowser;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -39,6 +38,7 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,7 +55,7 @@ import java.util.List;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION_SEND;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_DESCRIPTION;
-import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_PHOTO;
+import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_PHOTOS;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_TYPE;
 
 public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements PhotoBrowserBasicActivity.PhotoBrowserListener, ImageOverlayView.ImageOverlayVieListener {
@@ -70,13 +70,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     PhotoBrowserPluginActivity.PhotosDownloadListener photosDownloadListener = new PhotosDownloadListener() {
         @Override
         public void onPregress(final float progress) {
-            //TODO handle proess
-
+            
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     int v = (int) (progress * MAX);
-                    //TODO can not show progress
+
                     progressDialog.setProgress(v);
                 }
             });
@@ -85,7 +84,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         @Override
         public void onComplete() {
-            //TODO handle proess
+
 
             runOnUiThread(new Runnable() {
                 @Override
@@ -97,7 +96,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         @Override
         public void onFailed(Error err) {
-//TODO handle proess
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -108,6 +107,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     };
 
+
+
     interface PhotosDownloadListener {
 
         void onPregress(float progress);
@@ -117,7 +118,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         void onFailed(Error err);
     }
 
-    private static final String LOG_TAG = PhotoBrowserPluginActivity.class.getSimpleName();
     private static final String KEY_ORIGINALURL = "originalUrl";
 
     private FakeR f;
@@ -212,7 +212,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             }
         } else if (item.getTitle() != null) {
 
-            int index = 0;
             for (ActionSheet actionSheet : photoData.getActionSheet()) {
 
                 String label = actionSheet.getLabel();
@@ -268,9 +267,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             JSONObject res = new JSONObject();
             try {
 
-                res.put(KEY_PHOTO, fetchedDatas);
+                res.put(KEY_PHOTOS, new JSONArray(fetchedDatas));
                 res.put(KEY_ACTION, KEY_ACTION_SEND);
-                res.put(KEY_ID, photoData.getId().toString());
+                res.put(KEY_ID, photoData.getId());
                 res.put(KEY_TYPE, photoData.getType());
                 res.put(KEY_DESCRIPTION, "send photos to destination");
                 finishWithResult(res, Constants.RESULT_SEND_PHOTOS);
@@ -284,23 +283,23 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     protected void init() {
         f = new FakeR(getApplicationContext());
-        String title = getString(f.getId("string", "DOWNLOADING"));
+
         progressDialog = new MaterialDialog
                 .Builder(this)
-                .title(title)
+                .title(getString(f.getId("string", "DOWNLOADING")))
+                .neutralText(getString(f.getId("string", "CANCEL")))
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        if (currentExecutor != null) {
+                            currentExecutor.shutdown();
+                        }
+                    }
+                })
                 .progress(false, 100, true)
                 .build();
 
 
-        progressDialog.setCancelable(false);
-        progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                if (currentExecutor != null) {
-                    currentExecutor.shutdown();
-                }
-            }
-        });
 
         context = getApplicationContext();
 
@@ -384,17 +383,13 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     public String getSubtitle() {
         if (photoData.getImages() == null) {
-            return new StringBuilder()
-                    .append(0)
-                    .append(" ")
-                    .append(context.getResources().getString(f.getId("string", "PHOTOS")))
-                    .toString();
+            return "0" +
+                    " " +
+                    context.getResources().getString(f.getId("string", "PHOTOS"));
         } else {
-            return new StringBuilder()
-                    .append(this.photoData.getImages().size())
-                    .append(" ")
-                    .append(context.getResources().getString(f.getId("string", "PHOTOS")))
-                    .toString();
+            return String.valueOf(this.photoData.getImages().size()) +
+                    " " +
+                    context.getResources().getString(f.getId("string", "PHOTOS"));
         }
     }
 
@@ -426,6 +421,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         return new ImageViewer.OnImageChangeListener() {
             @Override
             public void onImageChange(int position) {
+                setCurrentPosition(position);
                 overlayView.setDescription(photoData.getCaptions().get(position));
                 try {
                     overlayView.setData(photoData.getData().get(position).toJSON());
@@ -441,7 +437,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //dismiss and send code
         JSONObject res = new JSONObject();
         res.put(KEY_ACTION, DEFAULT_ACTION_ADD);
-        res.put(KEY_ID, photoData.getId().toString());
+        res.put(KEY_ID, photoData.getId());
         res.put(KEY_TYPE, photoData.getType());
         res.put(KEY_DESCRIPTION, "add photo to album");
         finishWithResult(res, Constants.RESULT_ADD_PHOTO);
@@ -451,7 +447,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //pop up ui for confirmation
         JSONObject res = new JSONObject();
         res.put(KEY_ACTION, DEFAULT_ACTION_ADDTOPLAYLIST);
-        res.put(KEY_ID, photoData.getId().toString());
+        res.put(KEY_ID, photoData.getId());
         res.put(KEY_TYPE, photoData.getType());
         res.put(KEY_DESCRIPTION, "send photos to destination");
         finishWithResult(res, Constants.RESULT_ADD_PHOTO);
@@ -461,39 +457,44 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     private void editAlbumName() {
 
-        final String[] tempInput = {""};
         new MaterialDialog.Builder(this)
                 .title(getString(f.getId("string", "DELETE_ALBUM")))
                 .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS")))
                 .inputType(InputType.TYPE_CLASS_TEXT)
-                .positiveText(getString(f.getId("string", "CONFIRM")))
-                .negativeText(getString(f.getId("string", "CANCEL")))
-                .btnStackedGravity(GravityEnum.CENTER)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-
-                    @Override
-                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        dialog.dismiss();
-                        photoData.setName(tempInput[0]);
-                        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-                        if (actionBar != null) {
-                            actionBar.setTitle(listener.getActionBarTitle());
-                        }
-                        photoData.onSetName(tempInput[0]);
-
-                    }
-                })
-                .onNegative(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        dialog.dismiss();
-                    }
-                })
+//                .positiveText(getString(f.getId("string", "CONFIRM")))
+//                .negativeText(getString(f.getId("string", "CANCEL")))
+//                .btnStackedGravity(GravityEnum.CENTER)
+//                .onPositive(new MaterialDialog.SingleButtonCallback() {
+//
+//                    @Override
+//                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+//                        dialog.dismiss();
+//                        photoData.setName(tempInput[0]);
+//                        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+//                        if (actionBar != null) {
+//                            actionBar.setTitle(listener.getActionBarTitle());
+//                        }
+//                        photoData.onSetName(tempInput[0]);
+//
+//                    }
+//                })
+//                .onNegative(new MaterialDialog.SingleButtonCallback() {
+//                    @Override
+//                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+//                        dialog.dismiss();
+//                    }
+//                })
                 .input(getString(f.getId("string","EDIT_ALBUM_NAME")), photoData.getName(), new MaterialDialog.InputCallback() {
                     @Override
-                    public void onInput(MaterialDialog dialog, CharSequence input) {
-                        // Do something
-                        tempInput[0] = input.toString();
+                    public void onInput(@NonNull  MaterialDialog dialog, @NonNull  CharSequence input) {
+
+                        dialog.dismiss();
+                        photoData.setName(input.toString());
+                        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+                        if (actionBar != null) {
+                            actionBar.setTitle(input.toString());
+                        }
+                        photoData.onSetName(input.toString());
                     }
                 }).show();
 
@@ -514,7 +515,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         try {
                             JSONObject res = new JSONObject();
                             res.put(KEY_ACTION, DEFAULT_ACTION_DELETE);
-                            res.put(KEY_ID, photoData.getId().toString());
+                            res.put(KEY_ID, photoData.getId());
                             res.put(KEY_TYPE, photoData.getType());
                             res.put(KEY_DESCRIPTION, "delete album");
                             finishWithResult(res, Constants.RESULT_DELETE_ALBUM);
@@ -560,7 +561,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     private void deletePhotos() throws JSONException {
 
-        ArrayList<String> fetchedDatas = new ArrayList<String>();
+        final ArrayList<String> fetchedDatas = new ArrayList<String>();
         final ArrayList<Datum> tempDatas = new ArrayList<Datum
                 >();
         final ArrayList<String> tempPreviews = new ArrayList<String>();
@@ -577,12 +578,13 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 tempSelection.add(selections.get(i));
             } else {
                 Datum object = photoData.getData().get(i);
-                String id = object.getId().toString();
+                String id = object.getId();
 
                 fetchedDatas.add(id);
             }
         }
         if (fetchedDatas.size() > 0) {
+
             new MaterialDialog.Builder(this)
                     .title(getString(f.getId("string", "DELETE_PHOTOS")))
                     .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS")))
@@ -593,6 +595,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             dialog.dismiss();
+
+                            photoData.onPhotoDeleted(fetchedDatas);
+
                             photoData.setImages(tempPreviews);
                             photoData.setData(tempDatas);
                             photoData.setCaptions(tempCations);
@@ -600,7 +605,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                             selections = tempSelection;
                             if (photoData.getImages().size() == 0) {
 
-                                finishActivity(-1);
+                                finish();
                             } else {
                                 ArrayList<String> list = new ArrayList<String>(photoData.getThumbnails());
                                 getRcAdapter().swap(list);
@@ -622,14 +627,16 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     private void deletePhoto(int position, JSONObject data) {
         try {
-            photoData.getData().remove(position);
+            Datum deletedData = photoData.getData().remove(position);
             photoData.getImages().remove(position);
             photoData.getCaptions().remove(position);
             photoData.getThumbnails().remove(position);
             selections.remove(position);
-
+            ArrayList <String>deletedDatas = new ArrayList<String>();
+            deletedDatas.add(deletedData.getId());
+            photoData.onPhotoDeleted(deletedDatas);
             if (photoData.getImages().size() == 0) {
-                finishActivity(-1);
+                finish();
             } else {
                 imageViewer.onDismiss();
                 super.refreshCustomImage();
@@ -637,10 +644,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 ArrayList<String> list = new ArrayList<String>(photoData.getThumbnails());
                 getRcAdapter().swap(list);
 
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
 //        todo notify changed
 
     }
@@ -664,7 +673,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         downloadPhotoWithURL(fetchedDatas.get(0), new PhotosDownloadListener() {
             @Override
             public void onPregress(float progress) {
-                float PROGRESS = (counts - fetchedDatas.size())+((1.0f/counts)*progress) / counts ;
+                float particialProgress = ((1.0f/counts)*progress);
+                int curentsize = fetchedDatas.size();
+                float partition = (counts - curentsize);
+                float PROGRESS = (partition+particialProgress) / counts ;
                 _photosDownloadListener.onPregress(PROGRESS);
             }
 
@@ -807,7 +819,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS")))
                 .positiveText(getString(f.getId("string", "CONFIRM")))
                 .negativeText(getString(f.getId("string", "CANCEL")))
-                .btnStackedGravity(GravityEnum.CENTER)
+                
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
@@ -828,8 +840,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     public void onCaptionChanged(JSONObject data, String caption) {
         //TODO send caption
-//        photoData.setCaption(getCurrentPosition(), caption);
-//        getImages().get(getCurrentPosition()).setDescription(caption);
+        photoData.setCaption(getCurrentPosition(), caption);
+        overlayView.setDescription(caption);
         if (photoData.setCaption(getCurrentPosition(), caption)) {
 
         } else {
@@ -855,9 +867,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         JSONObject res = new JSONObject();
         try {
 
-            res.put(KEY_PHOTO, photoData.getId().toString());
+            res.put(KEY_PHOTOS, ids);
             res.put(KEY_ACTION, KEY_ACTION_SEND);
-            res.put(KEY_ID, photoData.getId().toString());
+            res.put(KEY_ID, photoData.getId());
             res.put(KEY_TYPE, photoData.getType());
             res.put(KEY_DESCRIPTION, "send photos to destination");
             finishWithResult(res, Constants.RESULT_SEND_PHOTOS);

@@ -13,6 +13,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -247,10 +248,18 @@ public class PhotoData implements Serializable, Parcelable {
         }
     }
 
+    public void onPhotoDeleted(ArrayList<String> deletedDatas) {
+        if (photoDataListener != null) {
+            photoDataListener.onPhotoDeleted(deletedDatas, id, type);
+        }
+    }
+
     public interface PhotoDataListener {
         boolean onCaptionChanged(Datum datum, String caption, String id, String type);
 
         void onSetName(String s, String id, String type);
+
+        void onPhotoDeleted(ArrayList<String>  deletedData, String id, String type);
 
 //        boolean onSendButtonClick(List<String>photoIDs, String albumId, String type);
     }
