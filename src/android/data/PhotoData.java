@@ -74,7 +74,7 @@ public class PhotoData implements Serializable, Parcelable {
     private List<String> captions = null;
     @SerializedName("id")
     @Expose
-    private Integer id;
+    private String id;
     @SerializedName("name")
     @Expose
     private String name;
@@ -102,7 +102,7 @@ public class PhotoData implements Serializable, Parcelable {
             in.readList(instance.thumbnails, (java.lang.String.class.getClassLoader()));
             in.readList(instance.data, (com.creedon.cordova.plugin.photobrowser.data.Datum.class.getClassLoader()));
             in.readList(instance.captions, (java.lang.String.class.getClassLoader()));
-            instance.id = ((Integer) in.readValue((Integer.class.getClassLoader())));
+            instance.id = ((String) in.readValue((Integer.class.getClassLoader())));
             instance.name = ((String) in.readValue((String.class.getClassLoader())));
             instance.count = ((Integer) in.readValue((Integer.class.getClassLoader())));
             instance.type = ((String) in.readValue((String.class.getClassLoader())));
@@ -147,11 +147,11 @@ public class PhotoData implements Serializable, Parcelable {
         return captions;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -236,13 +236,21 @@ public class PhotoData implements Serializable, Parcelable {
     public boolean setCaption(int index, String caption) {
         this.captions.set(index, caption);
         if (photoDataListener != null) {
-            return photoDataListener.onCaptionChanged(data.get(index), caption, id.toString(), type);
+            return photoDataListener.onCaptionChanged(data.get(index), caption, id, type);
         }
         return false;
     }
 
+    public void onSetName(String s) {
+        if (photoDataListener != null) {
+            photoDataListener.onSetName(s, id, type);
+        }
+    }
+
     public interface PhotoDataListener {
         boolean onCaptionChanged(Datum datum, String caption, String id, String type);
+
+        void onSetName(String s, String id, String type);
 
 //        boolean onSendButtonClick(List<String>photoIDs, String albumId, String type);
     }

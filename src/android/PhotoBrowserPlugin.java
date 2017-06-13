@@ -29,6 +29,10 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
     public static final String KEY_DESCRIPTION = "description";
     public static final String KEY_ACTION_SEND = "send";
     public static final String KEY_ACTION  = "action";
+
+    private static final String KEY_NAME = "name";
+    public static final String DEFAULT_ACTION_RENAME = "rename";
+    private static final String DEFAULT_ACTION_EDITCAPTION = "editCaption";
     private CallbackContext callbackContext;
     private PhotoData photoData;
 
@@ -46,7 +50,7 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
                     try {
                         res.put(KEY_PHOTO,datum.toJSON());
                         res.put(KEY_CAPTION,caption);
-                        res.put(KEY_ACTION,"editCaption");
+                        res.put(KEY_ACTION,DEFAULT_ACTION_EDITCAPTION);
                         res.put(KEY_ID,id);
                         res.put(KEY_TYPE,type);
                         res.put(KEY_DESCRIPTION,"edit caption of photo");
@@ -61,27 +65,25 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
                     return true;
                 }
 
-//                @Override
-//                public boolean onSendButtonClick(List<String>photoIDs, String albumId, String type) {
-//
-//                    JSONObject res = new JSONObject();
-//                    try {
-//
-//                        res.put(KEY_PHOTO,photoIDs);
-//                        res.put(KEY_ACTION,KEY_ACTION_SEND);
-//                        res.put(KEY_ID,albumId);
-//                        res.put(KEY_TYPE,type);
-//                        res.put(KEY_DESCRIPTION,"send photos to destination");
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                        return false;
-//                    }
-//                    PluginResult result = new PluginResult(OK,res);
-//                    result.setKeepCallback(true);
-//                    PhotoBrowserPlugin.this.callbackContext.sendPluginResult(result);
-//                    return true;
-//
-//                }
+                @Override
+                public void onSetName(String s, String id, String type) {
+                    JSONObject res = new JSONObject();
+                    try {
+                        
+                        res.put(KEY_ACTION,DEFAULT_ACTION_RENAME);
+                        res.put(KEY_ID,id);
+                        res.put(KEY_TYPE,type);
+                        res.put(KEY_NAME,s);
+                        res.put(KEY_DESCRIPTION,"edit album name");
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+
+                    }
+                    PluginResult result = new PluginResult(OK,res);
+                    result.setKeepCallback(true);
+                    PhotoBrowserPlugin.this.callbackContext.sendPluginResult(result);
+                }
             });
 
             this.showGallery(options, callbackContext);

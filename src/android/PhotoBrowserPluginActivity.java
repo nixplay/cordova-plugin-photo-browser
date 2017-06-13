@@ -1,7 +1,6 @@
 package com.creedon.cordova.plugin.photobrowser;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,12 +12,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.GravityEnum;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.creedon.androidphotobrowser.PhotoBrowserActivity;
 import com.creedon.androidphotobrowser.PhotoBrowserBasicActivity;
 import com.creedon.androidphotobrowser.common.data.models.CustomImage;
@@ -35,9 +37,6 @@ import com.facebook.imagepipeline.image.CloseableBitmap;
 import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
-import com.flyco.dialog.listener.OnBtnClickL;
-import com.flyco.dialog.widget.NormalDialog;
-import com.rengwuxian.materialedittext.MaterialEditText;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import org.json.JSONException;
@@ -129,7 +128,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     final private static String DEFAULT_ACTION_ADDTOPLAYLIST = "addToPlaylist";
     final private static String DEFAULT_ACTION_RENAME = "rename";
     final private static String DEFAULT_ACTION_DELETE = "delete";
-    ProgressDialog progressDialog;
+    MaterialDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -285,11 +284,14 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     protected void init() {
         f = new FakeR(getApplicationContext());
-        progressDialog = new ProgressDialog(this);
         String title = getString(f.getId("string", "DOWNLOADING"));
-        progressDialog.setMessage(title);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog = new MaterialDialog
+                .Builder(this)
+                .title(title)
+                .progress(false, 100, true)
+                .build();
+
+
         progressDialog.setCancelable(false);
         progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
@@ -458,119 +460,76 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     private void editAlbumName() {
-//pop up ui for album name edit
-        final MaterialEditText editText = new MaterialEditText(context);
-        editText.setText(photoData.getName());
-        editText.setHint("Album Name");
-        editText.setMaxLines(1);
-        editText.setMaxCharacters(100);
-        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    //TODO submit name
-                    //
-                    photoData.setName(editText.getText().toString());
-                    getSupportActionBar().setCustomView(null);
-                    getSupportActionBar().setTitle(photoData.getName());
-                }
-            }
-        });
-        getSupportActionBar().setCustomView(editText);
-        editText.requestFocus();
 
-        /*
-        NSMutableDictionary *dictionary = [NSMutableDictionary new];
-                        [dictionary setValue:[actions objectAtIndex:buttonIndex] forKey: KEY_ACTION];
-                        [dictionary setValue:@(_id) forKey: KEY_ID];
-                        [dictionary setValue:_type forKey: KEY_TYPE];
-                        [dictionary setValue:text forKey: KEY_NAME];
-                        [dictionary setValue:@"edit album name" forKey: @"description"];
-        * */
-        /*
-        JSONObject res = new JSONObject();
-        res.put(KEY_ACTION, DEFAULT_ACTION_RENAME);
-        res.put(KEY_ID, photoData.getId().toString());
-        res.put(KEY_TYPE, photoData.getType());
-        res.put(KEY_DESCRIPTION, "edit album name");
-        finishWithResult(res, Constants.RESULT_ADD_PHOTO);
-         */
-//        final EditTextDialog dialog = new EditTextDialog(this);
-//        dialog.title(getString(f.getId("string", "DELETE_ALBUM")))
-//                .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS")))
-//                .btnNum(2)
-//                .btnText(getString(f.getId("string", "CONFIRM")),
-//                        getString(f.getId("string", "CANCEL")))
-//                .show();
-//
-//        dialog.setOnBtnClickL(new OnBtnClickL() {
-//            @Override
-//            public void onBtnClick() {
-//
-//                dialog.dismiss();
-//            }
-//        }, new OnBtnClickL() {
-//            @Override
-//            public void onBtnClick() {
-//
-//                dialog.dismiss();
-//            }
-//        });
+        final String[] tempInput = {""};
+        new MaterialDialog.Builder(this)
+                .title(getString(f.getId("string", "DELETE_ALBUM")))
+                .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS")))
+                .inputType(InputType.TYPE_CLASS_TEXT)
+                .positiveText(getString(f.getId("string", "CONFIRM")))
+                .negativeText(getString(f.getId("string", "CANCEL")))
+                .btnStackedGravity(GravityEnum.CENTER)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        photoData.setName(tempInput[0]);
+                        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+                        if (actionBar != null) {
+                            actionBar.setTitle(listener.getActionBarTitle());
+                        }
+                        photoData.onSetName(tempInput[0]);
+
+                    }
+                })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                })
+                .input(getString(f.getId("string","EDIT_ALBUM_NAME")), photoData.getName(), new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(MaterialDialog dialog, CharSequence input) {
+                        // Do something
+                        tempInput[0] = input.toString();
+                    }
+                }).show();
+
     }
 
     private void deleteAlbum() {
-//pop up ui for confirmation
-        final NormalDialog dialog = new NormalDialog(this);
-        dialog.title(getString(f.getId("string", "DELETE_ALBUM")))
+        new MaterialDialog.Builder(this)
+                .title(getString(f.getId("string", "DELETE_ALBUM")))
                 .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS")))
-                .btnNum(2)
-                .btnText(getString(f.getId("string", "CONFIRM")),
-                        getString(f.getId("string", "CANCEL")))
+                .positiveText(getString(f.getId("string", "CONFIRM")))
+                .negativeText(getString(f.getId("string", "CANCEL")))
+                .btnStackedGravity(GravityEnum.CENTER)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+
+                        try {
+                            JSONObject res = new JSONObject();
+                            res.put(KEY_ACTION, DEFAULT_ACTION_DELETE);
+                            res.put(KEY_ID, photoData.getId().toString());
+                            res.put(KEY_TYPE, photoData.getType());
+                            res.put(KEY_DESCRIPTION, "delete album");
+                            finishWithResult(res, Constants.RESULT_DELETE_ALBUM);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                })
                 .show();
-
-        dialog.setOnBtnClickL(new OnBtnClickL() {
-            @Override
-            public void onBtnClick() {
-
-                dialog.dismiss();
-
-                try {
-                    JSONObject res = new JSONObject();
-                    res.put(KEY_ACTION, DEFAULT_ACTION_DELETE);
-                    res.put(KEY_ID, photoData.getId().toString());
-                    res.put(KEY_TYPE, photoData.getType());
-                    res.put(KEY_DESCRIPTION, "delete album");
-                    finishWithResult(res, Constants.RESULT_DELETE_ALBUM);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new OnBtnClickL() {
-            @Override
-            public void onBtnClick() {
-
-                dialog.dismiss();
-            }
-        });
-//        NormalDialog dialog = new NormalDialog(getApplicationContext());
-//        dialog.setTitle(getString(f.getId("string","DELETE_ALBUM")));
-//
-//        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-//            @Override
-//            public void onCancel(DialogInterface dialogInterface) {
-//
-//            }
-//        });
-//
-//        dialog.setOnBtnClickL(new OnBtnClickL() {
-//            @Override
-//            public void onBtnClick() {
-//                setResult(RESULT_OK);
-//                finishActivity(Constants.RESULT_DELETE_ALBUM);
-//            }
-//        });
-//        dialog.setCancelable(false);
-//        dialog.show();
 
     }
 
@@ -592,7 +551,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         if (fetchedDatas.size() > 0) {
 
-            progressDialog.setMax((int) MAX);
             progressDialog.setProgress(0);
             progressDialog.show();
             downloadWithURLS(fetchedDatas, fetchedDatas.size(), this.photosDownloadListener);
@@ -625,40 +583,37 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             }
         }
         if (fetchedDatas.size() > 0) {
-            final NormalDialog dialog = new NormalDialog(this);
-            dialog.title(getString(f.getId("string", "DELETE_PHOTOS")))
+            new MaterialDialog.Builder(this)
+                    .title(getString(f.getId("string", "DELETE_PHOTOS")))
                     .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS")))
-                    .btnNum(2)
-                    .btnText(getString(f.getId("string", "CONFIRM")),
-                            getString(f.getId("string", "CANCEL")))
+                    .positiveText(getString(f.getId("string", "CONFIRM")))
+                    .negativeText(getString(f.getId("string", "CANCEL")))
+                    .btnStackedGravity(GravityEnum.CENTER)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            dialog.dismiss();
+                            photoData.setImages(tempPreviews);
+                            photoData.setData(tempDatas);
+                            photoData.setCaptions(tempCations);
+                            photoData.setThumbnails(tempThumbnails);
+                            selections = tempSelection;
+                            if (photoData.getImages().size() == 0) {
+
+                                finishActivity(-1);
+                            } else {
+                                ArrayList<String> list = new ArrayList<String>(photoData.getThumbnails());
+                                getRcAdapter().swap(list);
+                            }
+                        }
+                    })
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            dialog.dismiss();
+                        }
+                    })
                     .show();
-
-            dialog.setOnBtnClickL(new OnBtnClickL() {
-                @Override
-                public void onBtnClick() {
-
-                    dialog.dismiss();
-                    photoData.setImages(tempPreviews);
-                    photoData.setData(tempDatas);
-                    photoData.setCaptions(tempCations);
-                    photoData.setThumbnails(tempThumbnails);
-                    selections = tempSelection;
-                    if (photoData.getImages().size() == 0) {
-
-                        finishActivity(-1);
-                    } else {
-                        ArrayList<String> list = new ArrayList<String>(photoData.getThumbnails());
-                        getRcAdapter().swap(list);
-                    }
-
-                }
-            }, new OnBtnClickL() {
-                @Override
-                public void onBtnClick() {
-
-                    dialog.dismiss();
-                }
-            });
         }
 
 
@@ -709,7 +664,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         downloadPhotoWithURL(fetchedDatas.get(0), new PhotosDownloadListener() {
             @Override
             public void onPregress(float progress) {
-                float PROGRESS = (counts - fetchedDatas.size()) / counts + progress;
+                float PROGRESS = (counts - fetchedDatas.size())+((1.0f/counts)*progress) / counts ;
                 _photosDownloadListener.onPregress(PROGRESS);
             }
 
@@ -737,7 +692,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         try {
             if (data.getString(KEY_ORIGINALURL) != null) {
 
-                progressDialog.setMax((int) MAX);
                 progressDialog.setProgress(0);
                 progressDialog.show();
                 ArrayList<String> fetchedDatas = new ArrayList<String>();
@@ -848,30 +802,26 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     public void onTrashButtonPressed(final JSONObject data) {
 
-
-        final NormalDialog dialog = new NormalDialog(this);
-        dialog.title(getString(f.getId("string", "DELETE_PHOTOS")))
+        new MaterialDialog.Builder(this)
+                .title(getString(f.getId("string", "DELETE_PHOTOS")))
                 .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS")))
-                .btnNum(2)
-                .btnText(getString(f.getId("string", "CONFIRM")),
-                        getString(f.getId("string", "CANCEL")))
+                .positiveText(getString(f.getId("string", "CONFIRM")))
+                .negativeText(getString(f.getId("string", "CANCEL")))
+                .btnStackedGravity(GravityEnum.CENTER)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        deletePhoto(getCurrentPosition(), data);
+                    }
+                })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                })
                 .show();
-
-        dialog.setOnBtnClickL(new OnBtnClickL() {
-            @Override
-            public void onBtnClick() {
-
-                dialog.dismiss();
-                deletePhoto(getCurrentPosition(), data);
-
-            }
-        }, new OnBtnClickL() {
-            @Override
-            public void onBtnClick() {
-
-                dialog.dismiss();
-            }
-        });
 
     }
 
