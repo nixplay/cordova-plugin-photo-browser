@@ -23,7 +23,7 @@
 #import <MBProgressHUD/MBProgressHUD.h>
 
 #define MAX_CHARACTER 160
-
+#define VIEWCONTROLLER_TRANSITION_DURATION 0.2
 #define DEFAULT_ACTION_ADD @"add"
 #define DEFAULT_ACTION_SELECT @"select"
 #define DEFAULT_ACTION_ADDTOPLAYLIST @"addToPlaylist"
@@ -189,13 +189,14 @@ enum Orientation {
 //    browser.navigationItem.rightBarButtonItem = newBackButton;
     UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
     addAttachButton.tintColor = LIGHT_BLUE_COLOR;
-    browser.navigationController.navigationItem.rightBarButtonItems = @[addAttachButton,newAddBackButton];
+//    browser.navigationController.navigationItem.rightBarButtonItems = @[addAttachButton,newAddBackButton];
+    browser.navigationController.navigationItem.rightBarButtonItem = newAddBackButton;
     _rightBarbuttonItem = newAddBackButton;
     
     _navigationController.delegate = self;
     
     CATransition *transition = [CATransition animation];
-    transition.duration = 0.5;
+    transition.duration = VIEWCONTROLLER_TRANSITION_DURATION;
     
     transition.type = kCATransitionPush;
     transition.subtype = kCATransitionFromRight;
@@ -496,7 +497,7 @@ enum Orientation {
 -(void) photoBrowserDidFinishModalPresentation:(MWPhotoBrowser*) browser{
     CATransition *transition = [CATransition animation];
     
-    transition.duration = 0.5;
+    transition.duration = VIEWCONTROLLER_TRANSITION_DURATION;
     transition.delegate = self;
     transition.type = kCATransitionPush;
     transition.subtype = kCATransitionFromLeft;
@@ -552,9 +553,9 @@ enum Orientation {
         
         [_rightBarbuttonItem setAction:@selector(home:)];
         [_rightBarbuttonItem setTarget:self];
-//        photoBrowser.navigationController.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
-        UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
-        photoBrowser.navigationController.navigationItem.rightBarButtonItems = @[addAttachButton,_rightBarbuttonItem];
+        photoBrowser.navigationController.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
+//        UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
+//        photoBrowser.navigationController.navigationItem.rightBarButtonItems = @[addAttachButton,_rightBarbuttonItem];
     }
     if(_textView != nil){
         [self resignKeyboard:_textView];
