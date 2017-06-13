@@ -70,7 +70,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     PhotoBrowserPluginActivity.PhotosDownloadListener photosDownloadListener = new PhotosDownloadListener() {
         @Override
         public void onPregress(final float progress) {
-            
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -108,7 +108,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     };
 
 
-
     interface PhotosDownloadListener {
 
         void onPregress(float progress);
@@ -126,6 +125,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     final private static String DEFAULT_ACTION_ADD = "add";
     final private static String DEFAULT_ACTION_SELECT = "select";
     final private static String DEFAULT_ACTION_ADDTOPLAYLIST = "addToPlaylist";
+    final private static String DEFAULT_ACTION_ADDTOFRAME = "addToFrame";
     final private static String DEFAULT_ACTION_RENAME = "rename";
     final private static String DEFAULT_ACTION_DELETE = "delete";
     MaterialDialog progressDialog;
@@ -236,6 +236,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         deleteAlbum();
                     } else if (action.equals(DEFAULT_ACTION_SELECT)) {
                         setupSelectionMode(!selectionMode);
+                    } else if (action.equals(DEFAULT_ACTION_ADDTOFRAME)) {
+                        try {
+                            addAlbumToFrame();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                     break;
                 }
@@ -247,6 +253,17 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         return false;
 
     }
+
+    private void addAlbumToFrame() throws JSONException {
+        JSONObject res = new JSONObject();
+        res.put(KEY_ACTION, DEFAULT_ACTION_ADDTOFRAME);
+        res.put(KEY_ID, photoData.getId());
+        res.put(KEY_TYPE, photoData.getType());
+        res.put(KEY_DESCRIPTION, "send photos to destination");
+        finishWithResult(res);
+
+    }
+
 
     private void sendPhotos() throws JSONException {
 
@@ -272,7 +289,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 res.put(KEY_ID, photoData.getId());
                 res.put(KEY_TYPE, photoData.getType());
                 res.put(KEY_DESCRIPTION, "send photos to destination");
-                finishWithResult(res, Constants.RESULT_SEND_PHOTOS);
+                finishWithResult(res);
             } catch (JSONException e) {
                 e.printStackTrace();
 
@@ -298,7 +315,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 })
                 .progress(false, 100, true)
                 .build();
-
 
 
         context = getApplicationContext();
@@ -440,17 +456,16 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         res.put(KEY_ID, photoData.getId());
         res.put(KEY_TYPE, photoData.getType());
         res.put(KEY_DESCRIPTION, "add photo to album");
-        finishWithResult(res, Constants.RESULT_ADD_PHOTO);
+        finishWithResult(res);
     }
 
     private void addAlbumToPlaylist() throws JSONException {
-//pop up ui for confirmation
         JSONObject res = new JSONObject();
         res.put(KEY_ACTION, DEFAULT_ACTION_ADDTOPLAYLIST);
         res.put(KEY_ID, photoData.getId());
         res.put(KEY_TYPE, photoData.getType());
         res.put(KEY_DESCRIPTION, "send photos to destination");
-        finishWithResult(res, Constants.RESULT_ADD_PHOTO);
+        finishWithResult(res);
 
 
     }
@@ -484,9 +499,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //                        dialog.dismiss();
 //                    }
 //                })
-                .input(getString(f.getId("string","EDIT_ALBUM_NAME")), photoData.getName(), new MaterialDialog.InputCallback() {
+                .input(getString(f.getId("string", "EDIT_ALBUM_NAME")), photoData.getName(), new MaterialDialog.InputCallback() {
                     @Override
-                    public void onInput(@NonNull  MaterialDialog dialog, @NonNull  CharSequence input) {
+                    public void onInput(@NonNull MaterialDialog dialog, @NonNull CharSequence input) {
 
                         dialog.dismiss();
                         photoData.setName(input.toString());
@@ -518,7 +533,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                             res.put(KEY_ID, photoData.getId());
                             res.put(KEY_TYPE, photoData.getType());
                             res.put(KEY_DESCRIPTION, "delete album");
-                            finishWithResult(res, Constants.RESULT_DELETE_ALBUM);
+                            finishWithResult(res);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -632,7 +647,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             photoData.getCaptions().remove(position);
             photoData.getThumbnails().remove(position);
             selections.remove(position);
-            ArrayList <String>deletedDatas = new ArrayList<String>();
+            ArrayList<String> deletedDatas = new ArrayList<String>();
             deletedDatas.add(deletedData.getId());
             photoData.onPhotoDeleted(deletedDatas);
             if (photoData.getImages().size() == 0) {
@@ -673,10 +688,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         downloadPhotoWithURL(fetchedDatas.get(0), new PhotosDownloadListener() {
             @Override
             public void onPregress(float progress) {
-                float particialProgress = ((1.0f/counts)*progress);
+                float particialProgress = ((1.0f / counts) * progress);
                 int curentsize = fetchedDatas.size();
                 float partition = (counts - curentsize);
-                float PROGRESS = (partition+particialProgress) / counts ;
+                float PROGRESS = (partition + particialProgress) / counts;
                 _photosDownloadListener.onPregress(PROGRESS);
             }
 
@@ -819,7 +834,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS")))
                 .positiveText(getString(f.getId("string", "CONFIRM")))
                 .negativeText(getString(f.getId("string", "CANCEL")))
-                
+
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
@@ -867,12 +882,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         JSONObject res = new JSONObject();
         try {
 
-            res.put(KEY_PHOTOS, ids);
+            res.put(KEY_PHOTOS, new JSONArray(ids));
             res.put(KEY_ACTION, KEY_ACTION_SEND);
             res.put(KEY_ID, photoData.getId());
             res.put(KEY_TYPE, photoData.getType());
             res.put(KEY_DESCRIPTION, "send photos to destination");
-            finishWithResult(res, Constants.RESULT_SEND_PHOTOS);
+            finishWithResult(res);
         } catch (JSONException e) {
             e.printStackTrace();
 
@@ -884,13 +899,13 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         photoData.setCaption(getCurrentPosition(), s);
     }
 
-    void finishWithResult(JSONObject result, int request) {
+    void finishWithResult(JSONObject result) {
         Bundle conData = new Bundle();
         conData.putString(Constants.RESULT, result.toString());
         Intent intent = new Intent();
         intent.putExtras(conData);
         setResult(RESULT_OK, intent);
-        finishActivity(request);
+        
         finish();
     }
 
