@@ -38,12 +38,12 @@
       <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     </config-file>
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-	    <activity
-	      android:name="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPluginActivity"
-	      android:screenOrientation="portrait"
-	      android:theme="@style/AppTheme">
-	    </activity>
-	</config-file>
+        <activity
+          android:name="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPluginActivity"
+          android:screenOrientation="portrait"
+          android:theme="@style/AppTheme">
+        </activity>
+    </config-file>
     <source-file src="src/android/PhotoBrowserPlugin.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/PhotoBrowserPluginActivity.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/FakeR.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>

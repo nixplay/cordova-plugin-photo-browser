@@ -255,9 +255,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         ArrayList<String> fetchedDatas = new ArrayList<String>();
 
 
-        for (int i = 0; i < selections.length; i++) {
+        for (int i = 0; i < selections.size(); i++) {
             //add to temp lsit if not selected
-            if (selections[i].equals("1")) {
+            if (selections.get(i).equals("1")) {
                 JSONObject object = photoData.getData().get(i).toJSON();
                 String id = object.getString(KEY_ID);
                 fetchedDatas.add(id);
@@ -580,9 +580,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         ArrayList<String> fetchedDatas = new ArrayList<String>();
 
 
-        for (int i = 0; i < selections.length; i++) {
+        for (int i = 0; i < selections.size(); i++) {
             //add to temp lsit if not selected
-            if (selections[i].equals("1")) {
+            if (selections.get(i).equals("1")) {
                 JSONObject object = photoData.getData().get(i).toJSON();
                 String id = object.getString(KEY_ORIGINALURL);
                 fetchedDatas.add(id);
@@ -608,13 +608,15 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         final ArrayList<String> tempPreviews = new ArrayList<String>();
         final ArrayList<String> tempCations = new ArrayList<String>();
         final ArrayList<String> tempThumbnails = new ArrayList<String>();
-        for (int i = 0; i < selections.length; i++) {
+        final ArrayList<String> tempSelection = new ArrayList<String>();
+        for (int i = 0; i < selections.size(); i++) {
             //add to temp lsit if not selected
-            if (selections[i].equals("0")) {
+            if (selections.get(i).equals("0")) {
                 tempDatas.add(photoData.getData().get(i));
                 tempPreviews.add(photoData.getImages().get(i));
                 tempCations.add(photoData.getCaptions().get(i));
                 tempThumbnails.add(photoData.getThumbnails().get(i));
+                tempSelection.add(selections.get(i));
             } else {
                 Datum object = photoData.getData().get(i);
                 String id = object.getId().toString();
@@ -640,11 +642,13 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     photoData.setData(tempDatas);
                     photoData.setCaptions(tempCations);
                     photoData.setThumbnails(tempThumbnails);
+                    selections = tempSelection;
                     if (photoData.getImages().size() == 0) {
 
                         finishActivity(-1);
                     } else {
-                        getRcAdapter().swap(photoData.getThumbnails());
+                        ArrayList<String> list = new ArrayList<String>(photoData.getThumbnails());
+                        getRcAdapter().swap(list);
                     }
 
                 }
@@ -662,23 +666,26 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     private void deletePhoto(int position, JSONObject data) {
+        try {
+            photoData.getData().remove(position);
+            photoData.getImages().remove(position);
+            photoData.getCaptions().remove(position);
+            photoData.getThumbnails().remove(position);
+            selections.remove(position);
 
-        photoData.getData().remove(position);
-        photoData.getImages().remove(position);
-        photoData.getCaptions().remove(position);
-        photoData.getThumbnails().remove(position);
+            if (photoData.getImages().size() == 0) {
+                finishActivity(-1);
+            } else {
+                imageViewer.onDismiss();
+                super.refreshCustomImage();
+                showPicker(photoData.getImages().size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition() - 1 : getCurrentPosition());
+                ArrayList<String> list = new ArrayList<String>(photoData.getThumbnails());
+                getRcAdapter().swap(list);
 
-        if (photoData.getImages().size() == 0) {
-            finishActivity(-1);
-        } else {
-            imageViewer.onDismiss();
-            super.refreshCustomImage();
-            showPicker(photoData.getImages().size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition() - 1 : getCurrentPosition());
-            ArrayList<String> list = (ArrayList<String>) photoData.getThumbnails();
-            getRcAdapter().swap(list);
-
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
 //        todo notify changed
 
     }
