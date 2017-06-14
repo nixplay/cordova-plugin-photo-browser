@@ -39,74 +39,74 @@
       <uses-permission android:name="android.permission.VIBRATE"/>
     </config-file>
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <activity
-        android:name="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPluginActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme">
-      </activity>
+        <activity
+          android:name="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPluginActivity"
+          android:screenOrientation="portrait"
+          android:theme="@style/AppTheme">
+        </activity>
     </config-file>
     <source-file src="src/android/PhotoBrowserPlugin.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/PhotoBrowserPluginActivity.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/FakeR.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
-    <source-file src="src/android/data/Demo.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
+        <source-file src="src/android/data/Demo.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
     <source-file src="src/android/Constants.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/data/ActionSheet.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
     <source-file src="src/android/data/Datum.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
     <source-file src="src/android/data/PhotoData.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
     <framework src="com.github.fishkingsin:androidphotobrowser:+"/>
-    <framework src="com.afollestad.material-dialogs:commons:0.9.4.5">
-      <config-file target="res/values/styles.xml" parent="/resources">
-        <style name="AppTheme" parent="Theme.AppCompat.Light">
-          <item name="colorPrimary">@color/colorPrimary</item>
-          <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-          <item name="colorAccent">@color/colorAccent</item>
-          <item name="android:textColorPrimary">@color/accentText</item>
-          <item name="android:textColor">#000</item>
-          <item name="android:textSize">16sp</item>
-        </style>
+    <framework src="com.afollestad.material-dialogs:commons:0.9.4.5"/>
+    <config-file target="res/values/styles.xml" parent="/resources">
+      <style name="AppTheme" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/accentText</item>
+        <item name="android:textColor">#000</item>
+        <item name="android:textSize">16sp</item>
+    </style>
 
-        <style name="AppThemeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-          <item name="colorPrimary">@color/colorPrimary</item>
-          <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-          <item name="colorAccent">@color/colorAccent</item>
-          <item name="android:textColorPrimary">@color/accentText</item>
+    <style name="AppThemeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/accentText</item>
 
-          <item name="android:windowTranslucentStatus">true</item>
-          <item name="android:windowActionBarOverlay">true</item>
-          <item name="android:windowContentOverlay">@null</item>
-          <item name="android:textColor">#000</item>
-          <item name="android:textSize">16sp</item>
-          <item name="android:titleTextStyle">@style/AppTheme.ActionBar.TitleTextStyle</item>
-        </style>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:textColor">#000</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:titleTextStyle">@style/AppTheme.ActionBar.TitleTextStyle</item>
+    </style>
 
-        <style name="AppTheme.ActionBar" parent="AppTheme">
-          <item name="actionMenuTextColor">@color/colorAccent</item>
-          <item name="android:background">@color/colorPrimary</item>
-          <item name="android:paddingRight">0dp</item>
-          <item name="android:textColorPrimary">@color/accentText</item>
-          <item name="android:textColor">#000</item>
-          <item name="android:textSize">16sp</item>
-        </style>
+    <style name="AppTheme.ActionBar" parent="AppTheme">
+        <item name="actionMenuTextColor">@color/colorAccent</item>
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:paddingRight">0dp</item>
+        <item name="android:textColorPrimary">@color/accentText</item>
+        <item name="android:textColor">#000</item>
+        <item name="android:textSize">16sp</item>
+    </style>
 
-        <style name="SimpleButtonStyle" parent="AppTheme">
-          <item name="android:background">@null</item>
-          <item name="android:textAllCaps">true</item>
-          <item name="android:textSize">14sp</item>
-          <item name="android:textStyle">bold</item>
-          <item name="android:textColor">@color/colorAccent</item>
+    <style name="SimpleButtonStyle" parent="AppTheme">
+        <item name="android:background">@null</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/colorAccent</item>
 
-        </style>
+    </style>
 
-        <style name="DescriptionText" parent="AppTheme">
-          <item name="android:textColor">@color/colorAccent</item>
-          <item name="android:maxLines">5</item>
-          <item name="android:ellipsize">end</item>
-          <item name="android:textSize">14sp</item>
-        </style>
+    <style name="DescriptionText" parent="AppTheme">
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:maxLines">5</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textSize">14sp</item>
+    </style>
 
-        <style name="AppTheme.ActionBar.TitleTextStyle" parent="@android:style/Widget.TextView">
-          <item name="android:textSize">12sp</item>
-        </style>
-      </config-file>
-    </platform>
-  </plugin>
+    <style name="AppTheme.ActionBar.TitleTextStyle" parent="@android:style/Widget.TextView">
+        <item name="android:textSize">12sp</item>
+    </style>
+    </config-file>
+  </platform>
+</plugin>
