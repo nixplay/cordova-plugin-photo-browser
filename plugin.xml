@@ -34,21 +34,24 @@
         <param name="android-package" value="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin"/>
       </feature>
     </config-file>
-    <config-file target="AndroidManifest.xml" parent="/manifest">
+    
+    <config-file target="AndroidManifest.xml" parent="/*">
       <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-      <uses-permission android:name="android.permission.VIBRATE"/>
+      <uses-permission android:name="android.permission.VIBRATE" />
+      
     </config-file>
+
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-        <activity
-          android:name="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPluginActivity"
-          android:screenOrientation="portrait"
-          android:theme="@style/AppTheme">
-        </activity>
+      <activity
+        android:name="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPluginActivity"
+        android:screenOrientation="portrait"
+        android:theme="@style/AppTheme">
+      </activity>
     </config-file>
     <source-file src="src/android/PhotoBrowserPlugin.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/PhotoBrowserPluginActivity.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/FakeR.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
-        <source-file src="src/android/data/Demo.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
+    <source-file src="src/android/data/Demo.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
     <source-file src="src/android/Constants.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/data/ActionSheet.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
     <source-file src="src/android/data/Datum.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
@@ -63,9 +66,9 @@
         <item name="android:textColorPrimary">@color/accentText</item>
         <item name="android:textColor">#000</item>
         <item name="android:textSize">16sp</item>
-    </style>
+      </style>
 
-    <style name="AppThemeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+      <style name="AppThemeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -77,36 +80,36 @@
         <item name="android:textColor">#000</item>
         <item name="android:textSize">16sp</item>
         <item name="android:titleTextStyle">@style/AppTheme.ActionBar.TitleTextStyle</item>
-    </style>
+      </style>
 
-    <style name="AppTheme.ActionBar" parent="AppTheme">
+      <style name="AppTheme.ActionBar" parent="AppTheme">
         <item name="actionMenuTextColor">@color/colorAccent</item>
         <item name="android:background">@color/colorPrimary</item>
         <item name="android:paddingRight">0dp</item>
         <item name="android:textColorPrimary">@color/accentText</item>
         <item name="android:textColor">#000</item>
         <item name="android:textSize">16sp</item>
-    </style>
+      </style>
 
-    <style name="SimpleButtonStyle" parent="AppTheme">
+      <style name="SimpleButtonStyle" parent="AppTheme">
         <item name="android:background">@null</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/colorAccent</item>
 
-    </style>
+      </style>
 
-    <style name="DescriptionText" parent="AppTheme">
+      <style name="DescriptionText" parent="AppTheme">
         <item name="android:textColor">@color/colorAccent</item>
         <item name="android:maxLines">5</item>
         <item name="android:ellipsize">end</item>
         <item name="android:textSize">14sp</item>
-    </style>
+      </style>
 
-    <style name="AppTheme.ActionBar.TitleTextStyle" parent="@android:style/Widget.TextView">
+      <style name="AppTheme.ActionBar.TitleTextStyle" parent="@android:style/Widget.TextView">
         <item name="android:textSize">12sp</item>
-    </style>
+      </style>
     </config-file>
   </platform>
 </plugin>
