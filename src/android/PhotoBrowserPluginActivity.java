@@ -63,6 +63,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public static final float MAX = 100;
     public static final int SAVE_PHOTO = 0x11;
     public static final String KEY_ID = "id";
+    private static final String KEY_ALBUM = "album";
     private CallerThreadExecutor currentExecutor;
     private String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private ArrayList<String> pendingFetchDatas;
@@ -473,7 +474,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private void editAlbumName() {
 
         new MaterialDialog.Builder(this)
-                .title(getString(f.getId("string", "DELETE_ALBUM")))
+                .title(getString(f.getId("string", photoData.getType().toLowerCase().equals(KEY_ALBUM) ? "EDIT_ALBUM_NAME" : "EDIT_PLAYLIST_NAME")))
                 .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS")))
                 .inputType(InputType.TYPE_CLASS_TEXT)
 //                .positiveText(getString(f.getId("string", "CONFIRM")))
