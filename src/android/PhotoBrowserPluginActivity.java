@@ -136,6 +136,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         if (!Fresco.hasBeenInitialized()) {
             Fresco.initialize(this);
+
         }
         super.onCreate(savedInstanceState);
 
@@ -475,31 +476,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         new MaterialDialog.Builder(this)
                 .title(getString(f.getId("string", photoData.getType().toLowerCase().equals(KEY_ALBUM) ? "EDIT_ALBUM_NAME" : "EDIT_PLAYLIST_NAME")))
-                .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS")))
                 .inputType(InputType.TYPE_CLASS_TEXT)
-//                .positiveText(getString(f.getId("string", "CONFIRM")))
-//                .negativeText(getString(f.getId("string", "CANCEL")))
-//                .btnStackedGravity(GravityEnum.CENTER)
-//                .onPositive(new MaterialDialog.SingleButtonCallback() {
-//
-//                    @Override
-//                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-//                        dialog.dismiss();
-//                        photoData.setName(tempInput[0]);
-//                        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-//                        if (actionBar != null) {
-//                            actionBar.setTitle(listener.getActionBarTitle());
-//                        }
-//                        photoData.onSetName(tempInput[0]);
-//
-//                    }
-//                })
-//                .onNegative(new MaterialDialog.SingleButtonCallback() {
-//                    @Override
-//                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-//                        dialog.dismiss();
-//                    }
-//                })
                 .input(getString(f.getId("string", "EDIT_ALBUM_NAME")), photoData.getName(), new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, @NonNull CharSequence input) {
@@ -517,9 +494,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     private void deleteAlbum() {
+        String content = getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS"));
+        content.replace(KEY_ALBUM, photoData.getType());
+
         new MaterialDialog.Builder(this)
-                .title(getString(f.getId("string", "DELETE_ALBUM")))
-                .content(getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS")))
+                .title(getString(f.getId("string", "DELETE")) + photoData.getType())
+                .content(content)
                 .positiveText(getString(f.getId("string", "CONFIRM")))
                 .negativeText(getString(f.getId("string", "CANCEL")))
                 .btnStackedGravity(GravityEnum.CENTER)
@@ -533,7 +513,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                             res.put(KEY_ACTION, DEFAULT_ACTION_DELETE);
                             res.put(KEY_ID, photoData.getId());
                             res.put(KEY_TYPE, photoData.getType());
-                            res.put(KEY_DESCRIPTION, "delete album");
+                            res.put(KEY_DESCRIPTION, "delete "+photoData.getType());
                             finishWithResult(res);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -906,7 +886,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         Intent intent = new Intent();
         intent.putExtras(conData);
         setResult(RESULT_OK, intent);
-        
+
         finish();
     }
 
