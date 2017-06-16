@@ -9,7 +9,6 @@ import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -77,10 +76,6 @@ public class Datum implements Serializable, Parcelable
         this.caption = caption;
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
 
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeValue(id);

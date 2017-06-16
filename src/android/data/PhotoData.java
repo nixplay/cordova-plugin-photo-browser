@@ -9,7 +9,6 @@ import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.json.JSONObject;
 
 import java.io.Serializable;
@@ -194,11 +193,6 @@ public class PhotoData implements Serializable, Parcelable {
 
     public void setActionSheet(List<ActionSheet> actionSheet) {
         this.actionSheet = actionSheet;
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
     }
 
     public void writeToParcel(Parcel dest, int flags) {

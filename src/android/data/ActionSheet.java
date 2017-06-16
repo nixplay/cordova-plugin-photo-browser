@@ -7,7 +7,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+
 
 import java.io.Serializable;
 
@@ -57,10 +57,6 @@ public class ActionSheet implements Serializable, Parcelable
         this.label = label;
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
 
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeValue(action);
