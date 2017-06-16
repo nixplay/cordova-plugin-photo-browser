@@ -56,7 +56,7 @@
     <source-file src="src/android/data/ActionSheet.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
     <source-file src="src/android/data/Datum.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
     <source-file src="src/android/data/PhotoData.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
-    <framework src="com.github.fishkingsin:androidphotobrowser:0.0.7"/>
+    <framework src="com.github.fishkingsin:androidphotobrowser:0.0.8"/>
     <framework src="com.afollestad.material-dialogs:commons:0.9.4.5"/>
     <framework src="com.google.code.gson:gson:2.8.1"/>
     <config-file target="res/values/styles.xml" parent="/resources">
