@@ -2,6 +2,7 @@ package com.creedon.cordova.plugin.photobrowser;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -307,9 +308,17 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 .Builder(this)
                 .title(getString(f.getId("string", "DOWNLOADING")))
                 .neutralText(getString(f.getId("string", "CANCEL")))
-                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                .onAny(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        if (currentExecutor != null) {
+                            currentExecutor.shutdown();
+                        }
+                    }
+                })
+                .dismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
                         if (currentExecutor != null) {
                             currentExecutor.shutdown();
                         }
@@ -670,9 +679,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             @Override
             public void onPregress(float progress) {
                 float particialProgress = ((1.0f / counts) * progress);
-                int curentsize = fetchedDatas.size();
+                Log.d(TAG,"particialProgress "+particialProgress);
+                float curentsize = fetchedDatas.size();
                 float partition = (counts - curentsize);
-                float PROGRESS = (partition + particialProgress) / counts;
+                Log.d(TAG,"partition "+partition);
+                float PROGRESS = (partition  / counts )+particialProgress;
+                Log.d(TAG,"Progress "+PROGRESS);
                 _photosDownloadListener.onPregress(PROGRESS);
             }
 
