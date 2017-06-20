@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -52,6 +53,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import okhttp3.OkHttpClient;
 
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION_SEND;
@@ -108,6 +111,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
 
     };
+    private OkHttpClient globalOkHttpClient3;
 
 
     interface PhotosDownloadListener {
@@ -136,6 +140,13 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     protected void onCreate(Bundle savedInstanceState) {
 
         if (!Fresco.hasBeenInitialized()) {
+            Context context = this;
+//            globalOkHttpClient3 = new OkHttpClient();
+//            ImagePipelineConfig config = OkHttpImagePipelineConfigFactory
+//                    .newBuilder(context,globalOkHttpClient3)
+//                    .setNetworkFetcher(new OkHttp3NetworkFetcher(globalOkHttpClient3))
+//                    .build();
+//            Fresco.initialize(context, config);
             Fresco.initialize(this);
 
         }
@@ -155,7 +166,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 String label = actionSheet.getLabel();
                 String action = actionSheet.getAction();
                 MenuItem menuItem = menu.add(0, index, 1, label);
-                menuItem.setShowAsAction( (index==0)? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_IF_ROOM  );
+                menuItem.setShowAsAction((index == 0) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
 
                 index++;
 
@@ -524,7 +535,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                             res.put(KEY_ACTION, DEFAULT_ACTION_DELETE);
                             res.put(KEY_ID, photoData.getId());
                             res.put(KEY_TYPE, photoData.getType());
-                            res.put(KEY_DESCRIPTION, "delete "+photoData.getType());
+                            res.put(KEY_DESCRIPTION, "delete " + photoData.getType());
                             finishWithResult(res);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -681,12 +692,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             @Override
             public void onPregress(float progress) {
                 float particialProgress = ((1.0f / counts) * progress);
-                Log.d(TAG,"particialProgress "+particialProgress);
+                Log.d(TAG, "particialProgress " + particialProgress);
                 float curentsize = fetchedDatas.size();
                 float partition = (counts - curentsize);
-                Log.d(TAG,"partition "+partition);
-                float PROGRESS = (partition  / counts )+particialProgress;
-                Log.d(TAG,"Progress "+PROGRESS);
+                Log.d(TAG, "partition " + partition);
+                float PROGRESS = (partition / counts) + particialProgress;
+                Log.d(TAG, "Progress " + PROGRESS);
                 _photosDownloadListener.onPregress(PROGRESS);
             }
 
@@ -902,6 +913,36 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         setResult(RESULT_OK, intent);
 
         finish();
+    }
+
+    @Override
+    protected ImageViewer.OnOrientationListener getOrientationListener() {
+        return new ImageViewer.OnOrientationListener() {
+            @Override
+            public int OnOrientaion(int currentPosition) {
+                List<Datum> datums = photoData.getData();
+                int orientation = 0;
+                if (datums != null) {
+                    if (datums.size() > currentPosition) {
+                        Datum datum = datums.get(currentPosition);
+                        orientation = datum.getOrientation();
+                    }
+                }
+                return exifToDegrees(orientation);
+
+            }
+        };
+    }
+    private int exifToDegrees(int exifOrientation) {
+        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
+            return 90;
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+            return 180;
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+            return 270;
+        } else {
+            return 0;
+        }
     }
 
 }
