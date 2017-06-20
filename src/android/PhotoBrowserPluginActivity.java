@@ -154,7 +154,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                 String label = actionSheet.getLabel();
                 String action = actionSheet.getAction();
-                menu.add(0, index, 1, label);
+                MenuItem menuItem = menu.add(0, index, 1, label);
+                menuItem.setShowAsAction( (index==0)? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_IF_ROOM  );
+
                 index++;
 
             }
