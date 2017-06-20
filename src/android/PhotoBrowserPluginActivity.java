@@ -166,8 +166,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 String label = actionSheet.getLabel();
                 String action = actionSheet.getAction();
                 MenuItem menuItem = menu.add(0, index, 1, label);
-                menuItem.setShowAsAction((index == 0) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
-
+                menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add")) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
+                if(index == 0 && label.toLowerCase().contains("add")){
+                    menuItem.setIcon(f.getId("drawable","ic_action_add"));
+                }
                 index++;
 
             }
