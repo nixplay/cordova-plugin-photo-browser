@@ -256,8 +256,8 @@ enum Orientation {
         MKASOrientationConfig *landscapeConfig = [[MKASOrientationConfig alloc] init];
         landscapeConfig.titleAlignment = NSTextAlignmentLeft;
         landscapeConfig.buttonTitleAlignment = MKActionSheetButtonTitleAlignment_left;
-        landscapeConfig.buttonHeight = 35.0f;
-        landscapeConfig.maxShowButtonCount = 4.5f;
+        landscapeConfig.buttonHeight = 30.0f;
+        landscapeConfig.maxShowButtonCount = 2.5f;
         
         
         MKActionSheet *sheet = [[MKActionSheet alloc] initWithTitle:NSLocalizedString(@"Options", nil) buttonTitleArray:titles selectType:MKActionSheetSelectType_common];
