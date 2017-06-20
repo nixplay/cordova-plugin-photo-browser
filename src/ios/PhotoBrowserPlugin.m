@@ -186,6 +186,7 @@ enum Orientation {
     
     UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithImage: OPTIONS_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(home:)];
     newAddBackButton.tag = 0;
+    
 //    browser.navigationItem.rightBarButtonItem = newBackButton;
     UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
     addAttachButton.tintColor = LIGHT_BLUE_COLOR;
@@ -210,15 +211,21 @@ enum Orientation {
     UIBarButtonItem *deselectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Deselect All" style:UIBarButtonItemStylePlain target:self action:@selector(deselectAllPhotos:)];
     deselectAllButton.tag = SELECTALL_TAG;
     _browser.navigationItem.leftBarButtonItem = deselectAllButton;
-    _leftBarbuttonItem = deselectAllButton;
-    //select all photos
+    
+    for (int i = 0; i < _selections.count; i++) {
+        [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:YES]];
+    }
+    [_gridViewController.collectionView reloadData];
+
 }
 -(void) deselectAllPhotos:(UIBarButtonItem *)sender{
     UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Select All" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
     selectAllButton.tag = SELECTALL_TAG;
     _browser.navigationItem.leftBarButtonItem = selectAllButton;
-    _leftBarbuttonItem = selectAllButton;
-    //deselect all photo
+    for (int i = 0; i < _selections.count; i++) {
+        [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
+    }
+    [_gridViewController.collectionView reloadData];
 }
 -(void)home:(UIBarButtonItem *)sender
 {
@@ -275,12 +282,14 @@ enum Orientation {
             }else if([[actions objectAtIndex:buttonIndex] isEqualToString:DEFAULT_ACTION_SELECT]){
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if(!_browser.displaySelectionButtons){
+                        _leftBarbuttonItem = _browser.navigationItem.leftBarButtonItem;
                         _gridViewController.selectionMode = _browser.displaySelectionButtons = YES;
                         [_gridViewController.collectionView reloadData];
                         [_browser showToolBar];
                         sender.tag = 1;
                         [sender setImage:nil];
                         [sender setTitle:NSLocalizedString(@"Cancel", nil)];
+                        
                     }
                 });
             }
@@ -352,7 +361,10 @@ enum Orientation {
             for (int i = 0; i < _selections.count; i++) {
                 [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
             }
+            
+
         }
+        _browser.navigationItem.leftBarButtonItem = _leftBarbuttonItem;
         //add home back
     }
 }
@@ -549,7 +561,7 @@ enum Orientation {
     _browser = photoBrowser;
     _gridViewController = gridController;
     if(_rightBarbuttonItem != nil){
-//        photoBrowser.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
+        photoBrowser.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
         
         [_rightBarbuttonItem setAction:@selector(home:)];
         [_rightBarbuttonItem setTarget:self];
@@ -593,7 +605,8 @@ enum Orientation {
     _browser = photoBrowser;
     [photoBrowser.navigationController setNavigationBarHidden:NO animated:NO];
     navigationBar.barStyle = UIBarStyleDefault;
-    navigationBar.translucent = NO;
+//    navigationBar.translucent = YES;
+    navigationBar.barTintColor = [UIColor whiteColor];
     photoBrowser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
     return YES;
 }
@@ -661,7 +674,6 @@ enum Orientation {
         UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Select All" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
         selectAllButton  .tag = SELECTALL_TAG;
         photoBrowser.navigationItem.leftBarButtonItem = selectAllButton;
-        _leftBarbuttonItem = selectAllButton;
         
         
         [items addObject:deleteBarButton];
