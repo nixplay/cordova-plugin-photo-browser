@@ -30,6 +30,12 @@ public class Datum implements Serializable, Parcelable
     @SerializedName("caption")
     @Expose
     private String caption;
+
+    @Nullable
+    @SerializedName("orientation")
+    @Expose
+    private int orientation;
+
     public final static Parcelable.Creator<Datum> CREATOR = new Creator<Datum>() {
 
 
@@ -41,6 +47,7 @@ public class Datum implements Serializable, Parcelable
             instance.id = ((String) in.readValue((String.class.getClassLoader())));
             instance.originalUrl = ((String) in.readValue((String.class.getClassLoader())));
             instance.caption = ((String) in.readValue((String.class.getClassLoader())));
+            instance.orientation = ((Integer) in.readValue((Integer.class.getClassLoader())));
             return instance;
         }
 
@@ -51,7 +58,6 @@ public class Datum implements Serializable, Parcelable
     }
     ;
     private final static long serialVersionUID = 6516892402532993702L;
-
     public String getId() {
         return id;
     }
@@ -76,11 +82,21 @@ public class Datum implements Serializable, Parcelable
         this.caption = caption;
     }
 
+    @Nullable
+    public int getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(@Nullable int orientation) {
+        this.orientation = orientation;
+    }
+
 
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeValue(id);
         dest.writeValue(originalUrl);
         dest.writeValue(caption);
+        dest.writeValue(orientation);
     }
 
     public int describeContents() {
