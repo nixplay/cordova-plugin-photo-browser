@@ -20,6 +20,7 @@
     NSMutableDictionary* _actionSheetDicArray;
     NSMutableArray *_selections;
     UIBarButtonItem *_rightBarbuttonItem;
+    UIBarButtonItem *_addAttachButton;
     UIBarButtonItem *_leftBarbuttonItem;
     IQTextView *_textView;
     NSInteger _id;

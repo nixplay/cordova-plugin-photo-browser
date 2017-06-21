@@ -187,11 +187,11 @@ enum Orientation {
     UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithImage: OPTIONS_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(home:)];
     newAddBackButton.tag = 0;
     
-//    browser.navigationItem.rightBarButtonItem = newBackButton;
+
     UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
     addAttachButton.tintColor = LIGHT_BLUE_COLOR;
-//    browser.navigationController.navigationItem.rightBarButtonItems = @[addAttachButton,newAddBackButton];
-    browser.navigationController.navigationItem.rightBarButtonItem = newAddBackButton;
+    browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton, addAttachButton];
+    _addAttachButton = addAttachButton;
     _rightBarbuttonItem = newAddBackButton;
     
     _navigationController.delegate = self;
@@ -289,7 +289,7 @@ enum Orientation {
                         sender.tag = 1;
                         [sender setImage:nil];
                         [sender setTitle:NSLocalizedString(@"Cancel", nil)];
-                        
+                        _browser.navigationItem.rightBarButtonItems = @[_rightBarbuttonItem];
                     }
                 });
             }
@@ -365,6 +365,7 @@ enum Orientation {
 
         }
         _browser.navigationItem.leftBarButtonItem = _leftBarbuttonItem;
+        _browser.navigationItem.rightBarButtonItems = @[_rightBarbuttonItem, _addAttachButton];
         //add home back
     }
 }
@@ -532,6 +533,7 @@ enum Orientation {
         _name = nil;
         _dialogView = nil;
         _rightBarbuttonItem = nil;
+        _addAttachButton = nil;
     }
 }
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didDisplayPhotoAtIndex:(NSUInteger)index{
@@ -561,13 +563,11 @@ enum Orientation {
     _browser = photoBrowser;
     _gridViewController = gridController;
     if(_rightBarbuttonItem != nil){
-        photoBrowser.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
-        
+
+//        UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
+        photoBrowser.navigationItem.rightBarButtonItems = @[_rightBarbuttonItem, _addAttachButton];
         [_rightBarbuttonItem setAction:@selector(home:)];
         [_rightBarbuttonItem setTarget:self];
-        photoBrowser.navigationController.navigationItem.rightBarButtonItem = _rightBarbuttonItem;
-//        UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
-//        photoBrowser.navigationController.navigationItem.rightBarButtonItems = @[addAttachButton,_rightBarbuttonItem];
     }
     if(_textView != nil){
         [self resignKeyboard:_textView];
@@ -594,8 +594,8 @@ enum Orientation {
     if(_textView != nil){
         [_textView removeFromSuperview];
     }
-    photoBrowser.navigationItem.rightBarButtonItem = nil;
-    photoBrowser.navigationController.navigationItem.rightBarButtonItem = nil;
+    photoBrowser.navigationItem.rightBarButtonItems = nil;
+    photoBrowser.navigationController.navigationItem.rightBarButtonItems = nil;
     [photoBrowser showToolBar];
     return YES;
 }
@@ -612,7 +612,7 @@ enum Orientation {
 }
 
 -(UIView*) setTitle:(NSString*)title subtitle:(NSString*)subtitle {
-    UILabel *titleLabel = [[UILabel alloc] initWithFrame: CGRectMake(0,-5,self.navigationController.view.frame.size.width*0.7,18)];
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame: CGRectMake(0,-5,0,18)];
     
     titleLabel.backgroundColor = [UIColor clearColor];
     titleLabel.textColor = [UIColor blackColor];
@@ -620,8 +620,7 @@ enum Orientation {
     titleLabel.text = title;
     titleLabel.numberOfLines = 1;
     titleLabel.minimumScaleFactor = 0.8f;
-    titleLabel.adjustsFontSizeToFitWidth = YES;
-    titleLabel.textAlignment = NSTextAlignmentCenter;
+    [titleLabel sizeToFit];
     
     UILabel *subtitleLabel = [[UILabel alloc] initWithFrame: CGRectMake(0,18,0,0)];
     subtitleLabel.backgroundColor = [UIColor clearColor];
