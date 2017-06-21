@@ -51,11 +51,11 @@
     <source-file src="src/android/PhotoBrowserPlugin.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/PhotoBrowserPluginActivity.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/FakeR.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
-    <source-file src="src/android/data/Demo.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
+    <source-file src="src/android/metadata/Demo.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/metadata"/>
     <source-file src="src/android/Constants.java" target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
-    <source-file src="src/android/data/ActionSheet.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
-    <source-file src="src/android/data/Datum.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
-    <source-file src="src/android/data/PhotoData.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/data"/>
+    <source-file src="src/android/metadata/ActionSheet.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/metadata"/>
+    <source-file src="src/android/metadata/Datum.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/metadata"/>
+    <source-file src="src/android/metadata/PhotoDetail.java" target-dir="src/com/creedon/cordova/plugin/photobrowser/metadata"/>
     <source-file src="src/android/drawable-mdpi/ic_action_add.png" target-dir="res/drawable-mdpi" />
     <source-file src="src/android/drawable-hdpi/ic_action_add.png" target-dir="res/drawable-hdpi" />
     <source-file src="src/android/drawable-xhdpi/ic_action_add.png" target-dir="res/drawable-xhdpi" />
