@@ -54,8 +54,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import okhttp3.OkHttpClient;
-
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION_SEND;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_DESCRIPTION;
@@ -111,7 +109,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
 
     };
-    private OkHttpClient globalOkHttpClient3;
+//    private OkHttpClient globalOkHttpClient3;
 
 
     interface PhotosDownloadListener {
@@ -166,6 +164,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 String label = actionSheet.getLabel();
                 String action = actionSheet.getAction();
                 MenuItem menuItem = menu.add(0, index, 1, label);
+                //TODO any better way to create menu/menu icon?
                 menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add")) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
                 if(index == 0 && label.toLowerCase().contains("add")){
                     menuItem.setIcon(f.getId("drawable","ic_action_add"));
