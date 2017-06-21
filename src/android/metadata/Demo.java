@@ -1,4 +1,4 @@
-package com.creedon.cordova.plugin.photobrowser.data;
+package com.creedon.cordova.plugin.photobrowser.metadata;
 
 
 /*

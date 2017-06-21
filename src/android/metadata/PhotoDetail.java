@@ -1,4 +1,4 @@
-package com.creedon.cordova.plugin.photobrowser.data;
+package com.creedon.cordova.plugin.photobrowser.metadata;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -27,36 +27,36 @@ import java.util.List;
  */
 
 
-public class PhotoData implements Serializable, Parcelable {
-    private static final String TAG = PhotoData.class.getSimpleName();
-    private static PhotoData ourInstance;
+public class PhotoDetail implements Serializable, Parcelable {
+    private static final String TAG = PhotoDetail.class.getSimpleName();
+    private static PhotoDetail ourInstance;
     private static PhotoDataListener photoDataListener;
 
-    public static PhotoData getInstance(@NonNull JSONObject jsonObject) {
+    public static PhotoDetail getInstance(@NonNull JSONObject jsonObject) {
         try {
             if(ourInstance != null){
                 Log.w(TAG,"ourInstance is not null : \n"+ ourInstance.toString());
             }
-            ourInstance = new Gson().fromJson(jsonObject.toString(), PhotoData.class);
+            ourInstance = new Gson().fromJson(jsonObject.toString(), PhotoDetail.class);
         } catch (NullPointerException e) {
             e.printStackTrace();
 
         } finally {
             if (ourInstance == null) {
-                ourInstance = new PhotoData();
+                ourInstance = new PhotoDetail();
             }
         }
         return ourInstance;
     }
 
-    public static PhotoData getInstance() {
+    public static PhotoDetail getInstance() {
         if (ourInstance == null) {
-            ourInstance = new PhotoData();
+            ourInstance = new PhotoDetail();
         }
         return ourInstance;
     }
 
-    private PhotoData() {
+    private PhotoDetail() {
 
     }
 
@@ -90,29 +90,29 @@ public class PhotoData implements Serializable, Parcelable {
     @SerializedName("actionSheet")
     @Expose
     private List<ActionSheet> actionSheet = null;
-    public final static Parcelable.Creator<PhotoData> CREATOR = new Creator<PhotoData>() {
+    public final static Parcelable.Creator<PhotoDetail> CREATOR = new Creator<PhotoDetail>() {
 
 
         @SuppressWarnings({
                 "unchecked"
         })
-        public PhotoData createFromParcel(Parcel in) {
-            PhotoData instance = new PhotoData();
+        public PhotoDetail createFromParcel(Parcel in) {
+            PhotoDetail instance = new PhotoDetail();
             in.readList(instance.images, (java.lang.String.class.getClassLoader()));
             in.readList(instance.thumbnails, (java.lang.String.class.getClassLoader()));
-            in.readList(instance.data, (com.creedon.cordova.plugin.photobrowser.data.Datum.class.getClassLoader()));
+            in.readList(instance.data, (com.creedon.cordova.plugin.photobrowser.metadata.Datum.class.getClassLoader()));
             in.readList(instance.captions, (java.lang.String.class.getClassLoader()));
             instance.id = ((String) in.readValue((Integer.class.getClassLoader())));
             instance.name = ((String) in.readValue((String.class.getClassLoader())));
             instance.count = ((Integer) in.readValue((Integer.class.getClassLoader())));
             instance.type = ((String) in.readValue((String.class.getClassLoader())));
             instance.albumType = ((String) in.readValue((String.class.getClassLoader())));
-            in.readList(instance.actionSheet, (com.creedon.cordova.plugin.photobrowser.data.ActionSheet.class.getClassLoader()));
+            in.readList(instance.actionSheet, (com.creedon.cordova.plugin.photobrowser.metadata.ActionSheet.class.getClassLoader()));
             return instance;
         }
 
-        public PhotoData[] newArray(int size) {
-            return (new PhotoData[size]);
+        public PhotoDetail[] newArray(int size) {
+            return (new PhotoDetail[size]);
         }
 
     };

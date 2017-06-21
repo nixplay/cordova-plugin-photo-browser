@@ -1,5 +1,5 @@
 
-package com.creedon.cordova.plugin.photobrowser.data;
+package com.creedon.cordova.plugin.photobrowser.metadata;
 
 import android.os.Parcel;
 import android.os.Parcelable;
