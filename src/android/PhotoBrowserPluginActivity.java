@@ -26,9 +26,9 @@ import com.creedon.androidphotobrowser.PhotoBrowserActivity;
 import com.creedon.androidphotobrowser.PhotoBrowserBasicActivity;
 import com.creedon.androidphotobrowser.common.data.models.CustomImage;
 import com.creedon.androidphotobrowser.common.views.ImageOverlayView;
-import com.creedon.cordova.plugin.photobrowser.data.ActionSheet;
-import com.creedon.cordova.plugin.photobrowser.data.Datum;
-import com.creedon.cordova.plugin.photobrowser.data.PhotoData;
+import com.creedon.cordova.plugin.photobrowser.metadata.ActionSheet;
+import com.creedon.cordova.plugin.photobrowser.metadata.Datum;
+import com.creedon.cordova.plugin.photobrowser.metadata.PhotoDetail;
 import com.facebook.common.executors.CallerThreadExecutor;
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.BaseDataSubscriber;
@@ -69,7 +69,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private CallerThreadExecutor currentExecutor;
     private String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private ArrayList<String> pendingFetchDatas;
-    PhotoData photoData;
+    PhotoDetail photoDetail;
     PhotoBrowserPluginActivity.PhotosDownloadListener photosDownloadListener = new PhotosDownloadListener() {
         @Override
         public void onPregress(final float progress) {
@@ -139,7 +139,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         if (!Fresco.hasBeenInitialized()) {
             Context context = this;
-//            globalOkHttpClient3 = new OkHttpClient();
+//            global 3 = new OkHttpClient();
 //            ImagePipelineConfig config = OkHttpImagePipelineConfigFactory
 //                    .newBuilder(context,globalOkHttpClient3)
 //                    .setNetworkFetcher(new OkHttp3NetworkFetcher(globalOkHttpClient3))
@@ -159,7 +159,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             //TODO build aaction menu from custom data
 
             int index = 0;
-            for (ActionSheet actionSheet : photoData.getActionSheet()) {
+            for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
 
                 String label = actionSheet.getLabel();
                 String action = actionSheet.getAction();
@@ -229,7 +229,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             }
         } else if (item.getTitle() != null) {
 
-            for (ActionSheet actionSheet : photoData.getActionSheet()) {
+            for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
 
                 String label = actionSheet.getLabel();
                 String action = actionSheet.getAction();
@@ -274,8 +274,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private void addAlbumToFrame() throws JSONException {
         JSONObject res = new JSONObject();
         res.put(KEY_ACTION, DEFAULT_ACTION_ADDTOFRAME);
-        res.put(KEY_ID, photoData.getId());
-        res.put(KEY_TYPE, photoData.getType());
+        res.put(KEY_ID, photoDetail.getId());
+        res.put(KEY_TYPE, photoDetail.getType());
         res.put(KEY_DESCRIPTION, "send photos to destination");
         finishWithResult(res);
 
@@ -290,7 +290,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         for (int i = 0; i < selections.size(); i++) {
             //add to temp lsit if not selected
             if (selections.get(i).equals("1")) {
-                JSONObject object = photoData.getData().get(i).toJSON();
+                JSONObject object = photoDetail.getData().get(i).toJSON();
                 String id = object.getString(KEY_ID);
                 fetchedDatas.add(id);
             }
@@ -303,8 +303,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                 res.put(KEY_PHOTOS, new JSONArray(fetchedDatas));
                 res.put(KEY_ACTION, KEY_ACTION_SEND);
-                res.put(KEY_ID, photoData.getId());
-                res.put(KEY_TYPE, photoData.getType());
+                res.put(KEY_ID, photoDetail.getId());
+                res.put(KEY_TYPE, photoDetail.getType());
                 res.put(KEY_DESCRIPTION, "send photos to destination");
                 finishWithResult(res);
             } catch (JSONException e) {
@@ -351,7 +351,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             Bundle bundle = getIntent().getExtras();
             String optionsJsonString = bundle.getString("options");
             try {
-                photoData = PhotoData.getInstance(new JSONObject(optionsJsonString));
+                photoDetail = PhotoDetail.getInstance(new JSONObject(optionsJsonString));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -398,12 +398,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public List<String> photoBrowserPhotos(PhotoBrowserBasicActivity activity) {
-        return photoData.getImages();
+        return photoDetail.getImages();
     }
 
     @Override
     public List<String> photoBrowserThumbnails(PhotoBrowserBasicActivity activity) {
-        return photoData.getThumbnails();
+        return photoDetail.getThumbnails();
     }
 
     @Override
@@ -413,22 +413,22 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public List<String> photoBrowserPhotoCaptions(PhotoBrowserBasicActivity photoBrowserBasicActivity) {
-        return photoData.getCaptions();
+        return photoDetail.getCaptions();
     }
 
     @Override
     public String getActionBarTitle() {
-        return photoData.getName();
+        return photoDetail.getName();
     }
 
     @Override
     public String getSubtitle() {
-        if (photoData.getImages() == null) {
+        if (photoDetail.getImages() == null) {
             return "0" +
                     " " +
                     context.getResources().getString(f.getId("string", "PHOTOS"));
         } else {
-            return String.valueOf(this.photoData.getImages().size()) +
+            return String.valueOf(this.photoDetail.getImages().size()) +
                     " " +
                     context.getResources().getString(f.getId("string", "PHOTOS"));
         }
@@ -463,9 +463,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             @Override
             public void onImageChange(int position) {
                 setCurrentPosition(position);
-                overlayView.setDescription(photoData.getCaptions().get(position));
+                overlayView.setDescription(photoDetail.getCaptions().get(position));
                 try {
-                    overlayView.setData(photoData.getData().get(position).toJSON());
+                    overlayView.setData(photoDetail.getData().get(position).toJSON());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -478,8 +478,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //dismiss and send code
         JSONObject res = new JSONObject();
         res.put(KEY_ACTION, DEFAULT_ACTION_ADD);
-        res.put(KEY_ID, photoData.getId());
-        res.put(KEY_TYPE, photoData.getType());
+        res.put(KEY_ID, photoDetail.getId());
+        res.put(KEY_TYPE, photoDetail.getType());
         res.put(KEY_DESCRIPTION, "add photo to album");
         finishWithResult(res);
     }
@@ -487,8 +487,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private void addAlbumToPlaylist() throws JSONException {
         JSONObject res = new JSONObject();
         res.put(KEY_ACTION, DEFAULT_ACTION_ADDTOPLAYLIST);
-        res.put(KEY_ID, photoData.getId());
-        res.put(KEY_TYPE, photoData.getType());
+        res.put(KEY_ID, photoDetail.getId());
+        res.put(KEY_TYPE, photoDetail.getType());
         res.put(KEY_DESCRIPTION, "send photos to destination");
         finishWithResult(res);
 
@@ -498,19 +498,19 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private void editAlbumName() {
 
         new MaterialDialog.Builder(this)
-                .title(getString(f.getId("string", photoData.getType().toLowerCase().equals(KEY_ALBUM) ? "EDIT_ALBUM_NAME" : "EDIT_PLAYLIST_NAME")))
+                .title(getString(f.getId("string", photoDetail.getType().toLowerCase().equals(KEY_ALBUM) ? "EDIT_ALBUM_NAME" : "EDIT_PLAYLIST_NAME")))
                 .inputType(InputType.TYPE_CLASS_TEXT)
-                .input(getString(f.getId("string", "EDIT_ALBUM_NAME")), photoData.getName(), new MaterialDialog.InputCallback() {
+                .input(getString(f.getId("string", "EDIT_ALBUM_NAME")), photoDetail.getName(), new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, @NonNull CharSequence input) {
 
                         dialog.dismiss();
-                        photoData.setName(input.toString());
+                        photoDetail.setName(input.toString());
                         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
                         if (actionBar != null) {
                             actionBar.setTitle(input.toString());
                         }
-                        photoData.onSetName(input.toString());
+                        photoDetail.onSetName(input.toString());
                     }
                 }).show();
 
@@ -518,10 +518,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     private void deleteAlbum() {
         String content = getString(f.getId("string", "ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_ALBUM_THIS_WILL_ALSO_REMOVE_THE_PHOTOS_FROM_THE_PLAYLIST_IF_THEY_ARE_NOT_IN_ANY_OTHER_ALBUMS"));
-        content.replace(KEY_ALBUM, photoData.getType());
+        content.replace(KEY_ALBUM, photoDetail.getType());
 
         new MaterialDialog.Builder(this)
-                .title(getString(f.getId("string", "DELETE")) + photoData.getType())
+                .title(getString(f.getId("string", "DELETE")) + photoDetail.getType())
                 .content(content)
                 .positiveText(getString(f.getId("string", "CONFIRM")))
                 .negativeText(getString(f.getId("string", "CANCEL")))
@@ -534,9 +534,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         try {
                             JSONObject res = new JSONObject();
                             res.put(KEY_ACTION, DEFAULT_ACTION_DELETE);
-                            res.put(KEY_ID, photoData.getId());
-                            res.put(KEY_TYPE, photoData.getType());
-                            res.put(KEY_DESCRIPTION, "delete " + photoData.getType());
+                            res.put(KEY_ID, photoDetail.getId());
+                            res.put(KEY_TYPE, photoDetail.getType());
+                            res.put(KEY_DESCRIPTION, "delete " + photoDetail.getType());
                             finishWithResult(res);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -562,7 +562,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         for (int i = 0; i < selections.size(); i++) {
             //add to temp lsit if not selected
             if (selections.get(i).equals("1")) {
-                JSONObject object = photoData.getData().get(i).toJSON();
+                JSONObject object = photoDetail.getData().get(i).toJSON();
                 String id = object.getString(KEY_ORIGINALURL);
                 fetchedDatas.add(id);
             }
@@ -590,13 +590,13 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         for (int i = 0; i < selections.size(); i++) {
             //add to temp lsit if not selected
             if (selections.get(i).equals("0")) {
-                tempDatas.add(photoData.getData().get(i));
-                tempPreviews.add(photoData.getImages().get(i));
-                tempCations.add(photoData.getCaptions().get(i));
-                tempThumbnails.add(photoData.getThumbnails().get(i));
+                tempDatas.add(photoDetail.getData().get(i));
+                tempPreviews.add(photoDetail.getImages().get(i));
+                tempCations.add(photoDetail.getCaptions().get(i));
+                tempThumbnails.add(photoDetail.getThumbnails().get(i));
                 tempSelection.add(selections.get(i));
             } else {
-                Datum object = photoData.getData().get(i);
+                Datum object = photoDetail.getData().get(i);
                 String id = object.getId();
 
                 fetchedDatas.add(id);
@@ -615,18 +615,18 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             dialog.dismiss();
 
-                            photoData.onPhotoDeleted(fetchedDatas);
+                            photoDetail.onPhotoDeleted(fetchedDatas);
 
-                            photoData.setImages(tempPreviews);
-                            photoData.setData(tempDatas);
-                            photoData.setCaptions(tempCations);
-                            photoData.setThumbnails(tempThumbnails);
+                            photoDetail.setImages(tempPreviews);
+                            photoDetail.setData(tempDatas);
+                            photoDetail.setCaptions(tempCations);
+                            photoDetail.setThumbnails(tempThumbnails);
                             selections = tempSelection;
-                            if (photoData.getImages().size() == 0) {
+                            if (photoDetail.getImages().size() == 0) {
 
                                 finish();
                             } else {
-                                ArrayList<String> list = new ArrayList<String>(photoData.getThumbnails());
+                                ArrayList<String> list = new ArrayList<String>(photoDetail.getThumbnails());
                                 getRcAdapter().swap(list);
                             }
                         }
@@ -646,21 +646,21 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     private void deletePhoto(int position, JSONObject data) {
         try {
-            Datum deletedData = photoData.getData().remove(position);
-            photoData.getImages().remove(position);
-            photoData.getCaptions().remove(position);
-            photoData.getThumbnails().remove(position);
+            Datum deletedData = photoDetail.getData().remove(position);
+            photoDetail.getImages().remove(position);
+            photoDetail.getCaptions().remove(position);
+            photoDetail.getThumbnails().remove(position);
             selections.remove(position);
             ArrayList<String> deletedDatas = new ArrayList<String>();
             deletedDatas.add(deletedData.getId());
-            photoData.onPhotoDeleted(deletedDatas);
-            if (photoData.getImages().size() == 0) {
+            photoDetail.onPhotoDeleted(deletedDatas);
+            if (photoDetail.getImages().size() == 0) {
                 finish();
             } else {
                 imageViewer.onDismiss();
                 super.refreshCustomImage();
-                showPicker(photoData.getImages().size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition() - 1 : getCurrentPosition());
-                ArrayList<String> list = new ArrayList<String>(photoData.getThumbnails());
+                showPicker(photoDetail.getImages().size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition() - 1 : getCurrentPosition());
+                ArrayList<String> list = new ArrayList<String>(photoDetail.getThumbnails());
                 getRcAdapter().swap(list);
 
 
@@ -862,9 +862,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     public void onCaptionChanged(JSONObject data, String caption) {
         //TODO send caption
-        photoData.setCaption(getCurrentPosition(), caption);
+        photoDetail.setCaption(getCurrentPosition(), caption);
         overlayView.setDescription(caption);
-        if (photoData.setCaption(getCurrentPosition(), caption)) {
+        if (photoDetail.setCaption(getCurrentPosition(), caption)) {
 
         } else {
             Log.e(TAG, "Error failed to set caption");
@@ -891,8 +891,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
             res.put(KEY_PHOTOS, new JSONArray(ids));
             res.put(KEY_ACTION, KEY_ACTION_SEND);
-            res.put(KEY_ID, photoData.getId());
-            res.put(KEY_TYPE, photoData.getType());
+            res.put(KEY_ID, photoDetail.getId());
+            res.put(KEY_TYPE, photoDetail.getType());
             res.put(KEY_DESCRIPTION, "send photos to destination");
             finishWithResult(res);
         } catch (JSONException e) {
@@ -903,7 +903,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public void didEndEditing(JSONObject data, String s) {
-        photoData.setCaption(getCurrentPosition(), s);
+        photoDetail.setCaption(getCurrentPosition(), s);
     }
 
     void finishWithResult(JSONObject result) {
@@ -917,11 +917,24 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     @Override
+    public int getOrientation(int currentPosition) {
+        List<Datum> datums = photoDetail.getData();
+        int orientation = 0;
+        if (datums != null) {
+            if (datums.size() > currentPosition) {
+                Datum datum = datums.get(currentPosition);
+                orientation = datum.getOrientation();
+            }
+        }
+        return exifToDegrees(orientation);
+    }
+
+    @Override
     protected ImageViewer.OnOrientationListener getOrientationListener() {
         return new ImageViewer.OnOrientationListener() {
             @Override
             public int OnOrientaion(int currentPosition) {
-                List<Datum> datums = photoData.getData();
+                List<Datum> datums = photoDetail.getData();
                 int orientation = 0;
                 if (datums != null) {
                     if (datums.size() > currentPosition) {

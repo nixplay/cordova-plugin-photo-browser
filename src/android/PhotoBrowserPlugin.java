@@ -5,8 +5,8 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 
-import com.creedon.cordova.plugin.photobrowser.data.Datum;
-import com.creedon.cordova.plugin.photobrowser.data.PhotoData;
+import com.creedon.cordova.plugin.photobrowser.metadata.Datum;
+import com.creedon.cordova.plugin.photobrowser.metadata.PhotoDetail;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -37,15 +37,15 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
     private static final String DEFAULT_ACTION_EDITCAPTION = "editCaption";
     private static final String DEFAULT_ACTION_DELETEPHOTOS = "deletePhotos";
     private CallbackContext callbackContext;
-    private PhotoData photoData;
+    private PhotoDetail photoDetail;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
         if (action.equals("showGallery")) {
             JSONObject options = args.getJSONObject(0);
-            photoData = PhotoData.getInstance(options);
-            photoData.setOnCaptionChangeListener(new PhotoData.PhotoDataListener(){
+            photoDetail = PhotoDetail.getInstance(options);
+            photoDetail.setOnCaptionChangeListener(new PhotoDetail.PhotoDataListener(){
 
                 @Override
                 public boolean onCaptionChanged(Datum datum, String caption, String id, String type) {
