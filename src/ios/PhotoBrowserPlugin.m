@@ -44,8 +44,9 @@
 #define SEND_UIIMAGE BUNDLE_UIIMAGE(@"images/send.png")
 #define EDIT_UIIMAGE BUNDLE_UIIMAGE(@"images/edit.png")
 #define CLOSE_UIIMAGE BUNDLE_UIIMAGE(@"images/close.png")
+#define BIN_UIIMAGE BUNDLE_UIIMAGE(@"images/bin.png")
 
-#define LIGHT_BLUE_COLOR [UIColor colorWithRed:(78.0f/255.0f)  green:(145.0f/255.0f)  blue:(223.0f/255.0f) alpha:1.0]
+#define LIGHT_BLUE_COLOR [UIColor colorWithRed:(96.0f/255.0f)  green:(178.0f/255.0f)  blue:(232.0f/255.0f) alpha:1.0]
 #define IS_TYPE_ALBUM ([_type isEqualToString:KEY_ALBUM])
 #define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil)]
 
@@ -188,11 +189,12 @@ enum Orientation {
 //    UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithImage: OPTIONS_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
     UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
     newAddBackButton.tag = 0;
-    
+    newAddBackButton.tintColor = LIGHT_BLUE_COLOR;
     
 //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
 //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
     browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
+    browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
 //    _addAttachButton = addAttachButton;
     _rightBarbuttonItem = newAddBackButton;
     
@@ -242,12 +244,12 @@ enum Orientation {
                 //                [sender setImage:nil];
                 //                [sender setTitle:NSLocalizedString(@"Cancel", nil)];
                 
-                UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash
-                                                                                                  target:self action:@selector(deletePhotos:)];
-                
+                UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithImage:BIN_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(deletePhotos:)];
+                deleteBarButton.tintColor = LIGHT_BLUE_COLOR;
                 _browser.navigationItem.rightBarButtonItems = @[deleteBarButton];
                 UIBarButtonItem *closeButton = [[UIBarButtonItem alloc] initWithImage:CLOSE_UIIMAGE  style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
                 closeButton.tag = 1;
+                closeButton.tintColor = LIGHT_BLUE_COLOR;
                 _browser.navigationItem.leftBarButtonItem = closeButton;
             }
         });
@@ -403,7 +405,7 @@ enum Orientation {
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
                                            gestureDismissal:YES
                                                  completion:nil];
-    
+
     CancelButton *cancel = [[CancelButton alloc]initWithTitle:cancelText height:60 dismissOnTap:YES action:^{
         
     }];
@@ -744,12 +746,12 @@ enum Orientation {
             [items addObject:editCaption];
             [items addObject:flexSpace];
         }
-        UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(deletePhoto:)];
+        UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithImage:BIN_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(deletePhotos:)];
         [items addObject:deleteBarButton];
         _toolBar.translucent = NO;
         _toolBar.barStyle = UIBarStyleDefault;
-        _toolBar.tintColor = LIGHT_BLUE_COLOR;
-        _toolBar.barTintColor = [UIColor whiteColor];
+//        _toolBar.tintColor = LIGHT_BLUE_COLOR;
+//        _toolBar.barTintColor = [UIColor whiteColor];
         return items;
     }
     
