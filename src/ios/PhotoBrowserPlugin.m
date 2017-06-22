@@ -43,8 +43,9 @@
 #define DOWNLOADIMAGE_UIIMAGE BUNDLE_UIIMAGE(@"images/downloadCloud.png")
 #define SEND_UIIMAGE BUNDLE_UIIMAGE(@"images/send.png")
 #define EDIT_UIIMAGE BUNDLE_UIIMAGE(@"images/edit.png")
+#define CLOSE_UIIMAGE BUNDLE_UIIMAGE(@"images/close.png")
 
-#define LIGHT_BLUE_COLOR [UIColor colorWithRed:(99/255.0f)  green:(176/255.0f)  blue:(228.0f/255.0f) alpha:1.0]
+#define LIGHT_BLUE_COLOR [UIColor colorWithRed:(78.0f/255.0f)  green:(145.0f/255.0f)  blue:(223.0f/255.0f) alpha:1.0]
 #define IS_TYPE_ALBUM ([_type isEqualToString:KEY_ALBUM])
 #define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil)]
 
@@ -115,7 +116,7 @@ enum Orientation {
         _dateString = NSLocalizedString(@"Unknown Date",nil);
     }
     if(_name == nil){
-        _name = NSLocalizedString(@"Untitled",nil);
+        _name = NSLocalizedString(@"UNTITLED",nil);
     }
     
     for (NSString* url in imagesUrls)
@@ -407,7 +408,7 @@ enum Orientation {
     PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES completion:^{
         
     }];
-    CancelButton *cancel = [[CancelButton alloc]initWithTitle:NSLocalizedString(@"Cancel", nil) height:60 dismissOnTap:YES action:^{
+    CancelButton *cancel = [[CancelButton alloc]initWithTitle:NSLocalizedString(@"CANCEL", nil) height:60 dismissOnTap:YES action:^{
         
     }];
     
@@ -719,7 +720,7 @@ enum Orientation {
                                                               animated:YES];
     progressHUD.mode = MBProgressHUDModeDeterminate;
     
-    progressHUD.label.text = NSLocalizedString(@"Downloading",nil);
+    progressHUD.label.text = NSLocalizedString(@"DOWNLOADING",nil);
     [progressHUD showAnimated:YES];
     
     @try{
