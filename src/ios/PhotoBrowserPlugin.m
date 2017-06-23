@@ -695,7 +695,19 @@ enum Orientation {
 //            fixedSpace.width = 32; // To balance action button
             UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
             [items addObject:flexSpace];
-            UIBarButtonItem * addPhotoButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"ADD_PHOTOS", nil) style:UIBarButtonItemStylePlain target:self action:@selector(sendTo:)];
+            float margin = 2;
+            CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
+            UIButton *btn = [[UIButton alloc] initWithFrame: newFrame];
+        
+            //    [button setImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@.bundle/%@", NSStringFromClass([self class]), @"images/send.png"]] forState:UIControlStateNormal];
+            [btn setBackgroundColor:LIGHT_BLUE_COLOR];
+            btn.layer.cornerRadius = 10; // this value vary as per your desire
+            btn.clipsToBounds = YES;
+            [btn setTitle:NSLocalizedString(@"ADD_PHOTOS", nil) forState:UIControlStateNormal];
+            [btn addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
+            UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:btn];
+            
+            //            UIBarButtonItem * addPhotoButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"ADD_PHOTOS", nil) style:UIBarButtonItemStylePlain target:self action:@selector(m:)];
             
             [items addObject:addPhotoButton];
 
@@ -704,10 +716,10 @@ enum Orientation {
 //            [items addObject:sendtoBarButton];
             [items addObject:flexSpace];
             
-            _toolBar.translucent = NO;
+//            _toolBar.translucent = NO;
             _toolBar.barStyle = UIBarStyleDefault;
-            _toolBar.tintColor = [UIColor whiteColor];
-            _toolBar.barTintColor = LIGHT_BLUE_COLOR;
+//            _toolBar.tintColor = [UIColor whiteColor];
+            _toolBar.barTintColor = [UIColor whiteColor];;
         }
 //
 //        
@@ -750,7 +762,7 @@ enum Orientation {
         [items addObject:deleteBarButton];
         _toolBar.translucent = NO;
         _toolBar.barStyle = UIBarStyleDefault;
-//        _toolBar.tintColor = LIGHT_BLUE_COLOR;
+        _toolBar.tintColor = LIGHT_BLUE_COLOR;
 //        _toolBar.barTintColor = [UIColor whiteColor];
         return items;
     }
