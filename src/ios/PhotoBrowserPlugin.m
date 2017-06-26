@@ -8,6 +8,7 @@
 
 #import "PhotoBrowserPlugin.h"
 #import "MWPhotoBrowser.h"
+#import "CustomViewController.h"
 #import "MWGridViewController.h"
 #import "TextInputViewController.h"
 #import <Cordova/CDVViewController.h>
@@ -183,7 +184,7 @@ enum Orientation {
     
     // Modal
     
-    UINavigationController *nc = [[UINavigationController alloc] initWithRootViewController:browser];
+    CustomViewController *nc = [[CustomViewController alloc] initWithRootViewController:browser];
     _navigationController = nc;
     
 //    UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithImage: OPTIONS_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
