@@ -163,11 +163,14 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                 String label = actionSheet.getLabel();
                 String action = actionSheet.getAction();
-                MenuItem menuItem = menu.add(0, index, 1, label);
-                //TODO any better way to create menu/menu icon?
-                menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add")) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
-                if(index == 0 && label.toLowerCase().contains("add")){
-                    menuItem.setIcon(f.getId("drawable","ic_action_add"));
+                if(action.equals(DEFAULT_ACTION_SELECT)) {
+                    MenuItem menuItem = menu.add(0, index, 1, label);
+                    //TODO any better way to create menu/menu icon?
+
+                    menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add") || action.equals(DEFAULT_ACTION_SELECT)) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
+                    if (index == 0 && label.toLowerCase().contains("add")) {
+                        menuItem.setIcon(f.getId("drawable", "ic_action_add"));
+                    }
                 }
                 index++;
 
@@ -214,20 +217,22 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 e.printStackTrace();
             }
             //TODO delete item
-        } else if (id == com.creedon.androidphotobrowser.R.id.send) {
-//            addAlbumToPlaylist();
-            try {
-                sendPhotos();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        } else if (id == com.creedon.androidphotobrowser.R.id.download) {
-            try {
-                downloadPhotos();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        } else if (item.getTitle() != null) {
+        }
+//        else if (id == com.creedon.androidphotobrowser.R.id.send) {
+////            addAlbumToPlaylist();
+//            try {
+//                sendPhotos();
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        } else if (id == com.creedon.androidphotobrowser.R.id.download) {
+//            try {
+//                downloadPhotos();
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
+        else if (item.getTitle() != null) {
 
             for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
 
