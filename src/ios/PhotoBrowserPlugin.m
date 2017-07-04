@@ -22,7 +22,6 @@
 #import <SDWebImage/SDWebImageManager.h>
 #import <SDWebImage/SDWebImageDownloaderOperation.h>
 #import <MBProgressHUD/MBProgressHUD.h>
-#import "ASBottomSheet-Swift.h"
 
 #define MAX_CHARACTER 160
 #define VIEWCONTROLLER_TRANSITION_DURATION 0.2
@@ -608,11 +607,20 @@ enum Orientation {
 }
 - (void) addPhotos:(id) sender{
     
-    __weak PhotoBrowserPlugin *weakSelf = self;
-    __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
-    __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
-    __block NSArray * icons = @[@"images/camera", @"images/photolibrary", @"images/nixplayalbum"];// [_actionSheetDicArray valueForKey:KEY_ACTION];
-    NSMutableArray * items = [NSMutableArray new];
+//    __weak PhotoBrowserPlugin *weakSelf = self;
+//    __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
+//    __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
+//    __block NSArray * icons = @[@"images/camera", @"images/photolibrary", @"images/nixplayalbum"];// [_actionSheetDicArray valueForKey:KEY_ACTION];
+//    RGBottomSheetConfiguration *config = RGBottomSheetConfiguration(
+//                                        
+//    sheet = RGBottomSheet(
+//                          withContentView: bottomView,
+//                          configuration: config
+//                          )
+//    RGBottomSheet *rgBottomSheet;
+    /*
+     //ASBottomSheet , got issue with style
+     NSMutableArray * items = [NSMutableArray new];
     [titles enumerateObjectsUsingBlock:^(NSString* title, NSUInteger idx, BOOL * _Nonnull stop) {
         ASBottomSheetItem *item = [[ASBottomSheetItem alloc] initWithTitle:title withIcon:BUNDLE_UIIMAGE([icons objectAtIndex:idx])];
         item.action = ^{
@@ -631,11 +639,13 @@ enum Orientation {
     }];
     ASBottomSheet* bottomSheet = [ASBottomSheet menuWithOptions:items];
     [bottomSheet setTitle:NSLocalizedString(@"Options", nil)];
-//    [bottomSheet setTintColor:[UIColor grayColor]];
+    [bottomSheet setTintColor:[UIColor grayColor]];
     
     [bottomSheet showMenuFromViewController:_browser];
     
-    /*
+     */
+    
+     //MKActionsheet style not match
     PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
     PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
     overlayAppearance.blurEnabled = NO;
@@ -649,9 +659,9 @@ enum Orientation {
     dialogAppearance.messageColor            =  [UIColor darkGrayColor];
     
     __weak PhotoBrowserPlugin *weakSelf = self;
-    __block NSArray * titles =  [_actionSheetDicArray valueForKey:KEY_LABEL];
-    __block NSArray * actions =  [_actionSheetDicArray valueForKey:KEY_ACTION];
-    
+    __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
+    __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
+    __block NSArray * icons = @[@"images/camera", @"images/photolibrary", @"images/nixplayalbum"];// [_actionSheetDicArray valueForKey:KEY_ACTION];
     
     MKASOrientationConfig *portraitConfig = [[MKASOrientationConfig alloc] init];
     portraitConfig.titleAlignment = NSTextAlignmentLeft;
@@ -694,7 +704,7 @@ enum Orientation {
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
         [self photoBrowserDidFinishModalPresentation:_browser];
     }];
-     */
+    
     
 }
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser hideGridController:(MWGridViewController*)gridController{
