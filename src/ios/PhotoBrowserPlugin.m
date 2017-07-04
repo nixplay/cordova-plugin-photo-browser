@@ -32,14 +32,18 @@
 #define DEFAULT_ACTION_DELETE @"delete"
 #define DEFAULT_ACTION_CAEMRA @"camera"
 #define DEFAULT_ACTION_NIXALBUM @"nixalbum"
+#define KEY_ACTION @"action"
 #define KEY_ALBUM @"album"
-#define KEY_ACTION  @"action"
+#define KEY_TYPE_ALBUM @"album"
+#define KEY_TYPE_PLAYLIST @"playlist"
+#define KEY_TYPE_NIXALBUM  @"nixalbum"
 #define KEY_LABEL  @"label"
 #define KEY_NAME @"name"
 #define KEY_ID @"id"
 #define KEY_TYPE @"type"
 #define KEY_DELETEPHOTOS @"deletePhotos"
 #define KEY_PHOTOS @"photos"
+
 
 #define BUNDLE_UIIMAGE(imageNames) [UIImage imageNamed:[NSString stringWithFormat:@"%@.bundle/%@", NSStringFromClass([self class]), imageNames]]
 #define OPTIONS_UIIMAGE BUNDLE_UIIMAGE(@"images/options.png")
@@ -50,7 +54,8 @@
 #define BIN_UIIMAGE BUNDLE_UIIMAGE(@"images/bin.png")
 
 #define LIGHT_BLUE_COLOR [UIColor colorWithRed:(96.0f/255.0f)  green:(178.0f/255.0f)  blue:(232.0f/255.0f) alpha:1.0]
-#define IS_TYPE_ALBUM ([_type isEqualToString:KEY_ALBUM])
+#define IS_TYPE_ALBUM ([_type isEqualToString:KEY_TYPE_ALBUM])
+#define IS_TYPE_NIXALBUM ([_type isEqualToString:KEY_TYPE_NIXALBUM])
 #define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil)]
 
 
@@ -113,7 +118,11 @@ enum Orientation {
     _actionSheetDicArray = [options objectForKey:@"actionSheet"];
     _name = [options objectForKey:KEY_NAME];
     _id = [[options objectForKey:KEY_ID] integerValue];
+#ifdef DEBUG
+    _type = KEY_TYPE_NIXALBUM;
+#else
     _type = [options objectForKey:KEY_TYPE] ;
+#endif
     NSArray *captions = [options objectForKey:@"captions"];
     _dateString = [options objectForKey:@"date"];
     if(_dateString == nil){
@@ -190,16 +199,26 @@ enum Orientation {
     _navigationController = nc;
     
     //    UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithImage: OPTIONS_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
-    UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
-    newAddBackButton.tag = 0;
-    newAddBackButton.tintColor = LIGHT_BLUE_COLOR;
     
-    //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
-    //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
-    browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
-    browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
-    //    _addAttachButton = addAttachButton;
-    _rightBarbuttonItem = newAddBackButton;
+    if(IS_TYPE_NIXALBUM){
+        UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT_ALL", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectAll:)];
+        newAddBackButton.tag = 0;
+        newAddBackButton.tintColor = LIGHT_BLUE_COLOR;
+        browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
+        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
+        _rightBarbuttonItem = newAddBackButton;
+    }else{
+        UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
+        newAddBackButton.tag = 0;
+        newAddBackButton.tintColor = LIGHT_BLUE_COLOR;
+        
+        //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
+        //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
+        browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
+        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
+        //    _addAttachButton = addAttachButton;
+        _rightBarbuttonItem = newAddBackButton;
+    }
     
     _navigationController.delegate = self;
     
@@ -607,45 +626,45 @@ enum Orientation {
 }
 - (void) addPhotos:(id) sender{
     
-//    __weak PhotoBrowserPlugin *weakSelf = self;
-//    __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
-//    __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
-//    __block NSArray * icons = @[@"images/camera", @"images/photolibrary", @"images/nixplayalbum"];// [_actionSheetDicArray valueForKey:KEY_ACTION];
-//    RGBottomSheetConfiguration *config = RGBottomSheetConfiguration(
-//                                        
-//    sheet = RGBottomSheet(
-//                          withContentView: bottomView,
-//                          configuration: config
-//                          )
-//    RGBottomSheet *rgBottomSheet;
+    //    __weak PhotoBrowserPlugin *weakSelf = self;
+    //    __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
+    //    __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
+    //    __block NSArray * icons = @[@"images/camera", @"images/photolibrary", @"images/nixplayalbum"];// [_actionSheetDicArray valueForKey:KEY_ACTION];
+    //    RGBottomSheetConfiguration *config = RGBottomSheetConfiguration(
+    //
+    //    sheet = RGBottomSheet(
+    //                          withContentView: bottomView,
+    //                          configuration: config
+    //                          )
+    //    RGBottomSheet *rgBottomSheet;
     /*
      //ASBottomSheet , got issue with style
      NSMutableArray * items = [NSMutableArray new];
-    [titles enumerateObjectsUsingBlock:^(NSString* title, NSUInteger idx, BOOL * _Nonnull stop) {
-        ASBottomSheetItem *item = [[ASBottomSheetItem alloc] initWithTitle:title withIcon:BUNDLE_UIIMAGE([icons objectAtIndex:idx])];
-        item.action = ^{
-            NSMutableDictionary *dictionary = [NSMutableDictionary new];
-            [dictionary setValue:[actions objectAtIndex:idx] forKey: KEY_ACTION];
-            [dictionary setValue:@(_id) forKey: KEY_ID];
-            [dictionary setValue:_type forKey: KEY_TYPE];
-            
-            [dictionary setValue:@"add photo to album" forKey: @"description"];
-            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-            [pluginResult setKeepCallbackAsBool:NO];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-            [self photoBrowserDidFinishModalPresentation:_browser];
-        };
-        [items addObject:item];
-    }];
-    ASBottomSheet* bottomSheet = [ASBottomSheet menuWithOptions:items];
-    [bottomSheet setTitle:NSLocalizedString(@"Options", nil)];
-    [bottomSheet setTintColor:[UIColor grayColor]];
-    
-    [bottomSheet showMenuFromViewController:_browser];
-    
+     [titles enumerateObjectsUsingBlock:^(NSString* title, NSUInteger idx, BOOL * _Nonnull stop) {
+     ASBottomSheetItem *item = [[ASBottomSheetItem alloc] initWithTitle:title withIcon:BUNDLE_UIIMAGE([icons objectAtIndex:idx])];
+     item.action = ^{
+     NSMutableDictionary *dictionary = [NSMutableDictionary new];
+     [dictionary setValue:[actions objectAtIndex:idx] forKey: KEY_ACTION];
+     [dictionary setValue:@(_id) forKey: KEY_ID];
+     [dictionary setValue:_type forKey: KEY_TYPE];
+     
+     [dictionary setValue:@"add photo to album" forKey: @"description"];
+     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+     [pluginResult setKeepCallbackAsBool:NO];
+     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+     [self photoBrowserDidFinishModalPresentation:_browser];
+     };
+     [items addObject:item];
+     }];
+     ASBottomSheet* bottomSheet = [ASBottomSheet menuWithOptions:items];
+     [bottomSheet setTitle:NSLocalizedString(@"Options", nil)];
+     [bottomSheet setTintColor:[UIColor grayColor]];
+     
+     [bottomSheet showMenuFromViewController:_browser];
+     
      */
     
-     //MKActionsheet style not match
+    //MKActionsheet style not match
     PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
     PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
     overlayAppearance.blurEnabled = NO;
@@ -659,10 +678,15 @@ enum Orientation {
     dialogAppearance.messageColor            =  [UIColor darkGrayColor];
     
     __weak PhotoBrowserPlugin *weakSelf = self;
+#ifdef DEBUG
     __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
     __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
     __block NSArray * icons = @[@"images/camera", @"images/photolibrary", @"images/nixplayalbum"];// [_actionSheetDicArray valueForKey:KEY_ACTION];
-    
+#else
+    __block NSArray * titles = [_actionSheetDicArray valueForKey:KEY_LABEL];
+    __block NSArray * actions = [_actionSheetDicArray valueForKey:KEY_ACTION];
+    __block NSArray * icons = [_actionSheetDicArray valueForKey:KEY_ACTION];
+#endif
     MKASOrientationConfig *portraitConfig = [[MKASOrientationConfig alloc] init];
     portraitConfig.titleAlignment = NSTextAlignmentLeft;
     portraitConfig.buttonTitleAlignment = MKActionSheetButtonTitleAlignment_left;
@@ -705,6 +729,31 @@ enum Orientation {
         [self photoBrowserDidFinishModalPresentation:_browser];
     }];
     
+    
+}
+-(void) addPhotosToPlaylist:(id) sender{
+    __block NSMutableArray *fetchArray = [NSMutableArray new];
+    [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if([obj boolValue]){
+            NSDictionary* object = [_data objectAtIndex:idx];
+            if([object objectForKey:KEY_ID] != nil){
+                [fetchArray addObject: [object objectForKey:KEY_ID]];
+            }
+        }
+    }];
+    if([fetchArray count] > 0 ){
+        NSMutableDictionary *dictionary = [NSMutableDictionary new];
+        [dictionary setValue:DEFAULT_ACTION_ADDTOPLAYLIST forKey: KEY_ACTION];
+        [dictionary setValue:fetchArray forKey: KEY_PHOTOS];
+        [dictionary setValue:@(_id) forKey: KEY_ID];
+        [dictionary setValue:_type forKey: KEY_TYPE];
+        
+        [dictionary setValue:@"add photo to album" forKey: @"description"];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+        [pluginResult setKeepCallbackAsBool:NO];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+        [self photoBrowserDidFinishModalPresentation:_browser];
+    }
     
 }
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser hideGridController:(MWGridViewController*)gridController{
@@ -785,26 +834,41 @@ enum Orientation {
         if(_browser.displaySelectionButtons){
             
         }else{
-            //            UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
-            //            fixedSpace.width = 32; // To balance action button
             UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
             [items addObject:flexSpace];
-            float margin = 3;
-            CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
-            UIButton *btn = [[UIButton alloc] initWithFrame: newFrame];
-            
-            //    [button setImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@.bundle/%@", NSStringFromClass([self class]), @"images/send.png"]] forState:UIControlStateNormal];
-            [btn setBackgroundColor:LIGHT_BLUE_COLOR];
-            btn.layer.cornerRadius = 5; // this value vary as per your desire
-            btn.clipsToBounds = YES;
-            [btn setTitle:NSLocalizedString(@"ADD_PHOTOS", nil) forState:UIControlStateNormal];
-            [btn addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
-            UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:btn];
-            
-            //            UIBarButtonItem * addPhotoButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"ADD_PHOTOS", nil) style:UIBarButtonItemStylePlain target:self action:@selector(m:)];
-            
-            [items addObject:addPhotoButton];
-            
+            if(IS_TYPE_NIXALBUM){
+                float margin = 3;
+                CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
+                UIButton *btn = [[UIButton alloc] initWithFrame: newFrame];
+                [btn setBackgroundColor:LIGHT_BLUE_COLOR];
+                btn.layer.cornerRadius = 5; // this value vary as per your desire
+                btn.clipsToBounds = YES;
+                [btn setTitle:NSLocalizedString(@"AD_PHOTOS_TO_PLAYLIST", nil) forState:UIControlStateNormal];
+                [btn addTarget:self action:@selector(addPhotosToPlaylist:) forControlEvents:UIControlEventTouchUpInside];
+                UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:btn];
+                [items addObject:addPhotoButton];
+            }else{
+                //            UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
+                //            fixedSpace.width = 32; // To balance action button
+                UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
+                [items addObject:flexSpace];
+                float margin = 3;
+                CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
+                UIButton *btn = [[UIButton alloc] initWithFrame: newFrame];
+                
+                //    [button setImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@.bundle/%@", NSStringFromClass([self class]), @"images/send.png"]] forState:UIControlStateNormal];
+                [btn setBackgroundColor:LIGHT_BLUE_COLOR];
+                btn.layer.cornerRadius = 5; // this value vary as per your desire
+                btn.clipsToBounds = YES;
+                [btn setTitle:NSLocalizedString(@"ADD_PHOTOS", nil) forState:UIControlStateNormal];
+                [btn addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
+                UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:btn];
+                
+                //            UIBarButtonItem * addPhotoButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"ADD_PHOTOS", nil) style:UIBarButtonItemStylePlain target:self action:@selector(m:)];
+                
+                [items addObject:addPhotoButton];
+                
+            }
             //            UIBarButtonItem * sendtoBarButton = [[UIBarButtonItem alloc] initWithImage:SEND_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(sendTo:)];
             //            sendtoBarButton.tintColor = LIGHT_BLUE_COLOR;
             //            [items addObject:sendtoBarButton];
