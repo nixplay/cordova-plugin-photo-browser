@@ -25,7 +25,7 @@
     <pod name="IQKeyboardManager"/>
     <pod name="MBProgressHUD"/>
     <pod name="IQKeyboardManager"/>
-    <pod name="ASButtonSheet"/>
+    
     <resource-file src="src/ios/PhotoBrowserPlugin.bundle"/>
     <resource-file src="src/ios/TextInputViewController.xib"/>
   </platform>
