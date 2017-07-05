@@ -241,7 +241,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             }
 
         }else if (id == android.R.id.home) {
-            if (!selectionMode) {
+            if (!selectionMode || photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
                 finish();
             }
 
@@ -435,7 +435,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
         super.init();
 
-        photoDetail.setType(KEY_TYPE_NIXALBUM);
         if(photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
             setupSelectionMode(true);
         }
@@ -506,7 +505,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         imageButton.setTextAppearance(this, f.getId("style", "AppTheme"));
                     }
                 }
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
                 layoutParams.setMargins(10,10,10,10);
                 imageButton.setLayoutParams(layoutParams);
                 imageButton.setOnClickListener(new View.OnClickListener() {
