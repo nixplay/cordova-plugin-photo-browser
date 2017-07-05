@@ -6,18 +6,26 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.GravityEnum;
@@ -66,6 +74,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public static final int SAVE_PHOTO = 0x11;
     public static final String KEY_ID = "id";
     private static final String KEY_ALBUM = "album";
+    private static final String KEY_TYPE_NIXALBUM = "nixalbum";
+    private static final int TAG_SELECT_ALL = 0x501;
+
     private CallerThreadExecutor currentExecutor;
     private String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private ArrayList<String> pendingFetchDatas;
@@ -109,6 +120,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
 
     };
+    private BottomSheetBehavior<View> mBottomSheetBehavior1;
 //    private OkHttpClient globalOkHttpClient3;
 
 
@@ -163,7 +175,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                 String label = actionSheet.getLabel();
                 String action = actionSheet.getAction();
-                if(action.equals(DEFAULT_ACTION_SELECT)) {
+                if (action.equals(DEFAULT_ACTION_SELECT)) {
                     MenuItem menuItem = menu.add(0, index, 1, label);
                     //TODO any better way to create menu/menu icon?
 
@@ -177,9 +189,16 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             }
             setupToolBar();
         } else {
-            MenuInflater inflater = getMenuInflater();
-            inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
-            setupToolBar();
+            if(photoDetail.getType().equals(KEY_TYPE_NIXALBUM)){
+                MenuItem menuItem = menu.add(0, TAG_SELECT_ALL, 1, getString(f.getId("string", "SELECT_ALL")));
+                //TODO any better way to create menu/menu icon?
+                menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
+            }else {
+                MenuInflater inflater = getMenuInflater();
+                inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
+                setupToolBar();
+            }
         }
         return true;
     }
@@ -205,7 +224,23 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         int id = item.getItemId();
-        if (id == android.R.id.home) {
+        if(id == TAG_SELECT_ALL){
+            if(item.getTitle().equals(getString(f.getId("string","SELECT_ALL")))) {
+                item.setTitle(getString(f.getId("string", "DESELECT_ALL")));
+                for (int i = 0; i < selections.size(); i++) {
+                    selections.set(i, "1");
+                }
+                rcAdapter.notifyDataSetChanged();
+
+            }else{
+                item.setTitle(getString(f.getId("string","SELECT_ALL")));
+                for (int i = 0; i < selections.size(); i++) {
+                    selections.set(i, "0");
+                }
+                rcAdapter.notifyDataSetChanged();
+            }
+
+        }else if (id == android.R.id.home) {
             if (!selectionMode) {
                 finish();
             }
@@ -399,6 +434,107 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         }
         super.init();
+
+        photoDetail.setType(KEY_TYPE_NIXALBUM);
+        if(photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+            setupSelectionMode(true);
+        }
+
+        View bottomSheet = findViewById(f.getId("id", "bottom_sheet1"));
+        mBottomSheetBehavior1 = BottomSheetBehavior.from(bottomSheet);
+
+        mBottomSheetBehavior1.setHideable(true);
+        mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+        TextView titleTextView = (TextView) findViewById(f.getId("id", "titleTextView"));
+        titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
+        FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(f.getId("id", "floatingButton"));
+        if (floatingActionButton != null) {
+            floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if(photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                        try {
+                            sendPhotos();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }else{
+
+                        if (mBottomSheetBehavior1.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                            mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+                        } else {
+                            mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+                        }
+                    }
+                }
+            });
+        }
+
+        LinearLayout sheetLinearLayout = (LinearLayout) findViewById(f.getId("id", "sheetLinearLayout"));
+        int index = 0;
+        for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
+            try {
+                String label = actionSheet.getLabel();
+                final String action = actionSheet.getAction();
+                Button imageButton = new Button(this, null, android.R.style.Widget_Button_Small);//@android:style/Widget.Button.Small
+
+
+                Drawable drawable = null;
+                if (index % 3 == 0) {
+                    drawable = getResources().getDrawable(com.creedon.androidphotobrowser.R.drawable.camera);
+
+                } else if (index % 3 == 1) {
+                    drawable = getResources().getDrawable(com.creedon.androidphotobrowser.R.drawable.photolibrary);
+                } else if (index % 3 == 2) {
+                    drawable = getResources().getDrawable(com.creedon.androidphotobrowser.R.drawable.nixplayalbum);
+                }
+                if (drawable != null) {
+
+                    int h = drawable.getIntrinsicHeight();
+                    int w = drawable.getIntrinsicWidth();
+                    drawable.setBounds(0, 0, w, h);
+                    imageButton.setBackgroundColor(0x00000000);
+                    imageButton.setCompoundDrawables(null, drawable, null, null);
+                    imageButton.setText(label);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        imageButton.setTextAppearance(f.getId("style", "AppTheme"));
+
+                    } else {
+                        imageButton.setTextAppearance(this, f.getId("style", "AppTheme"));
+                    }
+                }
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+                layoutParams.setMargins(10,10,10,10);
+                imageButton.setLayoutParams(layoutParams);
+                imageButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        JSONObject res = new JSONObject();
+                        try {
+                            res.put(KEY_ACTION, action);
+                            res.put(KEY_ID, photoDetail.getId());
+                            res.put(KEY_TYPE, photoDetail.getType());
+                            res.put(KEY_DESCRIPTION, "add photo to album");
+                            finishWithResult(res);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+                    }
+                });
+
+                sheetLinearLayout.addView(imageButton);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            index++;
+            if (index == 3)
+                break;
+        }
     }
 
     @Override
@@ -952,6 +1088,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             }
         };
     }
+
     private int exifToDegrees(int exifOrientation) {
         if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
             return 90;
