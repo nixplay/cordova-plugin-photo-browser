@@ -690,7 +690,7 @@ enum Orientation {
     dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
     dialogAppearance.titleColor            =  [UIColor blackColor];
     dialogAppearance.messageColor            =  [UIColor darkGrayColor];
-    
+
     __weak PhotoBrowserPlugin *weakSelf = self;
 #if DEBUG
     __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
@@ -705,8 +705,8 @@ enum Orientation {
     MKASOrientationConfig *portraitConfig = [[MKASOrientationConfig alloc] init];
     portraitConfig.titleAlignment = NSTextAlignmentLeft;
     portraitConfig.buttonTitleAlignment = MKActionSheetButtonTitleAlignment_left;
-    portraitConfig.buttonHeight = 100.0f;
-    portraitConfig.maxShowButtonCount = 5.5f;
+    portraitConfig.buttonHeight = 80.0f;
+    portraitConfig.maxShowButtonCount = 3.0f;
     
 //    MKASOrientationConfig *landscapeConfig = [[MKASOrientationConfig alloc] init];
 //    landscapeConfig.titleAlignment = NSTextAlignmentLeft;
@@ -725,7 +725,7 @@ enum Orientation {
         [dicArray addObject:dic];
     }
     
-    MKActionSheet *sheet = [[MKActionSheet alloc] initWithTitle:NSLocalizedString(@"Options", nil) objArray:dicArray buttonTitleKey:@"titleStr" imageKey:@"image" imageValueType:MKActionSheetButtonImageValueType_image selectType:MKActionSheetSelectType_common];
+    MKActionSheet *sheet = [[MKActionSheet alloc] initWithTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil) objArray:dicArray buttonTitleKey:@"titleStr" imageKey:@"image" imageValueType:MKActionSheetButtonImageValueType_image selectType:MKActionSheetSelectType_common];
     
     //    MKActionSheet *sheet = [[MKActionSheet alloc] initWithTitle:NSLocalizedString(@"Options", nil) buttonTitleArray:titles selectType:MKActionSheetSelectType_common];
     sheet.titleColor = [UIColor grayColor];
