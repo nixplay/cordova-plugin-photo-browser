@@ -75,7 +75,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private static final String KEY_ALBUM = "album";
     private static final String KEY_TYPE_NIXALBUM = "nixalbum";
     private static final int TAG_SELECT_ALL = 0x501;
-    private static final String DEFAULT_ACTION_ADDTOPLAYLIST = "addToPlaylist";
 
     private CallerThreadExecutor currentExecutor;
     private String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
