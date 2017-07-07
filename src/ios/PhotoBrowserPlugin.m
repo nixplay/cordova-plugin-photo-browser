@@ -876,7 +876,7 @@ enum Orientation {
                 [items addObject:flexSpace];
             }
         }else{
-            if([_type isEqualToString:KEY_TYPE_EMAIL]){
+            if([_actionSheetDicArray count] > 0){
                 UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
                 [items addObject:flexSpace];
                 //            UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
