@@ -193,6 +193,7 @@ enum Orientation {
     browser.startOnGrid = YES;
     browser.enableGrid = YES;
     browser.displayNavArrows = NO;
+    browser.alwaysShowControls = YES;
     
     [browser setCurrentPhotoIndex: photoIndex]; // Example: allows second image to be presented first
     
@@ -239,8 +240,9 @@ enum Orientation {
 }
 -(void) selectAllPhotos:(UIBarButtonItem *)sender{
     
-    UIBarButtonItem *deselectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Deselect All" style:UIBarButtonItemStylePlain target:self action:@selector(deselectAllPhotos:)];
+    UIBarButtonItem *deselectAllButton = [[UIBarButtonItem alloc] initWithTitle: NSLocalizedString(@"DESELECT_ALL", nil) style:UIBarButtonItemStylePlain target:self action:@selector(deselectAllPhotos:)];
     deselectAllButton.tag = SELECTALL_TAG;
+    deselectAllButton.tintColor = LIGHT_BLUE_COLOR;
     if(IS_TYPE_NIXALBUM){
         _browser.navigationItem.rightBarButtonItem = deselectAllButton;
     }else{
@@ -256,6 +258,7 @@ enum Orientation {
 -(void) deselectAllPhotos:(UIBarButtonItem *)sender{
     UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Select All" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
     selectAllButton.tag = SELECTALL_TAG;
+    selectAllButton.tintColor = LIGHT_BLUE_COLOR;
     if(IS_TYPE_NIXALBUM){
         _browser.navigationItem.rightBarButtonItem = selectAllButton;
     }else{
@@ -621,6 +624,9 @@ enum Orientation {
     //    [photoBrowser hideToolBar];
     _browser = photoBrowser;
     _gridViewController = gridController;
+    
+    gridController.automaticallyAdjustsScrollViewInsets = YES;
+    
     if(_rightBarbuttonItem != nil){
         photoBrowser.navigationItem.rightBarButtonItems = @[_rightBarbuttonItem];
         if(IS_TYPE_NIXALBUM){
