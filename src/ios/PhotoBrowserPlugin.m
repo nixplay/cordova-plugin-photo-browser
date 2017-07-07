@@ -38,6 +38,7 @@
 #define KEY_TYPE_ALBUM @"album"
 #define KEY_TYPE_PLAYLIST @"playlist"
 #define KEY_TYPE_NIXALBUM  @"nixalbum"
+#define KEY_TYPE_EMAIL  @"Email"
 #define KEY_LABEL  @"label"
 #define KEY_NAME @"name"
 #define KEY_ID @"id"
@@ -875,37 +876,26 @@ enum Orientation {
                 [items addObject:flexSpace];
             }
         }else{
-            UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
-            [items addObject:flexSpace];
-            //            UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
-            //            fixedSpace.width = 32; // To balance action button
-            
-            float margin = 3;
-            CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
-            UIButton *btn = [[UIButton alloc] initWithFrame: newFrame];
-            
-            //    [button setImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@.bundle/%@", NSStringFromClass([self class]), @"images/send.png"]] forState:UIControlStateNormal];
-            [btn setBackgroundColor:LIGHT_BLUE_COLOR];
-            btn.layer.cornerRadius = 5; // this value vary as per your desire
-            btn.clipsToBounds = YES;
-            [btn setTitle:NSLocalizedString(@"ADD_PHOTOS", nil) forState:UIControlStateNormal];
-            [btn addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
-            UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:btn];
-            
-            //            UIBarButtonItem * addPhotoButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"ADD_PHOTOS", nil) style:UIBarButtonItemStylePlain target:self action:@selector(m:)];
-            
-            [items addObject:addPhotoButton];
-            
-            
-            //            UIBarButtonItem * sendtoBarButton = [[UIBarButtonItem alloc] initWithImage:SEND_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(sendTo:)];
-            //            sendtoBarButton.tintColor = LIGHT_BLUE_COLOR;
-            //            [items addObject:sendtoBarButton];
-            [items addObject:flexSpace];
-            
-            //            _toolBar.translucent = NO;
-            _toolBar.barStyle = UIBarStyleDefault;
-            //            _toolBar.tintColor = [UIColor whiteColor];
-            _toolBar.barTintColor = [UIColor whiteColor];;
+            if([_type isEqualToString:KEY_TYPE_EMAIL]){
+                UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
+                [items addObject:flexSpace];
+                //            UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
+                //            fixedSpace.width = 32; // To balance action button
+                
+                float margin = 3;
+                CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
+                UIButton *btn = [[UIButton alloc] initWithFrame: newFrame];
+                [btn setBackgroundColor:LIGHT_BLUE_COLOR];
+                btn.layer.cornerRadius = 5; // this value vary as per your desire
+                btn.clipsToBounds = YES;
+                [btn setTitle:NSLocalizedString(@"ADD_PHOTOS", nil) forState:UIControlStateNormal];
+                [btn addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
+                UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:btn];
+                [items addObject:addPhotoButton];
+                [items addObject:flexSpace];
+                _toolBar.barStyle = UIBarStyleDefault;
+                _toolBar.barTintColor = [UIColor whiteColor];;
+            }
         }
         //
         //
