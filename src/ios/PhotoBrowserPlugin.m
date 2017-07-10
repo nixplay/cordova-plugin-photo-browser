@@ -23,6 +23,10 @@
 #import <SDWebImage/SDWebImageDownloaderOperation.h>
 #import <MBProgressHUD/MBProgressHUD.h>
 #import "AppDelegate+LockOrientation.h"
+//#import <GPActivityViewController/GPActivityViewController.h>
+#import "GPActivities.h"
+#import "GPActivityViewController.h"
+
 #define DEBUG 0
 #define MAX_CHARACTER 160
 #define VIEWCONTROLLER_TRANSITION_DURATION 0.2
@@ -684,20 +688,6 @@ enum Orientation {
      [bottomSheet showMenuFromViewController:_browser];
      
      */
-    
-    //MKActionsheet style not match
-    PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
-    PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
-    overlayAppearance.blurEnabled = NO;
-    overlayAppearance.blurRadius = 0;
-    overlayAppearance.opacity = 0.5;
-    dialogAppearance.titleTextAlignment     = NSTextAlignmentLeft;
-    dialogAppearance.messageTextAlignment   = NSTextAlignmentLeft;
-    dialogAppearance.titleFont              = [UIFont systemFontOfSize:20];
-    dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
-    dialogAppearance.titleColor            =  [UIColor blackColor];
-    dialogAppearance.messageColor            =  [UIColor darkGrayColor];
-
     __weak PhotoBrowserPlugin *weakSelf = self;
 #if DEBUG
     __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
@@ -709,6 +699,46 @@ enum Orientation {
     //    __block NSArray * icons = [_actionSheetDicArray valueForKey:KEY_ACTION];
     __block NSArray * icons = @[@"images/camera", @"images/photolibrary", @"images/nixplayalbum"];// [_actionSheetDicArray valueForKey:KEY_ACTION];
 #endif
+    NSMutableArray *activities = [NSMutableArray new];
+    for(int i = 0 ;i < [actions count]; i ++){
+        GPActivity* activity = [GPActivity customActivity:[actions objectAtIndex:i] actionHandler:^(GPActivity *activity, NSDictionary *userInfo) {
+            NSLog(@"Activity done: %@", activity);
+        }];
+        activity.title = [titles objectAtIndex:i];
+        activity.image = BUNDLE_UIIMAGE([icons objectAtIndex:i]);
+        
+        [activities addObject:activity];
+    }
+    
+    GPActivityViewController *controller = [[GPActivityViewController alloc] initWithActivities:activities completion:^(NSString *activityType, BOOL completed) {
+        if (completed) {
+            if (activityType) {
+                NSLog(@"Activity done: %@", activityType);
+            }
+        }
+    }];
+    [controller setTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil)];
+
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        [controller presentFromBarButton:sender animated:YES];
+    } else {
+        UIButton *button = (UIButton *)sender;
+        [controller presentFromRect:button.frame inView:button.superview animated:YES];
+    }
+
+    //MKActionsheet style not match
+    /*PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
+    PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
+    overlayAppearance.blurEnabled = NO;
+    overlayAppearance.blurRadius = 0;
+    overlayAppearance.opacity = 0.5;
+    dialogAppearance.titleTextAlignment     = NSTextAlignmentLeft;
+    dialogAppearance.messageTextAlignment   = NSTextAlignmentLeft;
+    dialogAppearance.titleFont              = [UIFont systemFontOfSize:20];
+    dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
+    dialogAppearance.titleColor            =  [UIColor blackColor];
+    dialogAppearance.messageColor            =  [UIColor darkGrayColor];
+
     MKASOrientationConfig *portraitConfig = [[MKASOrientationConfig alloc] init];
     portraitConfig.titleAlignment = NSTextAlignmentLeft;
     portraitConfig.buttonTitleAlignment = MKActionSheetButtonTitleAlignment_left;
@@ -761,7 +791,10 @@ enum Orientation {
         [pluginResult setKeepCallbackAsBool:NO];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
         [self photoBrowserDidFinishModalPresentation:_browser];
-    }];
+    }];*/
+//    STPopupController *popupController = [[STPopupController alloc] initWithRootViewController:[[BottomActionSheetViewController alloc] initWithNibName:@"BottomActionSheetViewController" bundle:nil]];
+//    popupController.style = STPopupStyleBottomSheet;
+//    [popupController presentInViewController:self.browser.navigationController];
     
     
 }
