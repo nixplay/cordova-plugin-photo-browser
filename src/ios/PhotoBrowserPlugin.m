@@ -703,12 +703,24 @@ enum Orientation {
     for(int i = 0 ;i < [actions count]; i ++){
         GPActivity* activity = [GPActivity customActivity:[actions objectAtIndex:i] actionHandler:^(GPActivity *activity, NSDictionary *userInfo) {
             NSLog(@"Activity done: %@", activity);
+            
+            NSMutableDictionary *dictionary = [NSMutableDictionary new];
+            [dictionary setValue:activity.activityType forKey: KEY_ACTION];
+            [dictionary setValue:@(_id) forKey: KEY_ID];
+            [dictionary setValue:_type forKey: KEY_TYPE];
+            
+            [dictionary setValue:@"add photo to album" forKey: @"description"];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+            [pluginResult setKeepCallbackAsBool:NO];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+            [self photoBrowserDidFinishModalPresentation:_browser];
         }];
         activity.title = [titles objectAtIndex:i];
-        activity.image = BUNDLE_UIIMAGE([icons objectAtIndex:i]);
+        activity.image = BUNDLE_UIIMAGE([icons objectAtIndex:i%[icons count]]);
         
         [activities addObject:activity];
     }
+    
     
     GPActivityViewController *controller = [[GPActivityViewController alloc] initWithActivities:activities completion:^(NSString *activityType, BOOL completed) {
         if (completed) {
@@ -717,6 +729,7 @@ enum Orientation {
             }
         }
     }];
+    
     [controller setTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil)];
 
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
