@@ -509,7 +509,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                             }
                             imageButton.setTextAppearance(this, f.getId("style", "AppTheme"));
                         }
-                        imageButton.setTextSize(12);
+
                     }
                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, weight);
                     layoutParams.setMargins(10, 10, 10, 10);
