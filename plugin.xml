@@ -28,7 +28,7 @@
     <pod name="MBProgressHUD"/>
     <pod name="IQKeyboardManager"/>
     <pod name="GPActivityViewController" git="https://github.com/nixplay/GPActivityViewController"/>
-
+    <pod name="Masonry"/>
     
     <resource-file src="src/ios/PhotoBrowserPlugin.bundle"/>
     <resource-file src="src/ios/TextInputViewController.xib"/>
