@@ -732,12 +732,12 @@ enum Orientation {
     
     [controller setTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil)];
 
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        [controller presentFromBarButton:sender animated:YES];
-    } else {
+//    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+//        [controller presentFromBarButton:sender animated:YES];
+//    } else {
         UIButton *button = (UIButton *)sender;
         [controller presentFromRect:button.frame inView:button.superview animated:YES];
-    }
+//    }
 
     //MKActionsheet style not match
     /*PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
