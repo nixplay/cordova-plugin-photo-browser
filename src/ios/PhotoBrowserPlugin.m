@@ -585,6 +585,9 @@ enum Orientation {
         
         
     }];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT messageAsString:@"user cancelled"];
+    [pluginResult setKeepCallbackAsBool:NO];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
 }
 
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag{
