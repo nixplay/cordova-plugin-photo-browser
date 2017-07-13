@@ -171,27 +171,27 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             //TODO build aaction menu from custom data
 
             int index = 0;
-            if (photoDetail.getActionSheet() != null) {
-                for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
-
-                    String label = actionSheet.getLabel();
-                    String action = actionSheet.getAction();
-                    if (action.equals(DEFAULT_ACTION_SELECT)) {
-                        MenuItem menuItem = menu.add(0, index, 1, label);
-                        //TODO any better way to create menu/menu icon?
-
-                        menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add") || action.equals(DEFAULT_ACTION_SELECT)) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
-                        if (index == 0 && label.toLowerCase().contains("add")) {
-                            menuItem.setIcon(f.getId("drawable", "ic_action_add"));
-                        }
-                    }
-                    index++;
-
-                }
-            }else{
+//            if (photoDetail.getActionSheet() != null) {
+//                for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
+//
+//                    String label = actionSheet.getLabel();
+//                    String action = actionSheet.getAction();
+//                    if (action.equals(DEFAULT_ACTION_SELECT)) {
+//                        MenuItem menuItem = menu.add(0, index, 1, label);
+//                        //TODO any better way to create menu/menu icon?
+//
+//                        menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add") || action.equals(DEFAULT_ACTION_SELECT)) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
+//                        if (index == 0 && label.toLowerCase().contains("add")) {
+//                            menuItem.setIcon(f.getId("drawable", "ic_action_add"));
+//                        }
+//                    }
+//                    index++;
+//
+//                }
+//            }else{
                 MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
                 menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-            }
+//            }
             setupToolBar();
         } else {
             if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
@@ -230,6 +230,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         // Handle item selection
         int id = item.getItemId();
         if(id == TAG_SELECT){
+            if(!selectionMode) {
+                setupSelectionMode(true);
+            }
 
         }else if (id == TAG_SELECT_ALL) {
             if (item.getTitle().equals(getString(f.getId("string", "SELECT_ALL")))) {
