@@ -170,30 +170,32 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             //TODO build aaction menu from custom data
 
             int index = 0;
-            for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
+            if (photoDetail.getActionSheet() != null) {
+                for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
 
-                String label = actionSheet.getLabel();
-                String action = actionSheet.getAction();
-                if (action.equals(DEFAULT_ACTION_SELECT)) {
-                    MenuItem menuItem = menu.add(0, index, 1, label);
-                    //TODO any better way to create menu/menu icon?
+                    String label = actionSheet.getLabel();
+                    String action = actionSheet.getAction();
+                    if (action.equals(DEFAULT_ACTION_SELECT)) {
+                        MenuItem menuItem = menu.add(0, index, 1, label);
+                        //TODO any better way to create menu/menu icon?
 
-                    menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add") || action.equals(DEFAULT_ACTION_SELECT)) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
-                    if (index == 0 && label.toLowerCase().contains("add")) {
-                        menuItem.setIcon(f.getId("drawable", "ic_action_add"));
+                        menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add") || action.equals(DEFAULT_ACTION_SELECT)) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
+                        if (index == 0 && label.toLowerCase().contains("add")) {
+                            menuItem.setIcon(f.getId("drawable", "ic_action_add"));
+                        }
                     }
-                }
-                index++;
+                    index++;
 
+                }
             }
             setupToolBar();
         } else {
-            if(photoDetail.getType().equals(KEY_TYPE_NIXALBUM)){
+            if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
                 MenuItem menuItem = menu.add(0, TAG_SELECT_ALL, 1, getString(f.getId("string", "SELECT_ALL")));
                 //TODO any better way to create menu/menu icon?
                 menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-            }else {
+            } else {
                 MenuInflater inflater = getMenuInflater();
                 inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
                 setupToolBar();
@@ -223,23 +225,23 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         int id = item.getItemId();
-        if(id == TAG_SELECT_ALL){
-            if(item.getTitle().equals(getString(f.getId("string","SELECT_ALL")))) {
+        if (id == TAG_SELECT_ALL) {
+            if (item.getTitle().equals(getString(f.getId("string", "SELECT_ALL")))) {
                 item.setTitle(getString(f.getId("string", "DESELECT_ALL")));
                 for (int i = 0; i < selections.size(); i++) {
                     selections.set(i, "1");
                 }
                 rcAdapter.notifyDataSetChanged();
 
-            }else{
-                item.setTitle(getString(f.getId("string","SELECT_ALL")));
+            } else {
+                item.setTitle(getString(f.getId("string", "SELECT_ALL")));
                 for (int i = 0; i < selections.size(); i++) {
                     selections.set(i, "0");
                 }
                 rcAdapter.notifyDataSetChanged();
             }
 
-        }else if (id == android.R.id.home) {
+        } else if (id == android.R.id.home) {
             if (!selectionMode || photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
                 finish();
             }
@@ -267,41 +269,42 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //            }
 //        }
         else if (item.getTitle() != null) {
+            if (photoDetail.getActionSheet() != null) {
+                for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
 
-            for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
+                    String label = actionSheet.getLabel();
+                    String action = actionSheet.getAction();
+                    if (label.equals(item.getTitle())) {
 
-                String label = actionSheet.getLabel();
-                String action = actionSheet.getAction();
-                if (label.equals(item.getTitle())) {
-
-                    if (action.equals(DEFAULT_ACTION_ADD)) {
-                        try {
-                            addPhotos();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        if (action.equals(DEFAULT_ACTION_ADD)) {
+                            try {
+                                addPhotos();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        } else if (action.equals(DEFAULT_ACTION_RENAME)) {
+                            editAlbumName();
+                        } else if (action.equals(DEFAULT_ACTION_ADDTOPLAYLIST)) {
+                            try {
+                                addAlbumToPlaylist();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        } else if (action.equals(DEFAULT_ACTION_DELETE)) {
+                            deleteAlbum();
+                        } else if (action.equals(DEFAULT_ACTION_SELECT)) {
+                            setupSelectionMode(!selectionMode);
+                        } else if (action.equals(DEFAULT_ACTION_ADDTOFRAME)) {
+                            try {
+                                addAlbumToFrame();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    } else if (action.equals(DEFAULT_ACTION_RENAME)) {
-                        editAlbumName();
-                    } else if (action.equals(DEFAULT_ACTION_ADDTOPLAYLIST)) {
-                        try {
-                            addAlbumToPlaylist();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    } else if (action.equals(DEFAULT_ACTION_DELETE)) {
-                        deleteAlbum();
-                    } else if (action.equals(DEFAULT_ACTION_SELECT)) {
-                        setupSelectionMode(!selectionMode);
-                    } else if (action.equals(DEFAULT_ACTION_ADDTOFRAME)) {
-                        try {
-                            addAlbumToFrame();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        break;
                     }
-                    break;
-                }
 
+                }
             }
         } else {
             return super.onOptionsItemSelected(item);
@@ -434,7 +437,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
         super.init();
 
-        if(photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
             setupSelectionMode(true);
         }
 
@@ -446,19 +449,19 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         TextView titleTextView = (TextView) findViewById(f.getId("id", "titleTextView"));
         titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
         final Button floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
-        floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ?  "ADD_PHOTOS_TO_ALBUM" : "ADD_PHOTOS_TO_PLAYLIST")));
+        floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS_TO_ALBUM" : "ADD_PHOTOS_TO_PLAYLIST")));
         if (floatingActionButton != null) {
             floatingActionButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    if(photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                    if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
                         try {
                             sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                    }else{
+                    } else {
 
                         if (mBottomSheetBehavior1.getState() != BottomSheetBehavior.STATE_EXPANDED) {
                             mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -473,7 +476,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
 
         LinearLayout sheetLinearLayout = (LinearLayout) findViewById(f.getId("id", "sheetLinearLayout"));
-        if(photoDetail.getActionSheet() != null) {
+        if (photoDetail.getActionSheet() != null) {
             int index = 0;
             float weight = 1.0f / photoDetail.getActionSheet().size();
             for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
