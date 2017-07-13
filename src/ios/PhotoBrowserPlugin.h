@@ -33,6 +33,7 @@
 @property (nonatomic, retain) NSArray *thumbs;
 @property (nonatomic, retain) NSMutableArray *data;
 @property (nonatomic, retain) UIToolbar *toolBar;
+@property (nonatomic, retain) UIColor *titleViewColor;
 @property (nonatomic, retain) UINavigationController *navigationController;
 @property (nonatomic, retain) MWGridViewController* gridViewController;
 @property (nonatomic, retain) MWPhotoBrowser *browser;

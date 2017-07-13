@@ -60,6 +60,7 @@
 #define BIN_UIIMAGE BUNDLE_UIIMAGE(@"images/bin.png")
 
 #define LIGHT_BLUE_COLOR [UIColor colorWithRed:(96.0f/255.0f)  green:(178.0f/255.0f)  blue:(232.0f/255.0f) alpha:1.0]
+//#define LIGHT_BLUE_COLOR [UIColor whiteColor]
 #define IS_TYPE_ALBUM ([_type isEqualToString:KEY_TYPE_ALBUM])
 #define IS_TYPE_NIXALBUM ([_type isEqualToString:KEY_TYPE_NIXALBUM])
 #define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil)]
@@ -627,10 +628,35 @@ enum Orientation {
     [_selections replaceObjectAtIndex:index withObject:[NSNumber numberWithBool:selected]];
     NSLog(@"photoAtIndex %lu selectedChanged %i", (unsigned long)index , selected);
 }
+
+- (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser hideGridController:(MWGridViewController*)gridController{
+    _browser = photoBrowser;
+    _gridViewController = nil;
+    
+    if(_textView != nil){
+        [_textView removeFromSuperview];
+    }
+    photoBrowser.navigationItem.rightBarButtonItems = nil;
+    photoBrowser.navigationController.navigationItem.rightBarButtonItems = nil;
+    [photoBrowser showToolBar];
+    photoBrowser.alwaysShowControls = NO;
+    
+    _browser.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+    _toolBar.tintColor = [UIColor whiteColor];
+    _toolBar.barTintColor  = [UIColor blackColor];
+    _browser.navigationController.navigationBar.tintColor = [UIColor whiteColor];
+    _browser.navigationItem.titleView.tintColor = [UIColor whiteColor];
+    _titleViewColor = [UIColor whiteColor];
+    photoBrowser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString) color:_titleViewColor];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
+    return YES;
+}
+
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser showGridController:(MWGridViewController*)gridController{
     //    [photoBrowser hideToolBar];
     _browser = photoBrowser;
     _gridViewController = gridController;
+    
     
     gridController.automaticallyAdjustsScrollViewInsets = YES;
     
@@ -650,6 +676,16 @@ enum Orientation {
     }
     //    [_browser hideToolBar];
     [_browser showToolBar];
+    photoBrowser.alwaysShowControls = YES;
+    
+    _browser.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
+    _browser.navigationController.navigationBar.tintColor = LIGHT_BLUE_COLOR;
+    _toolBar.tintColor = LIGHT_BLUE_COLOR;
+    _toolBar.barTintColor  = [UIColor whiteColor];
+    _browser.navigationItem.titleView.tintColor = [UIColor blackColor];
+    _titleViewColor = [UIColor blackColor];
+    photoBrowser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString) color: _titleViewColor];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     return YES;
 }
 - (void) addPhotos:(id) sender{
@@ -839,18 +875,6 @@ enum Orientation {
     }
     
 }
-- (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser hideGridController:(MWGridViewController*)gridController{
-    _browser = photoBrowser;
-    _gridViewController = nil;
-    
-    if(_textView != nil){
-        [_textView removeFromSuperview];
-    }
-    photoBrowser.navigationItem.rightBarButtonItems = nil;
-    photoBrowser.navigationController.navigationItem.rightBarButtonItems = nil;
-    [photoBrowser showToolBar];
-    return YES;
-}
 
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser setNavBarAppearance:(UINavigationBar *)navigationBar{
     
@@ -859,15 +883,15 @@ enum Orientation {
     navigationBar.barStyle = UIBarStyleDefault;
     //    navigationBar.translucent = YES;
     navigationBar.barTintColor = [UIColor whiteColor];
-    photoBrowser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
+    photoBrowser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString) color:_titleViewColor];
     return YES;
 }
 
--(UIView*) setTitle:(NSString*)title subtitle:(NSString*)subtitle {
+-(UIView*) setTitle:(NSString*)title subtitle:(NSString*)subtitle color:(UIColor *)color{
     UILabel *titleLabel = [[UILabel alloc] initWithFrame: CGRectMake(0,-5,100, 18)];
     
     titleLabel.backgroundColor = [UIColor clearColor];
-    titleLabel.textColor = [UIColor blackColor];
+    titleLabel.textColor = color;
     titleLabel.font = [UIFont boldSystemFontOfSize: 17];
     titleLabel.text = title;
     titleLabel.numberOfLines = 1;
@@ -877,7 +901,7 @@ enum Orientation {
     
     UILabel *subtitleLabel = [[UILabel alloc] initWithFrame: CGRectMake(0,18,0,0)];
     subtitleLabel.backgroundColor = [UIColor clearColor];
-    subtitleLabel.textColor = [UIColor blackColor];
+    subtitleLabel.textColor = color;
     subtitleLabel.font = [UIFont systemFontOfSize:12];
     subtitleLabel.text = subtitle;
     subtitleLabel.textAlignment = NSTextAlignmentCenter;
@@ -1032,7 +1056,7 @@ enum Orientation {
         [items addObject:deleteBarButton];
         _toolBar.translucent = NO;
         _toolBar.barStyle = UIBarStyleDefault;
-        _toolBar.tintColor = LIGHT_BLUE_COLOR;
+//        _toolBar.tintColor = LIGHT_BLUE_COLOR;
         //        _toolBar.barTintColor = [UIColor whiteColor];
         return items;
     }
@@ -1040,7 +1064,7 @@ enum Orientation {
     
 }
 -(void)onOrientationChanged:(id)orientation{
-    _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
+    _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString) color: _titleViewColor];
 }
 
 -(void) downloadPhoto:(id)sender{
@@ -1295,7 +1319,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         self.thumbs = tempThumbs;
         _selections = tempSelections;
         if([targetPhoto valueForKey:KEY_ID] != nil){
-            _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
+            _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString) color: _titleViewColor];
             NSMutableDictionary *dictionary = [NSMutableDictionary new];
             [dictionary setValue:@[[targetPhoto valueForKey:KEY_ID]] forKey: KEY_PHOTOS];
             [dictionary setValue:KEY_DELETEPHOTOS forKey: KEY_ACTION];
@@ -1348,7 +1372,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                 [_browser setCurrentPhotoIndex:0];
             }
             
-            _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
+            _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString) color: _titleViewColor];
             NSMutableDictionary *dictionary = [NSMutableDictionary new];
             [dictionary setValue:fetchArray forKey: KEY_PHOTOS];
             [dictionary setValue:KEY_DELETEPHOTOS forKey: KEY_ACTION];
