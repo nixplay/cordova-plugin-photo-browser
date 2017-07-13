@@ -769,7 +769,7 @@ enum Orientation {
         }
     }];
     
-    [controller setTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil)];
+    [controller setTitle:([_type isEqualToString:KEY_ALBUM])? NSLocalizedString(@"ADD_PHOTOS_TO_ALBUM", nil) : NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil)];
     
     //    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
     //        [controller presentFromBarButton:sender animated:YES];
@@ -987,7 +987,7 @@ enum Orientation {
                 [btn setBackgroundColor:LIGHT_BLUE_COLOR];
                 btn.layer.cornerRadius = 5; // this value vary as per your desire
                 btn.clipsToBounds = YES;
-                [btn setTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil) forState:UIControlStateNormal];
+                [btn setTitle:([_type isEqualToString:KEY_ALBUM])? NSLocalizedString(@"ADD_PHOTOS_TO_ALBUM", nil) : NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil) forState:UIControlStateNormal];
                 [btn addTarget:self action:@selector(addPhotosToPlaylist:) forControlEvents:UIControlEventTouchUpInside];
                 UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:btn];
                 [items addObject:addPhotoButton];
