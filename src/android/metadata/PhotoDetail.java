@@ -217,13 +217,6 @@ public class PhotoDetail implements Serializable, Parcelable {
         photoDataListener = _photoDataListener;
     }
 
-//    public boolean onSendButtonClick(List<String>photoIDs) {
-//        if (photoDataListener != null) {
-//            return photoDataListener.onSendButtonClick(photoIDs, getId().toString(), getType());
-//        }
-//        return false;
-//    }
-
     public void setCaptions(List<String> captions) {
         this.captions = captions;
     }
@@ -255,6 +248,5 @@ public class PhotoDetail implements Serializable, Parcelable {
 
         void onPhotoDeleted(ArrayList<String>  deletedData, String id, String type);
 
-//        boolean onSendButtonClick(List<String>photoIDs, String albumId, String type);
     }
 }

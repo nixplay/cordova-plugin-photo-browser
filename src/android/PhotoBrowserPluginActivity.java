@@ -74,6 +74,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public static final String KEY_ID = "id";
     private static final String KEY_ALBUM = "album";
     private static final String KEY_TYPE_NIXALBUM = "nixalbum";
+    private static final int TAG_SELECT = 0x401;
     private static final int TAG_SELECT_ALL = 0x501;
 
     private CallerThreadExecutor currentExecutor;
@@ -187,6 +188,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     index++;
 
                 }
+            }else{
+                MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
+                menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
             }
             setupToolBar();
         } else {
@@ -225,7 +229,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         int id = item.getItemId();
-        if (id == TAG_SELECT_ALL) {
+        if(id == TAG_SELECT){
+
+        }else if (id == TAG_SELECT_ALL) {
             if (item.getTitle().equals(getString(f.getId("string", "SELECT_ALL")))) {
                 item.setTitle(getString(f.getId("string", "DESELECT_ALL")));
                 for (int i = 0; i < selections.size(); i++) {
@@ -1029,7 +1035,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     @Override
-    public void onSendButtonClick(JSONObject data) {
+    public void onEditButtonClick(JSONObject data) {
         ArrayList<String> ids = new ArrayList<String>();
         try {
             ids.add(data.getString("id"));

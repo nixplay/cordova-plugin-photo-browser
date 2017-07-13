@@ -107,6 +107,7 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
                     result.setKeepCallback(true);
                     PhotoBrowserPlugin.this.callbackContext.sendPluginResult(result);
                 }
+
             });
 
             this.showGallery(options, callbackContext);
