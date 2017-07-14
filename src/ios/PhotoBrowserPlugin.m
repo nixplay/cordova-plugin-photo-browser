@@ -30,6 +30,7 @@
 #define DEBUG 0
 #define MAX_CHARACTER 160
 #define VIEWCONTROLLER_TRANSITION_DURATION 0.2
+#define TEXT_SIZE 16
 #define DEFAULT_ACTION_ADD @"add"
 #define DEFAULT_ACTION_SELECT @"select"
 #define DEFAULT_ACTION_ADDTOPLAYLIST @"addToPlaylist"
@@ -59,6 +60,8 @@
 #define CLOSE_UIIMAGE BUNDLE_UIIMAGE(@"images/close.png")
 #define BIN_UIIMAGE BUNDLE_UIIMAGE(@"images/bin.png")
 
+#define BRIGHTNESS 74.0f/255.0f
+#define TITLE_GRAY_COLOR [UIColor colorWithRed:BRIGHTNESS green:BRIGHTNESS blue:BRIGHTNESS alpha:1.0]
 #define LIGHT_BLUE_COLOR [UIColor colorWithRed:(96.0f/255.0f)  green:(178.0f/255.0f)  blue:(232.0f/255.0f) alpha:1.0]
 #define IS_TYPE_ALBUM ([_type isEqualToString:KEY_TYPE_ALBUM])
 #define IS_TYPE_NIXALBUM ([_type isEqualToString:KEY_TYPE_NIXALBUM])
@@ -210,17 +213,17 @@ enum Orientation {
     
     if(IS_TYPE_NIXALBUM){
         UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT_ALL", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
+        [newAddBackButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
         newAddBackButton.tag = 0;
-        newAddBackButton.tintColor = LIGHT_BLUE_COLOR;
+        
         browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
         _rightBarbuttonItem = newAddBackButton;
         _gridViewController.selectionMode = _browser.displaySelectionButtons = YES;
         [_gridViewController.collectionView reloadData];
     }else{
         UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
+        [newAddBackButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
         newAddBackButton.tag = 0;
-        newAddBackButton.tintColor = LIGHT_BLUE_COLOR;
-        
         //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
         //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
         browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
@@ -245,8 +248,9 @@ enum Orientation {
 -(void) selectAllPhotos:(UIBarButtonItem *)sender{
     
     UIBarButtonItem *deselectAllButton = [[UIBarButtonItem alloc] initWithTitle: NSLocalizedString(@"DESELECT_ALL", nil) style:UIBarButtonItemStylePlain target:self action:@selector(deselectAllPhotos:)];
+    [deselectAllButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
     deselectAllButton.tag = SELECTALL_TAG;
-    deselectAllButton.tintColor = LIGHT_BLUE_COLOR;
+    
     if(IS_TYPE_NIXALBUM){
         _browser.navigationItem.rightBarButtonItem = deselectAllButton;
     }else{
@@ -262,7 +266,8 @@ enum Orientation {
 -(void) deselectAllPhotos:(UIBarButtonItem *)sender{
     UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Select All" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
     selectAllButton.tag = SELECTALL_TAG;
-    selectAllButton.tintColor = LIGHT_BLUE_COLOR;
+    [selectAllButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
+    
     if(IS_TYPE_NIXALBUM){
         _browser.navigationItem.rightBarButtonItem = selectAllButton;
     }else{
@@ -437,8 +442,19 @@ enum Orientation {
 }
 
 -(void) buildDialogWithCancelText:(NSString*)cancelText confirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
-    __weak PhotoBrowserPlugin *weakSelf = self;
     
+    PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
+    PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
+    overlayAppearance.blurEnabled = NO;
+    overlayAppearance.blurRadius = 0;
+    overlayAppearance.opacity = 0.5;
+    dialogAppearance.titleTextAlignment     = NSTextAlignmentLeft;
+    dialogAppearance.messageTextAlignment   = NSTextAlignmentLeft;
+    dialogAppearance.titleFont              = [UIFont systemFontOfSize:TEXT_SIZE];
+    dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
+    dialogAppearance.titleColor            =  TITLE_GRAY_COLOR;
+    dialogAppearance.messageColor            =  [UIColor darkGrayColor];
+
     
     PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
                                                     message:text
@@ -454,7 +470,9 @@ enum Orientation {
     
     DefaultButton *ok = [[DefaultButton alloc]initWithTitle:confirmtext  height:60 dismissOnTap:YES action:action];
     [ok setBackgroundColor:LIGHT_BLUE_COLOR];
-    [ok setTitleColor:[UIColor whiteColor]];
+    [ok setAttributedTitle:[self attributedString:confirmtext WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
+    [cancel setAttributedTitle:[self attributedString:cancelText WithSize:TEXT_SIZE color:[UIColor grayColor]] forState:UIControlStateNormal];
+    
     [popup addButtons: @[cancel, ok]];
     _dialogView = popup;
     [_browser.navigationController presentViewController:popup animated:YES completion:nil];
@@ -480,8 +498,10 @@ enum Orientation {
     DefaultButton *ok = [[DefaultButton alloc]initWithTitle:NSLocalizedString(@"OK", nil)  height:60 dismissOnTap:YES action:^{
         action(textViewVC.textInputField.text);
     }];
-    [ok setTitleColor:[UIColor whiteColor]];
+    
     [ok setBackgroundColor:LIGHT_BLUE_COLOR];
+    [ok setAttributedTitle:[self attributedString:NSLocalizedString(@"OK", nil) WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
+    [cancel setAttributedTitle:[self attributedString:NSLocalizedString(@"CANCEL", nil) WithSize:TEXT_SIZE color:[UIColor grayColor]] forState:UIControlStateNormal];
     
     [popup addButtons: @[cancel, ok]];
     _dialogView = popup;
@@ -867,20 +887,16 @@ enum Orientation {
 -(UIView*) setTitle:(NSString*)title subtitle:(NSString*)subtitle {
     UILabel *titleLabel = [[UILabel alloc] initWithFrame: CGRectMake(0,-5,100, 18)];
     
+    [titleLabel setAttributedText:[self attributedString:title WithSize:TEXT_SIZE color:TITLE_GRAY_COLOR]];
     titleLabel.backgroundColor = [UIColor clearColor];
-    titleLabel.textColor = [UIColor blackColor];
-    titleLabel.font = [UIFont boldSystemFontOfSize: 17];
-    titleLabel.text = title;
     titleLabel.numberOfLines = 1;
     titleLabel.minimumScaleFactor = 0.8f;
     titleLabel.textAlignment = NSTextAlignmentCenter;
     [titleLabel sizeToFit];
     
     UILabel *subtitleLabel = [[UILabel alloc] initWithFrame: CGRectMake(0,18,0,0)];
+    [subtitleLabel setAttributedText:[self attributedString:subtitle WithSize:12 color:TITLE_GRAY_COLOR]];
     subtitleLabel.backgroundColor = [UIColor clearColor];
-    subtitleLabel.textColor = [UIColor blackColor];
-    subtitleLabel.font = [UIFont systemFontOfSize:12];
-    subtitleLabel.text = subtitle;
     subtitleLabel.textAlignment = NSTextAlignmentCenter;
     [subtitleLabel sizeToFit];
     
@@ -960,13 +976,14 @@ enum Orientation {
                 UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
                 [items addObject:flexSpace];
                 CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
-                UIButton *btn = [[UIButton alloc] initWithFrame: newFrame];
-                [btn setBackgroundColor:LIGHT_BLUE_COLOR];
-                btn.layer.cornerRadius = 5; // this value vary as per your desire
-                btn.clipsToBounds = YES;
-                [btn setTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil) forState:UIControlStateNormal];
-                [btn addTarget:self action:@selector(addPhotosToPlaylist:) forControlEvents:UIControlEventTouchUpInside];
-                UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:btn];
+                UIButton *button = [[UIButton alloc] initWithFrame: newFrame];
+                [button setBackgroundColor:LIGHT_BLUE_COLOR];
+                button.layer.cornerRadius = 2; // this value vary as per your desire
+                button.clipsToBounds = YES;
+                [button setTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil) forState:UIControlStateNormal];
+                
+                [button addTarget:self action:@selector(addPhotosToPlaylist:) forControlEvents:UIControlEventTouchUpInside];
+                UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:button];
                 [items addObject:addPhotoButton];
                 [items addObject:flexSpace];
             }
@@ -979,13 +996,15 @@ enum Orientation {
                 
                 float margin = 3;
                 CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
-                UIButton *btn = [[UIButton alloc] initWithFrame: newFrame];
-                [btn setBackgroundColor:LIGHT_BLUE_COLOR];
-                btn.layer.cornerRadius = 5; // this value vary as per your desire
-                btn.clipsToBounds = YES;
-                [btn setTitle:NSLocalizedString(@"ADD_PHOTOS", nil) forState:UIControlStateNormal];
-                [btn addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
-                UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:btn];
+                UIButton *button = [[UIButton alloc] initWithFrame: newFrame];
+                [button setBackgroundColor:LIGHT_BLUE_COLOR];
+                button.layer.cornerRadius = 2; // this value vary as per your desire
+                button.clipsToBounds = YES;
+                
+                [button setAttributedTitle:[self attributedString: NSLocalizedString(@"ADD_PHOTOS", nil) WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
+
+                [button addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
+                UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:button];
                 [items addObject:addPhotoButton];
                 [items addObject:flexSpace];
                 _toolBar.barStyle = UIBarStyleDefault;
@@ -1458,5 +1477,20 @@ UIImage* rotate(UIImage* src, enum Orientation orientation)
     UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return newImage;
+}
+
+-(NSAttributedString *) attributedString:(NSString*)string WithSize:(NSInteger)size color:(UIColor*)color{
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc]init];
+    
+    NSDictionary *dictAttr0 = [self attributedDirectoryWithSize:size color:color];
+    NSAttributedString *attr0 = [[NSAttributedString alloc]initWithString:string attributes:dictAttr0];
+    [attributedString appendAttributedString:attr0];
+    return attributedString;
+}
+
+-(NSDictionary *) attributedDirectoryWithSize:(NSInteger)size color:(UIColor*)color{
+    NSDictionary *dictAttr0 = @{NSFontAttributeName:[UIFont systemFontOfSize:size],
+                                NSForegroundColorAttributeName:color};
+    return dictAttr0;
 }
 @end

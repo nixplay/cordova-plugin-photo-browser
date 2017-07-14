@@ -62,7 +62,6 @@ import java.util.Date;
 import java.util.List;
 
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
-import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION_SEND;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_DESCRIPTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_PHOTOS;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_TYPE;
@@ -448,6 +447,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
             setupSelectionMode(true);
+            findViewById(f.getId("id","floatingButton")).setVisibility(View.VISIBLE);
         }
 
         View bottomSheet = findViewById(f.getId("id", "bottom_sheet1"));
@@ -1037,29 +1037,29 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         imageViewer.onDismiss();
     }
 
-    @Override
-    public void onEditButtonClick(JSONObject data) {
-        ArrayList<String> ids = new ArrayList<String>();
-        try {
-            ids.add(data.getString("id"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JSONObject res = new JSONObject();
-        try {
-
-            res.put(KEY_PHOTOS, new JSONArray(ids));
-            res.put(KEY_ACTION, KEY_ACTION_SEND);
-            res.put(KEY_ID, photoDetail.getId());
-            res.put(KEY_TYPE, photoDetail.getType());
-            res.put(KEY_DESCRIPTION, "send photos to destination");
-            finishWithResult(res);
-        } catch (JSONException e) {
-            e.printStackTrace();
-
-        }
-    }
+//    @Override
+//    public void onEditButtonClick(JSONObject data) {
+//        ArrayList<String> ids = new ArrayList<String>();
+//        try {
+//            ids.add(data.getString("id"));
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//
+//        JSONObject res = new JSONObject();
+//        try {
+//
+//            res.put(KEY_PHOTOS, new JSONArray(ids));
+//            res.put(KEY_ACTION, KEY_ACTION_SEND);
+//            res.put(KEY_ID, photoDetail.getId());
+//            res.put(KEY_TYPE, photoDetail.getType());
+//            res.put(KEY_DESCRIPTION, "send photos to destination");
+//            finishWithResult(res);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//
+//        }
+//    }
 
     @Override
     public void didEndEditing(JSONObject data, String s) {
