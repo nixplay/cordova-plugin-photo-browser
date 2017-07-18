@@ -227,7 +227,7 @@ enum Orientation {
         //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
         //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
         browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
-        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
+//        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
         //    _addAttachButton = addAttachButton;
         _rightBarbuttonItem = newAddBackButton;
     }
@@ -1058,9 +1058,6 @@ enum Orientation {
     }
     
     
-}
--(void)onOrientationChanged:(id)orientation{
-    _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
 }
 
 -(void) downloadPhoto:(id)sender{
