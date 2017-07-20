@@ -15,7 +15,10 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
+import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -45,6 +48,7 @@ import com.facebook.imagepipeline.image.CloseableBitmap;
 import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.rengwuxian.materialedittext.MaterialAutoCompleteTextView;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import org.json.JSONArray;
@@ -75,6 +79,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private static final String KEY_TYPE_NIXALBUM = "nixalbum";
     private static final int TAG_SELECT = 0x401;
     private static final int TAG_SELECT_ALL = 0x501;
+    private static final int MAX_CHARACTOR = 160;
 
     private CallerThreadExecutor currentExecutor;
     private String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -188,8 +193,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //
 //                }
 //            }else{
-                MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
-                menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
+            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 //            }
             setupToolBar();
         } else {
@@ -228,12 +233,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         int id = item.getItemId();
-        if(id == TAG_SELECT){
-            if(!selectionMode) {
+        if (id == TAG_SELECT) {
+            if (!selectionMode) {
                 setupSelectionMode(true);
             }
 
-        }else if (id == TAG_SELECT_ALL) {
+        } else if (id == TAG_SELECT_ALL) {
             if (item.getTitle().equals(getString(f.getId("string", "SELECT_ALL")))) {
                 item.setTitle(getString(f.getId("string", "DESELECT_ALL")));
                 for (int i = 0; i < selections.size(); i++) {
@@ -447,7 +452,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
             setupSelectionMode(true);
-            findViewById(f.getId("id","floatingButton")).setVisibility(View.VISIBLE);
+            findViewById(f.getId("id", "floatingButton")).setVisibility(View.VISIBLE);
         }
 
         View bottomSheet = findViewById(f.getId("id", "bottom_sheet1"));
@@ -483,6 +488,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 }
             });
         }
+
 
         LinearLayout sheetLinearLayout = (LinearLayout) findViewById(f.getId("id", "sheetLinearLayout"));
         if (photoDetail.getActionSheet() != null) {
@@ -1064,6 +1070,34 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     public void didEndEditing(JSONObject data, String s) {
         photoDetail.setCaption(getCurrentPosition(), s);
+    }
+
+    @Override
+    public void onInitTextView(final MaterialAutoCompleteTextView editText) {
+
+        InputFilter[] filterArray = new InputFilter[1];
+        filterArray[0] = new InputFilter.LengthFilter(MAX_CHARACTOR);
+        editText.setFilters(filterArray);
+        editText.setFloatingLabelText(getString(f.getId("string", "ADD_CAPTION")));
+        editText.addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        editText.setFloatingLabelText(getString(f.getId("string", "ADD_CAPTION")) + "(" + charSequence.length() + "/" + MAX_CHARACTOR + ")");
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+
+                    }
+                }
+        );
+
     }
 
     void finishWithResult(JSONObject result) {
