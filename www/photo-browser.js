@@ -1,4 +1,3 @@
-cordova.define("cordova-plugin-photo-browser.PhotoBrowserPlugin", function(require, exports, module) {
 //
 // MWPhotoBrowser.js
 //
@@ -25,5 +24,3 @@ PhotoBrowserPlugin.prototype.showBrowser = function(images, successCallback, err
 var photoBrowserPlugin = new PhotoBrowserPlugin();
 
 module.exports = photoBrowserPlugin;
-
-});
