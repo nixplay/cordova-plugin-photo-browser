@@ -124,7 +124,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
 
     };
-    private BottomSheetBehavior<View> mBottomSheetBehavior1;
+    private BottomSheetBehavior<View> mBottomSheetBehavior;
+    private View mask;
 //    private OkHttpClient globalOkHttpClient3;
 
 
@@ -184,6 +185,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //                        MenuItem menuItem = menu.add(0, index, 1, label);
 //                        //TODO any better way to create menu/menu icon?
 //
+
 //                        menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add") || action.equals(DEFAULT_ACTION_SELECT)) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
 //                        if (index == 0 && label.toLowerCase().contains("add")) {
 //                            menuItem.setIcon(f.getId("drawable", "ic_action_add"));
@@ -232,6 +234,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
+        if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            mask.setVisibility(View.GONE);
+
+        }
         int id = item.getItemId();
         if (id == TAG_SELECT) {
             if (!selectionMode) {
@@ -456,10 +463,19 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
 
         View bottomSheet = findViewById(f.getId("id", "bottom_sheet1"));
-        mBottomSheetBehavior1 = BottomSheetBehavior.from(bottomSheet);
-
-        mBottomSheetBehavior1.setHideable(true);
-        mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+        mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        mask = findViewById(f.getId("id", "mask"));
+        mask.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                    mask.setVisibility(View.GONE);
+                }
+            }
+        });
+        mBottomSheetBehavior.setHideable(true);
+        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         TextView titleTextView = (TextView) findViewById(f.getId("id", "titleTextView"));
         titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
         final Button floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
@@ -477,12 +493,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         }
                     } else {
 
-                        if (mBottomSheetBehavior1.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-                            mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_EXPANDED);
-
+                        if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                            mask.setVisibility(View.VISIBLE);
                         } else {
-                            mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
-
+                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                            mask.setVisibility(View.GONE);
                         }
                     }
                 }
@@ -518,6 +534,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                         imageButton.setBackgroundColor(0x00000000);
                         imageButton.setCompoundDrawables(null, drawable, null, null);
                         imageButton.setText(label);
+                        imageButton.setTextSize(16);
+                        imageButton.setTextColor(0x4A4A4A);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             imageButton.setTextAppearance(f.getId("style", "AppTheme"));
                             imageButton.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
@@ -530,7 +548,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                     }
                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, weight);
-                    layoutParams.setMargins(10, 10, 10, 10);
+                    layoutParams.setMargins(20, 0, 0, 0);
                     imageButton.setLayoutParams(layoutParams);
 
                     imageButton.setOnClickListener(new View.OnClickListener() {
@@ -546,7 +564,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                            mask.setVisibility(View.GONE);
 
                         }
                     });
@@ -628,6 +647,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         return new ImageViewer.OnImageChangeListener() {
             @Override
             public void onImageChange(int position) {
+                if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                    mask.setVisibility(View.GONE);
+                }
                 setCurrentPosition(position);
                 overlayView.setDescription(photoDetail.getCaptions().get(position));
                 try {
