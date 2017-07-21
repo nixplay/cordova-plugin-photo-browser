@@ -816,6 +816,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                 finish();
                             } else {
                                 ArrayList<String> list = new ArrayList<String>(photoDetail.getThumbnails());
+                                posters = listener.photoBrowserPhotos(PhotoBrowserPluginActivity.this);
                                 getRcAdapter().swap(list);
                             }
                         }
@@ -846,6 +847,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             if (photoDetail.getImages().size() == 0) {
                 finish();
             } else {
+                posters = listener.photoBrowserPhotos(this);
                 imageViewer.onDismiss();
                 super.refreshCustomImage();
                 showPicker(photoDetail.getImages().size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition() - 1 : getCurrentPosition());
@@ -1121,6 +1123,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 }
         );
 
+    }
+
+    @Override
+    public int downloadButtonVisiblity() {
+        return photoDetail.getType().equals(KEY_ALBUM) ? View.VISIBLE : View.GONE;
     }
 
     void finishWithResult(JSONObject result) {
