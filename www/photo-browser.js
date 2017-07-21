@@ -1,3 +1,4 @@
+cordova.define("cordova-plugin-photo-browser.PhotoBrowserPlugin", function(require, exports, module) {
 //
 // MWPhotoBrowser.js
 //
@@ -12,15 +13,17 @@ var PhotoBrowserPlugin = function() {
 };
 
 // Call this to register for push notifications and retreive a deviceToken
-PhotoBrowserPlugin.prototype.showGallery = function(images, callback) {
-  cordova.exec(callback, callback, "PhotoBrowserPlugin", "showGallery", images ? [images] : []);
+PhotoBrowserPlugin.prototype.showGallery = function(images, successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "PhotoBrowserPlugin", "showGallery", images ? [images] : []);
 };
 
-PhotoBrowserPlugin.prototype.showBrowser = function(images, callback) {
-  cordova.exec(callback, callback, "PhotoBrowserPlugin", "showBrowser", images ? [images] : []);
+PhotoBrowserPlugin.prototype.showBrowser = function(images, successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "PhotoBrowserPlugin", "showBrowser", images ? [images] : []);
 };
 
 
 var photoBrowserPlugin = new PhotoBrowserPlugin();
 
 module.exports = photoBrowserPlugin;
+
+});
