@@ -816,7 +816,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                 finish();
                             } else {
                                 ArrayList<String> list = new ArrayList<String>(photoDetail.getThumbnails());
-                                posters = listener.photoBrowserPhotos(PhotoBrowserPluginActivity.this);
+                                refreshCustomImage();
                                 getRcAdapter().swap(list);
                             }
                         }
@@ -847,12 +847,15 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             if (photoDetail.getImages().size() == 0) {
                 finish();
             } else {
-                posters = listener.photoBrowserPhotos(this);
+
                 imageViewer.onDismiss();
                 super.refreshCustomImage();
-                showPicker(photoDetail.getImages().size() == 1 ? 0 : getCurrentPosition() > 0 ? getCurrentPosition() - 1 : getCurrentPosition());
                 ArrayList<String> list = new ArrayList<String>(photoDetail.getThumbnails());
                 getRcAdapter().swap(list);
+
+
+
+
 
 
             }
