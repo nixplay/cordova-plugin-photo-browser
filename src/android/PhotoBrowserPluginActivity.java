@@ -63,6 +63,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
@@ -780,6 +781,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         final ArrayList<String> tempCations = new ArrayList<String>();
         final ArrayList<String> tempThumbnails = new ArrayList<String>();
         final ArrayList<String> tempSelection = new ArrayList<String>();
+        final ArrayList<Integer> tempSelected = new ArrayList<Integer>();
         for (int i = 0; i < selections.size(); i++) {
             //add to temp lsit if not selected
             if (selections.get(i).equals("0")) {
@@ -793,6 +795,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 String id = object.getId();
 
                 fetchedDatas.add(id);
+                tempSelected.add(i);
             }
         }
         if (fetchedDatas.size() > 0) {
@@ -821,7 +824,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                             } else {
                                 ArrayList<String> list = new ArrayList<String>(photoDetail.getThumbnails());
                                 refreshCustomImage();
-                                getRcAdapter().swap(list);
+                                Iterator<Integer> it = tempSelected.iterator();
+                                while(it.hasNext()){
+                                    getRcAdapter().remove(it.next());
+                                }
+//                                getRcAdapter().swap(list);
                             }
                         }
                     })
@@ -855,8 +862,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 imageViewer.onDismiss();
                 super.refreshCustomImage();
                 ArrayList<String> list = new ArrayList<String>(photoDetail.getThumbnails());
-                getRcAdapter().swap(list);
-
+//                getRcAdapter().swap(list);
+                getRcAdapter().remove(position, list);
 
 
 
