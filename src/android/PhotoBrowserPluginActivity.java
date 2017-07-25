@@ -825,10 +825,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                 ArrayList<String> list = new ArrayList<String>(photoDetail.getThumbnails());
                                 refreshCustomImage();
                                 Iterator<Integer> it = tempSelected.iterator();
-                                while(it.hasNext()){
-                                    getRcAdapter().remove(it.next());
-                                }
-//                                getRcAdapter().swap(list);
+
+                                getRcAdapter().swap(list);
                             }
                         }
                     })
