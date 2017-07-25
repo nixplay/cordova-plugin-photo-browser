@@ -652,7 +652,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     mask.setVisibility(View.GONE);
                 }
                 setCurrentPosition(position);
-                overlayView.setDescription(photoDetail.getCaptions().get(position));
+                String caption = photoDetail.getCaptions().get(position);
+                if(caption.equals("") || caption.equals(" ")){
+                    caption = getString(f.getId("string", "ADD_CAPTION"));
+                }
+                overlayView.setDescription(caption);
                 try {
                     overlayView.setData(photoDetail.getData().get(position).toJSON());
                 } catch (JSONException e) {
