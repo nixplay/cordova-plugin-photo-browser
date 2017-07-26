@@ -59,6 +59,7 @@
 #define EDIT_UIIMAGE BUNDLE_UIIMAGE(@"images/edit.png")
 #define CLOSE_UIIMAGE BUNDLE_UIIMAGE(@"images/close.png")
 #define BIN_UIIMAGE BUNDLE_UIIMAGE(@"images/bin.png")
+#define RIGHT_UIIMAGE BUNDLE_UIIMAGE(@"images/right.png")
 
 #define BRIGHTNESS 74.0f/255.0f
 #define TITLE_GRAY_COLOR [UIColor colorWithRed:BRIGHTNESS green:BRIGHTNESS blue:BRIGHTNESS alpha:1.0]
@@ -669,9 +670,31 @@ enum Orientation {
         [self endEditCaption:_textView];
     }
     //    [_browser hideToolBar];
+    [photoBrowser.navigationItem.leftBarButtonItem setImage:RIGHT_UIIMAGE];
+    [photoBrowser.navigationItem.leftBarButtonItem setTintColor:LIGHT_BLUE_COLOR];
+
     [_browser showToolBar];
     return YES;
 }
+
+
+- (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser hideGridController:(MWGridViewController*)gridController{
+    _browser = photoBrowser;
+    _gridViewController = nil;
+    
+    if(_textView != nil){
+        [_textView removeFromSuperview];
+    }
+    photoBrowser.navigationItem.rightBarButtonItems = nil;
+    photoBrowser.navigationController.navigationItem.rightBarButtonItems = nil;
+    [photoBrowser.navigationItem.leftBarButtonItem setImage:CLOSE_UIIMAGE];
+    [photoBrowser.navigationItem.leftBarButtonItem setTintColor:LIGHT_BLUE_COLOR];
+
+    [photoBrowser showToolBar];
+    return YES;
+}
+
+
 - (void) addPhotos:(id) sender{
     
     //    __weak PhotoBrowserPlugin *weakSelf = self;
@@ -860,19 +883,6 @@ enum Orientation {
     }
     
 }
-- (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser hideGridController:(MWGridViewController*)gridController{
-    _browser = photoBrowser;
-    _gridViewController = nil;
-    
-    if(_textView != nil){
-        [_textView removeFromSuperview];
-    }
-    photoBrowser.navigationItem.rightBarButtonItems = nil;
-    photoBrowser.navigationController.navigationItem.rightBarButtonItems = nil;
-    [photoBrowser showToolBar];
-    return YES;
-}
-
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser setNavBarAppearance:(UINavigationBar *)navigationBar{
     
     _browser = photoBrowser;
