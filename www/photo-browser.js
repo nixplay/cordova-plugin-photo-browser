@@ -20,6 +20,10 @@ PhotoBrowserPlugin.prototype.showBrowser = function(images, successCallback, err
   cordova.exec(successCallback, errorCallback, "PhotoBrowserPlugin", "showBrowser", images ? [images] : []);
 };
 
+PhotoBrowserPlugin.prototype.showImageSelection = function(images, successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "PhotoBrowserPlugin", "showImageSelection", images ? [images] : []);
+};
+
 
 var photoBrowserPlugin = new PhotoBrowserPlugin();
 

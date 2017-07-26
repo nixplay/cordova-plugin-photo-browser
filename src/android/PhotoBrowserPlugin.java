@@ -112,8 +112,13 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
 
             this.showGallery(options, callbackContext);
             return true;
+        }else if (action.equals("showImageSelection")){
+            JSONObject res = new JSONObject();
+            if(this.callbackContext != null ){
+                this.callbackContext.error(res);
+            }
         }
-        if (action.equals("showBrowser")) {
+        else if (action.equals("showBrowser")) {
             String message = args.getString(0);
             this.showBrowser(message, callbackContext);
             return true;

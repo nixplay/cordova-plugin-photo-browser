@@ -245,6 +245,13 @@ enum Orientation {
     }];
     
 }
+
+- (void)showImageSelection:(CDVInvokedUrlCommand*)command {
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Under construction"];
+    [pluginResult setKeepCallbackAsBool:NO];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+}
+
 -(void) selectAllPhotos:(UIBarButtonItem *)sender{
     
     UIBarButtonItem *deselectAllButton = [[UIBarButtonItem alloc] initWithTitle: NSLocalizedString(@"DESELECT_ALL", nil) style:UIBarButtonItemStylePlain target:self action:@selector(deselectAllPhotos:)];
@@ -286,7 +293,9 @@ enum Orientation {
                 _leftBarbuttonItem = _browser.navigationItem.leftBarButtonItem;
                 _gridViewController.selectionMode = _browser.displaySelectionButtons = YES;
                 [_gridViewController.collectionView reloadData];
-                [_browser hideToolBar];
+                if(!IS_TYPE_NIXALBUM){
+                    [_browser hideToolBar];
+                }
                 //                sender.tag = 1;
                 //                [sender setImage:nil];
                 //                [sender setTitle:NSLocalizedString(@"Cancel", nil)];

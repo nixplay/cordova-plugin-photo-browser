@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin id="cordova-plugin-photo-browser" version="1.1.37" xmlns="http://cordova.apache.org/ns/plugins/1.0">
+<plugin id="cordova-plugin-photo-browser" version="1.1.38" xmlns="http://cordova.apache.org/ns/plugins/1.0">
   <name>PhotoBrowserPlugin</name>
   <author>James Kong</author>
   <description>Universal Photo browser to Cordova.</description>
