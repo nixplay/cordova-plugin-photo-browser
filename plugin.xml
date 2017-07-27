@@ -66,7 +66,7 @@
     <source-file src="src/android/drawable-xhdpi/ic_action_add.png"   target-dir="res/drawable-xhdpi" />
     <source-file src="src/android/drawable-xxhdpi/ic_action_add.png"  target-dir="res/drawable-xxhdpi" />
 
-    <framework src="com.github.fishkingsin:androidphotobrowser:0.0.26"/>
+    <framework src="com.github.fishkingsin:androidphotobrowser:0.0.27"/>
     <framework src="com.afollestad.material-dialogs:commons:0.9.4.5"/>
     <framework src="com.google.code.gson:gson:2.8.1"/>
     <config-file target="res/values/styles.xml" parent="/resources">
