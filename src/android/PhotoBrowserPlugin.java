@@ -124,13 +124,21 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
     private void showGallery(JSONObject options, CallbackContext callbackContext) {
         if (options != null && options.length() > 0) {
 
-
+            photoDetail = PhotoDetail.getInstance(options);
             ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
             ActivityManager activityManager = (ActivityManager) this.cordova.getActivity().getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
             activityManager.getMemoryInfo(mi);
             long totalMegs = mi.totalMem / 1048576L;
             System.out.println("[NIX] totalMegs: " + totalMegs);
-
+            if(options.has("images")){
+                options.remove("images");
+            }if(options.has("thumbnails")){
+                options.remove("thumbnails");
+            }if(options.has("captions")){
+                options.remove("captions");
+            }if(options.has("data")){
+                options.remove("data");
+            }
             Intent intent = new Intent(cordova.getActivity(), PhotoBrowserPluginActivity.class);
 
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);

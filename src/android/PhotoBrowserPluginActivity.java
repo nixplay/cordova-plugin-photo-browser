@@ -412,13 +412,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         if (getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
-            String optionsJsonString = bundle.getString("options");
-            try {
-                photoDetail = PhotoDetail.getInstance(new JSONObject(optionsJsonString));
-            } catch (JSONException e) {
-                e.printStackTrace();
+//            String optionsJsonString = bundle.getString("options");
+            photoDetail = PhotoDetail.getInstance();
+            if(photoDetail.getImages() == null){
+                finishWithResult(new JSONObject());
             }
-//            try {
+            //            try {
 //                JSONObject jsonObject = new JSONObject(optionsJsonString);
 //                JSONArray images = jsonObject.getJSONArray("images");
 //                JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
