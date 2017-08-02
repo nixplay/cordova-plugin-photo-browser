@@ -656,7 +656,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 if(caption.equals("") || caption.equals(" ")){
                     caption = getString(f.getId("string", "ADD_CAPTION"));
                 }
-                overlayView.setDescription(caption);
+                overlayView.setDescription(caption,photoDetail.getCaptions().get(position));
                 try {
                     overlayView.setData(photoDetail.getData().get(position).toJSON());
                 } catch (JSONException e) {
@@ -1065,7 +1065,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public void onCaptionChanged(JSONObject data, String caption) {
         //TODO send caption
         photoDetail.setCaption(getCurrentPosition(), caption);
-        overlayView.setDescription(caption);
+        overlayView.setDescription(caption,caption);
         if (photoDetail.setCaption(getCurrentPosition(), caption)) {
 
         } else {
