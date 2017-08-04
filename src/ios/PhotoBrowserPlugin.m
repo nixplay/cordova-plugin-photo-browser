@@ -87,7 +87,6 @@ enum Orientation {
 @synthesize thumbs = _thumbs;
 @synthesize browser = _browser;
 @synthesize data = _data;
-@synthesize actionSheet = _actionSheet;
 @synthesize navigationController = _navigationController;
 @synthesize albumName = _name;
 @synthesize gridViewController = _gridViewController;
@@ -227,7 +226,7 @@ enum Orientation {
         //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
         //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
         browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
-//        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
+        //        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
         //    _addAttachButton = addAttachButton;
         _rightBarbuttonItem = newAddBackButton;
     }
@@ -338,7 +337,7 @@ enum Orientation {
     dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
     dialogAppearance.titleColor            =  TITLE_GRAY_COLOR;
     dialogAppearance.messageColor            =  [UIColor darkGrayColor];
-
+    
     
     PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
                                                     message:text
@@ -502,7 +501,6 @@ enum Orientation {
         _navigationController = nil;
         _gridViewController = nil;
         _browser = nil;
-        _actionSheet = nil;
         _name = nil;
         _dialogView = nil;
         _rightBarbuttonItem = nil;
@@ -555,7 +553,7 @@ enum Orientation {
     //    [_browser hideToolBar];
     [photoBrowser.navigationItem.leftBarButtonItem setImage:RIGHT_UIIMAGE];
     [photoBrowser.navigationItem.leftBarButtonItem setTintColor:LIGHT_BLUE_COLOR];
-
+    
     [_browser showToolBar];
     return YES;
 }
@@ -572,7 +570,7 @@ enum Orientation {
     photoBrowser.navigationController.navigationItem.rightBarButtonItems = nil;
     [photoBrowser.navigationItem.leftBarButtonItem setImage:CLOSE_UIIMAGE];
     [photoBrowser.navigationItem.leftBarButtonItem setTintColor:LIGHT_BLUE_COLOR];
-
+    
     [photoBrowser showToolBar];
     return YES;
 }
@@ -660,7 +658,7 @@ enum Orientation {
     }];
     
     [controller setTitle:([_type isEqualToString:KEY_ALBUM])? NSLocalizedString(@"ADD_PHOTOS_TO_ALBUM", nil) : NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil)];
-
+    
     
     //    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
     //        [controller presentFromBarButton:sender animated:YES];
@@ -731,14 +729,14 @@ enum Orientation {
     [titleView addSubview:titleLabel];
     [titleView addSubview:subtitleLabel];
     
-//    float widthDiff = subtitleLabel.frame.size.width - titleLabel.frame.size.width;
-//    [titleLabel addConstraint:];
-//    [subtitleLabel addConstraint:[NSLayoutConstraint constraintWithItem:subtitleLabel
-//                                                              attribute:NSLayoutAttributeCenterX
-//                                                              relatedBy:NSLayoutRelationEqual
-//                                                                 toItem:titleView
-//                                                              attribute:NSLayoutAttributeCenterX
-//                                                             multiplier:1.f constant:0.f]];
+    //    float widthDiff = subtitleLabel.frame.size.width - titleLabel.frame.size.width;
+    //    [titleLabel addConstraint:];
+    //    [subtitleLabel addConstraint:[NSLayoutConstraint constraintWithItem:subtitleLabel
+    //                                                              attribute:NSLayoutAttributeCenterX
+    //                                                              relatedBy:NSLayoutRelationEqual
+    //                                                                 toItem:titleView
+    //                                                              attribute:NSLayoutAttributeCenterX
+    //                                                             multiplier:1.f constant:0.f]];
     UIEdgeInsets padding = UIEdgeInsetsMake(-5, 0, 5, 0);
     
     [titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -752,33 +750,33 @@ enum Orientation {
         make.width.equalTo(titleView.mas_width);
     }];
     
-   //    if (widthDiff > 0) {
-//        CGRect frame = titleLabel.frame;
-//        frame.origin.x = widthDiff / 2;
-//        titleLabel.frame = CGRectIntegral(frame);
-//        
-//        NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:subtitleLabel
-//                                                                           attribute:NSLayoutAttributeWidth
-//                                                                           relatedBy:NSLayoutRelationLessThanOrEqual
-//                                                                              toItem:subtitleLabel.superview
-//                                                                           attribute:NSLayoutAttributeWidth
-//                                                                          multiplier:1.0f
-//                                                                            constant:0.0f];
-////        [titleView addConstraint:widthConstraint];
-//    } else {
-//        CGRect frame = subtitleLabel.frame;
-//        frame.origin.x = fabsf(widthDiff) / 2;
-//        subtitleLabel.frame = CGRectIntegral(frame);
-//        
-//        NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:titleLabel
-//                                                                           attribute:NSLayoutAttributeWidth
-//                                                                           relatedBy:NSLayoutRelationLessThanOrEqual
-//                                                                              toItem:titleLabel.superview
-//                                                                           attribute:NSLayoutAttributeWidth
-//                                                                          multiplier:1.0f
-//                                                                            constant:0.0f];
-////        [titleView addConstraint:widthConstraint];
-//    }
+    //    if (widthDiff > 0) {
+    //        CGRect frame = titleLabel.frame;
+    //        frame.origin.x = widthDiff / 2;
+    //        titleLabel.frame = CGRectIntegral(frame);
+    //
+    //        NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:subtitleLabel
+    //                                                                           attribute:NSLayoutAttributeWidth
+    //                                                                           relatedBy:NSLayoutRelationLessThanOrEqual
+    //                                                                              toItem:subtitleLabel.superview
+    //                                                                           attribute:NSLayoutAttributeWidth
+    //                                                                          multiplier:1.0f
+    //                                                                            constant:0.0f];
+    ////        [titleView addConstraint:widthConstraint];
+    //    } else {
+    //        CGRect frame = subtitleLabel.frame;
+    //        frame.origin.x = fabsf(widthDiff) / 2;
+    //        subtitleLabel.frame = CGRectIntegral(frame);
+    //
+    //        NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:titleLabel
+    //                                                                           attribute:NSLayoutAttributeWidth
+    //                                                                           relatedBy:NSLayoutRelationLessThanOrEqual
+    //                                                                              toItem:titleLabel.superview
+    //                                                                           attribute:NSLayoutAttributeWidth
+    //                                                                          multiplier:1.0f
+    //                                                                            constant:0.0f];
+    ////        [titleView addConstraint:widthConstraint];
+    //    }
     
     return titleView;
 }
@@ -827,7 +825,7 @@ enum Orientation {
                 button.clipsToBounds = YES;
                 
                 [button setAttributedTitle:[self attributedString: NSLocalizedString(@"ADD_PHOTOS", nil) WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
-
+                
                 [button addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
                 UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:button];
                 [items addObject:addPhotoButton];
