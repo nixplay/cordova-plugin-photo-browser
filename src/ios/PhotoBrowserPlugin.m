@@ -12,7 +12,6 @@
 #import "MWGridViewController.h"
 #import "TextInputViewController.h"
 #import <Cordova/CDVViewController.h>
-#import "MKActionSheet.h"
 #import "UIImage+MWPhotoBrowser.h"
 #import <Cordova/CDVPlugin+Resources.h>
 #import <PopupDialog/PopupDialog-Swift.h>
@@ -302,123 +301,7 @@ enum Orientation {
             }
         });
         
-        //        PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
-        //        PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
-        //        overlayAppearance.blurEnabled = NO;
-        //        overlayAppearance.blurRadius = 0;
-        //        overlayAppearance.opacity = 0.5;
-        //        dialogAppearance.titleTextAlignment     = NSTextAlignmentLeft;
-        //        dialogAppearance.messageTextAlignment   = NSTextAlignmentLeft;
-        //        dialogAppearance.titleFont              = [UIFont systemFontOfSize:20];
-        //        dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
-        //        dialogAppearance.titleColor            =  [UIColor blackColor];
-        //        dialogAppearance.messageColor            =  [UIColor darkGrayColor];
-        //
-        //        __weak PhotoBrowserPlugin *weakSelf = self;
-        //        __block NSArray * titles =  [_actionSheetDicArray valueForKey:KEY_LABEL];
-        //        __block NSArray * actions =  [_actionSheetDicArray valueForKey:KEY_ACTION];
-        //
-        //
-        //        MKASOrientationConfig *portraitConfig = [[MKASOrientationConfig alloc] init];
-        //        portraitConfig.titleAlignment = NSTextAlignmentLeft;
-        //        portraitConfig.buttonTitleAlignment = MKActionSheetButtonTitleAlignment_left;
-        //        portraitConfig.buttonHeight = 45.0f;
-        //        portraitConfig.maxShowButtonCount = 5.5f;
-        //
-        //        MKASOrientationConfig *landscapeConfig = [[MKASOrientationConfig alloc] init];
-        //        landscapeConfig.titleAlignment = NSTextAlignmentLeft;
-        //        landscapeConfig.buttonTitleAlignment = MKActionSheetButtonTitleAlignment_left;
-        //        landscapeConfig.buttonHeight = 30.0f;
-        //        landscapeConfig.maxShowButtonCount = 2.5f;
-        //
-        //
-        //        MKActionSheet *sheet = [[MKActionSheet alloc] initWithTitle:NSLocalizedString(@"Options", nil) buttonTitleArray:titles selectType:MKActionSheetSelectType_common];
-        //        sheet.titleColor = [UIColor grayColor];
-        //
-        //        sheet.buttonTitleColor = [UIColor blackColor];
-        //        sheet.buttonOpacity = 0.7;
-        //
-        //        sheet.animationDuration = 0.2f;
-        //        sheet.blurOpacity = 0.7f;
-        //        sheet.blackgroundOpacity = 0.6f;
-        //        sheet.needCancelButton = NO;
-        //
-        //
-        //        [sheet setPortraitConfig:portraitConfig];
-        //        [sheet setLandscapeConfig:landscapeConfig];
-        //
-        //        [sheet showWithBlock:^(MKActionSheet *actionSheet, NSInteger buttonIndex) {
-        //
-        //            if([[actions objectAtIndex:buttonIndex] isEqualToString:DEFAULT_ACTION_ADD]){
-        //                [self addPhotos:nil];
-        //            }else if([[actions objectAtIndex:buttonIndex] isEqualToString:DEFAULT_ACTION_SELECT]){
-        //                dispatch_async(dispatch_get_main_queue(), ^{
-        //                    if(!_browser.displaySelectionButtons){
-        //                        _leftBarbuttonItem = _browser.navigationItem.leftBarButtonItem;
-        //                        _gridViewController.selectionMode = _browser.displaySelectionButtons = YES;
-        //                        [_gridViewController.collectionView reloadData];
-        //                        [_browser showToolBar];
-        //                        sender.tag = 1;
-        //                        [sender setImage:nil];
-        //                        [sender setTitle:NSLocalizedString(@"Cancel", nil)];
-        //                        _browser.navigationItem.rightBarButtonItems = @[_rightBarbuttonItem];
-        //                    }
-        //                });
-        //            }
-        //            else if([[actions objectAtIndex:buttonIndex] isEqualToString:DEFAULT_ACTION_RENAME]){
-        //                //edit album name
-        //                [weakSelf popupTextAreaDialogTitle:NSLocalizedString(@"Edit Album Name", nil) message:((_name != nil || [_name isEqualToString:@""] ) ? _name : NSLocalizedString(KEY_ALBUM, nil)) placeholder:NSLocalizedString(@"Album Name", nil) action:^(NSString * text) {
-        //
-        //                    //TODO send result edit album name
-        //
-        //                    if( ![text isEqualToString:@""]){
-        //                        NSMutableDictionary *dictionary = [NSMutableDictionary new];
-        //                        [dictionary setValue:[actions objectAtIndex:buttonIndex] forKey: KEY_ACTION];
-        //                        [dictionary setValue:@(_id) forKey: KEY_ID];
-        //                        [dictionary setValue:_type forKey: KEY_TYPE];
-        //                        [dictionary setValue:text forKey: KEY_NAME];
-        //                        [dictionary setValue:@"edit album name" forKey: @"description"];
-        //                        _browser.navigationItem.titleView = [self setTitle:text subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
-        //                        _name = text;
-        //                        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-        //                        [pluginResult setKeepCallbackAsBool:YES];
-        //                        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-        //                    }
-        //
-        //                }];
-        //            }else if([[actions objectAtIndex:buttonIndex] isEqualToString:DEFAULT_ACTION_DELETE]){
-        //                [self buildDialogWithCancelText:NSLocalizedString(@"Cancel", nil) confirmText:NSLocalizedString(@"Delete", nil) title:
-        //                 [NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"Delete", nil), NSLocalizedString(_type, nil)]  text:NSLocalizedString(@"Are you sure you want to delete this album? This will also remove the Photos from the playlist if they are not in any other albums.", nil) action:^{
-        //                     NSMutableDictionary *dictionary = [NSMutableDictionary new];
-        //                     [dictionary setValue:[actions objectAtIndex:buttonIndex] forKey: KEY_ACTION];
-        //                     [dictionary setValue:@(_id) forKey: KEY_ID];
-        //                     [dictionary setValue:_type forKey: KEY_TYPE];
-        //
-        //                     [dictionary setValue:@"delete album" forKey: @"description"];
-        //                     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-        //                     [pluginResult setKeepCallbackAsBool:YES];
-        //                     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-        //                     [self photoBrowserDidFinishModalPresentation:_browser];
-        //                 }];
-        //
-        //
-        //            }else{
-        //                NSMutableDictionary *dictionary = [NSMutableDictionary new];
-        //                [dictionary setValue:[actions objectAtIndex:buttonIndex] forKey: KEY_ACTION];
-        //                [dictionary setValue:@(_id) forKey: KEY_ID];
-        //                [dictionary setValue:_type forKey: KEY_TYPE];
-        //                [dictionary setValue:[actions objectAtIndex:buttonIndex] forKey: @"description"];
-        //                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-        //                [pluginResult setKeepCallbackAsBool:NO];
-        //                [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-        //                [self photoBrowserDidFinishModalPresentation:_browser];
-        //            }
-        //
-        //
-        //        }];
-        //
-        //
-        //        self.actionSheet = sheet;
+        
     }else{
         _browser.navigationItem.leftBarButtonItem = _leftBarbuttonItem;
         _browser.navigationItem.rightBarButtonItems = @[_rightBarbuttonItem];
@@ -786,75 +669,7 @@ enum Orientation {
     [controller presentFromRect:button.frame inView:button.superview animated:YES];
     //    }
     
-    //MKActionsheet style not match
-    /*PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
-     PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
-     overlayAppearance.blurEnabled = NO;
-     overlayAppearance.blurRadius = 0;
-     overlayAppearance.opacity = 0.5;
-     dialogAppearance.titleTextAlignment     = NSTextAlignmentLeft;
-     dialogAppearance.messageTextAlignment   = NSTextAlignmentLeft;
-     dialogAppearance.titleFont              = [UIFont systemFontOfSize:20];
-     dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
-     dialogAppearance.titleColor            =  [UIColor blackColor];
-     dialogAppearance.messageColor            =  [UIColor darkGrayColor];
-     
-     MKASOrientationConfig *portraitConfig = [[MKASOrientationConfig alloc] init];
-     portraitConfig.titleAlignment = NSTextAlignmentLeft;
-     portraitConfig.buttonTitleAlignment = MKActionSheetButtonTitleAlignment_left;
-     portraitConfig.buttonHeight = 80.0f;
-     portraitConfig.maxShowButtonCount = 3.0f;
-     
-     //    MKASOrientationConfig *landscapeConfig = [[MKASOrientationConfig alloc] init];
-     //    landscapeConfig.titleAlignment = NSTextAlignmentLeft;
-     //    landscapeConfig.buttonTitleAlignment = MKActionSheetButtonTitleAlignment_left;
-     //    landscapeConfig.buttonHeight = 30.0f;
-     //    landscapeConfig.maxShowButtonCount = 2.5f;
-     
-     
-     NSMutableArray *dicArray = [[NSMutableArray alloc] init];
-     for (NSInteger i = 0; i < [titles count]; i++) {
-     NSString *imageName = [icons objectAtIndex:i%3];
-     NSDictionary *dic = @{@"titleStr"   :[titles objectAtIndex:i],
-     @"image"      :BUNDLE_UIIMAGE(imageName),
-     
-     };
-     [dicArray addObject:dic];
-     }
-     
-     MKActionSheet *sheet = [[MKActionSheet alloc] initWithTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil) objArray:dicArray buttonTitleKey:@"titleStr" imageKey:@"image" imageValueType:MKActionSheetButtonImageValueType_image selectType:MKActionSheetSelectType_common];
-     
-     //    MKActionSheet *sheet = [[MKActionSheet alloc] initWithTitle:NSLocalizedString(@"Options", nil) buttonTitleArray:titles selectType:MKActionSheetSelectType_common];
-     sheet.titleColor = [UIColor grayColor];
-     
-     sheet.buttonTitleColor = [UIColor blackColor];
-     sheet.buttonOpacity = 0.7;
-     
-     sheet.animationDuration = 0.2f;
-     sheet.blurOpacity = 0.7f;
-     sheet.blackgroundOpacity = 0.6f;
-     sheet.needCancelButton = NO;
-     
-     
-     [sheet setPortraitConfig:portraitConfig];
-     //    [sheet setLandscapeConfig:landscapeConfig];
-     
-     [sheet showWithBlock:^(MKActionSheet *actionSheet, NSInteger buttonIndex) {
-     
-     NSMutableDictionary *dictionary = [NSMutableDictionary new];
-     [dictionary setValue:[actions objectAtIndex:buttonIndex] forKey: KEY_ACTION];
-     [dictionary setValue:@(_id) forKey: KEY_ID];
-     [dictionary setValue:_type forKey: KEY_TYPE];
-     
-     [dictionary setValue:@"add photo to album" forKey: @"description"];
-     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-     [pluginResult setKeepCallbackAsBool:NO];
-     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-     [self photoBrowserDidFinishModalPresentation:_browser];
-     }];*/
-    //    STPopupController *popupController = [[STPopupController alloc] initWithRootViewController:[[BottomActionSheetViewController alloc] initWithNibName:@"BottomActionSheetViewController" bundle:nil]];
-    //    popupController.style = STPopupStyleBottomSheet;
-    //    [popupController presentInViewController:self.browser.navigationController];
+    
     
     
 }

@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <Cordova/CDVPlugin.h>
 #import "MWPhotoBrowser.h"
-#import "MKActionSheet.h"
 #import <PopupDialog/PopupDialog-Swift.h>
 #import <IQKeyboardManager/IQKeyboardManager.h>
 #import <IQKeyboardManager/IQTextView.h>
@@ -37,7 +36,6 @@
 @property (nonatomic, retain) UINavigationController *navigationController;
 @property (nonatomic, retain) MWGridViewController* gridViewController;
 @property (nonatomic, retain) MWPhotoBrowser *browser;
-@property (nonatomic, retain) MKActionSheet *actionSheet;
 @property (nonatomic, retain) NSString *albumName;
 @property (nonatomic, retain) PopupDialog *dialogView;
 @property (nonatomic, retain) NSMutableDictionary *HTTPResponseHeaderOrientations;
