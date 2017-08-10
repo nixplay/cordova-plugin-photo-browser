@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -12,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
@@ -863,9 +865,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 getRcAdapter().remove(position, list);
 
 
-
-
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -974,6 +973,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                 outStream = new FileOutputStream(file);
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100,
                                         outStream);
+                                MediaStore.Images.Media.insertImage(getContentResolver(),
+                                        file.getAbsolutePath(), file.getName(), file.getName());
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
                                 Error error = new Error(e.getMessage());
@@ -1018,7 +1019,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 }
                 , executor);
     }
-
+    public String getApplicationName(Context context) {
+        ApplicationInfo applicationInfo = context.getApplicationInfo();
+        int stringId = applicationInfo.labelRes;
+        return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
+    }
     private String getPicturesPath(String urlString) {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         //TODO dirty handle, may find bettery way handel data type
@@ -1029,8 +1034,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             fileName = urlString.substring(slashIndex + 1, jpgIndex);
         }
         String imageFileName = (!fileName.equals("")) ? fileName : "IMG_" + timeStamp + (urlString.contains(".jpg") ? ".jpg" : ".png");
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
+
+        final String appDirectoryName = getApplicationName(getApplicationContext());
+
+        File storageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES),appDirectoryName);
         String galleryPath = storageDir.getAbsolutePath() + "/" + imageFileName;
         return galleryPath;
     }
