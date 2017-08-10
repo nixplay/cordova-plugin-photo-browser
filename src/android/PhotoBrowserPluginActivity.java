@@ -1195,4 +1195,22 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         }
     }
 
+    @Override
+    protected void showPicker(int startPosition) {
+        isDialogShown = true;
+        currentPosition = startPosition;
+        if(photoDetail.getType().equals(KEY_ALBUM)){
+            overlayView = new ImageOverlayView(this);
+        }else {
+            overlayView = new CustomeImageOverlayView(this);
+        }
+        imageViewer = new ImageViewer.Builder<>(this, posters)
+                .setOverlayView(overlayView)
+                .setStartPosition(startPosition)
+                .setImageChangeListener(getImageChangeListener())
+                .setOnDismissListener(getDismissListener())
+                .setOnOrientationListener(getOrientationListener())
+                .show();
+    }
+
 }
