@@ -50,7 +50,7 @@ import com.facebook.imagepipeline.image.CloseableBitmap;
 import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
-import com.rengwuxian.materialedittext.MaterialAutoCompleteTextView;
+import com.rengwuxian.materialedittext.MaterialEditText;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import org.json.JSONArray;
@@ -416,7 +416,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             Bundle bundle = getIntent().getExtras();
 //            String optionsJsonString = bundle.getString("options");
             photoDetail = PhotoDetail.getInstance();
-            if(photoDetail.getImages() == null){
+            if (photoDetail.getImages() == null) {
                 finishWithResult(new JSONObject());
             }
             //            try {
@@ -655,10 +655,14 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 }
                 setCurrentPosition(position);
                 String caption = photoDetail.getCaptions().get(position);
-                if(caption.equals("") || caption.equals(" ")){
-                    caption = getString(f.getId("string", "ADD_CAPTION"));
+                if (photoDetail.getType().equals(KEY_ALBUM)) {
+
+                    if (caption.equals("") || caption.equals(" ")) {
+                        caption = getString(f.getId("string", "ADD_CAPTION"));
+                    }
                 }
-                overlayView.setDescription(caption,photoDetail.getCaptions().get(position));
+                overlayView.setDescription(caption, photoDetail.getCaptions().get(position));
+
                 try {
                     overlayView.setData(photoDetail.getData().get(position).toJSON());
                 } catch (JSONException e) {
@@ -1040,6 +1044,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         File storageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES),appDirectoryName);
         String galleryPath = storageDir.getAbsolutePath() + "/" + imageFileName;
+        File parentFolder = new File(galleryPath);
+        if(!parentFolder.getParentFile().exists()){
+            parentFolder.getParentFile().mkdir();
+        }
         return galleryPath;
     }
 
@@ -1073,7 +1081,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public void onCaptionChanged(JSONObject data, String caption) {
         //TODO send caption
         photoDetail.setCaption(getCurrentPosition(), caption);
-        overlayView.setDescription(caption,caption);
+        overlayView.setDescription(caption, caption);
         if (photoDetail.setCaption(getCurrentPosition(), caption)) {
 
         } else {
@@ -1117,12 +1125,13 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     @Override
-    public void onInitTextView(final MaterialAutoCompleteTextView editText) {
+    public void onInitTextView(final MaterialEditText editText) {
 
         InputFilter[] filterArray = new InputFilter[1];
         filterArray[0] = new InputFilter.LengthFilter(MAX_CHARACTOR);
         editText.setFilters(filterArray);
         editText.setFloatingLabelText(getString(f.getId("string", "ADD_CAPTION")));
+        editText.setHint(getString(f.getId("string", "ADD_CAPTION")));
         editText.addTextChangedListener(
                 new TextWatcher() {
                     @Override
@@ -1132,6 +1141,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                     @Override
                     public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        editText.setFloatingLabel(MaterialEditText.FLOATING_LABEL_HIGHLIGHT);
                         editText.setFloatingLabelText(getString(f.getId("string", "ADD_CAPTION")) + "(" + charSequence.length() + "/" + MAX_CHARACTOR + ")");
                     }
 
@@ -1207,9 +1217,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     protected void showPicker(int startPosition) {
         isDialogShown = true;
         currentPosition = startPosition;
-        if(photoDetail.getType().equals(KEY_ALBUM)){
+        if (photoDetail.getType().equals(KEY_ALBUM)) {
             overlayView = new ImageOverlayView(this);
-        }else {
+        } else {
             overlayView = new CustomeImageOverlayView(this);
         }
         imageViewer = new ImageViewer.Builder<>(this, posters)
