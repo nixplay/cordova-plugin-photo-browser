@@ -56,6 +56,7 @@
     <source-file src="src/android/Constants.java"                     target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/PhotoBrowserPlugin.java"            target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/PhotoBrowserPluginActivity.java"    target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
+    <source-file src="src/android/CustomeImageOverlayView.java"		  target-dir="src/com/creedon/cordova/plugin/photobrowser"/>
     <source-file src="src/android/metadata/Demo.java"                 target-dir="src/com/creedon/cordova/plugin/photobrowser/metadata"/>
     <source-file src="src/android/metadata/Datum.java"                target-dir="src/com/creedon/cordova/plugin/photobrowser/metadata"/>
     <source-file src="src/android/metadata/ActionSheet.java"          target-dir="src/com/creedon/cordova/plugin/photobrowser/metadata"/>
