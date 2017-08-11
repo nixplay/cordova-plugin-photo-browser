@@ -28,7 +28,7 @@
     <pod name="IQKeyboardManager"/>
     <pod name="GPActivityViewController" git="https://github.com/nixplay/GPActivityViewController"/>
     <pod name="Masonry"/>
-    
+
     <resource-file src="src/ios/PhotoBrowserPlugin.bundle"/>
     <resource-file src="src/ios/TextInputViewController.xib"/>
   </platform>
@@ -38,11 +38,11 @@
         <param name="android-package" value="com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin"/>
       </feature>
     </config-file>
-    
+
     <config-file target="AndroidManifest.xml" parent="/*">
       <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
       <uses-permission android:name="android.permission.VIBRATE" />
-      
+
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
@@ -65,7 +65,7 @@
     <source-file src="src/android/drawable-xhdpi/ic_action_add.png"   target-dir="res/drawable-xhdpi" />
     <source-file src="src/android/drawable-xxhdpi/ic_action_add.png"  target-dir="res/drawable-xxhdpi" />
 
-    <framework src="com.github.fishkingsin:androidphotobrowser:0.0.29"/>
+    <framework src="com.github.fishkingsin:androidphotobrowser:0.0.32"/>
     <framework src="com.afollestad.material-dialogs:commons:0.9.4.5"/>
     <framework src="com.google.code.gson:gson:2.8.1"/>
     <config-file target="res/values/styles.xml" parent="/resources">
