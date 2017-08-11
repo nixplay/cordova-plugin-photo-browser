@@ -833,6 +833,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                                 getRcAdapter().swap(list);
                             }
+                            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+                            if (actionBar != null) {
+                                actionBar.setSubtitle(listener.getSubtitle());
+                            }
                         }
                     })
                     .onNegative(new MaterialDialog.SingleButtonCallback() {
@@ -868,7 +872,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //                getRcAdapter().swap(list);
                 getRcAdapter().remove(position, list);
 
-
+                android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+                if (actionBar != null) {
+                    actionBar.setSubtitle(listener.getSubtitle());
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
