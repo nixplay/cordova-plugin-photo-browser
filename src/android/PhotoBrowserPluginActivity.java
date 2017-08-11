@@ -1222,7 +1222,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         } else {
             overlayView = new CustomeImageOverlayView(this);
         }
-        imageViewer = new ImageViewer.Builder<>(this, posters)
+        imageViewer = new ImageViewer.Builder<String>(this, posters)
                 .setOverlayView(overlayView)
                 .setStartPosition(startPosition)
                 .setImageChangeListener(getImageChangeListener())
