@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
@@ -990,8 +989,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                 outStream = new FileOutputStream(file);
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100,
                                         outStream);
-                                MediaStore.Images.Media.insertImage(getContentResolver(),
-                                        file.getAbsolutePath(), file.getName(), file.getName());
+//                                MediaStore.Images.Media.insertImage(getContentResolver(),
+//                                        file.getAbsolutePath(), file.getName(), file.getName());
+                                galleryAddPic(file);
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
                                 Error error = new Error(e.getMessage());
@@ -1036,6 +1036,13 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 }
                 , executor);
     }
+
+    public void galleryAddPic(File f) {
+        Uri contentUri = Uri.fromFile(f);
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,contentUri);
+        sendBroadcast(mediaScanIntent);
+    }
+
     public String getApplicationName(Context context) {
         ApplicationInfo applicationInfo = context.getApplicationInfo();
         int stringId = applicationInfo.labelRes;
