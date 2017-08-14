@@ -68,6 +68,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import static android.view.View.GONE;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_DESCRIPTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_PHOTOS;
@@ -239,7 +240,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         // Handle item selection
         if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
             mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-            mask.setVisibility(View.GONE);
+            mask.setVisibility(GONE);
 
         }
         int id = item.getItemId();
@@ -472,7 +473,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             public void onClick(View v) {
                 if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                     mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                    mask.setVisibility(View.GONE);
+                    mask.setVisibility(GONE);
                 }
             }
         });
@@ -480,31 +481,36 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         TextView titleTextView = (TextView) findViewById(f.getId("id", "titleTextView"));
         titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
+
         final Button floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
-        floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS_TO_ALBUM" : "ADD_PHOTOS_TO_PLAYLIST")));
-        if (floatingActionButton != null) {
-            floatingActionButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        if(photoDetail.getActionSheet() != null) {
+            floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST")));
+            if (floatingActionButton != null) {
+                floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
-                    if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
-                        try {
-                            sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-
-                        if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                            mask.setVisibility(View.VISIBLE);
+                        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                            try {
+                                sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         } else {
-                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                            mask.setVisibility(View.GONE);
+
+                            if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                                mask.setVisibility(View.VISIBLE);
+                            } else {
+                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                                mask.setVisibility(GONE);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
+        }else{
+            floatingActionButton.setVisibility(GONE);
         }
 
 
@@ -567,7 +573,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                 e.printStackTrace();
                             }
                             mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                            mask.setVisibility(View.GONE);
+                            mask.setVisibility(GONE);
 
                         }
                     });
@@ -651,7 +657,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             public void onImageChange(int position) {
                 if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                     mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                    mask.setVisibility(View.GONE);
+                    mask.setVisibility(GONE);
                 }
                 setCurrentPosition(position);
                 String caption = photoDetail.getCaptions().get(position);
@@ -1163,7 +1169,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public int downloadButtonVisiblity() {
-        return photoDetail.getType().equals(KEY_ALBUM) ? View.VISIBLE : View.GONE;
+        return photoDetail.getType().equals(KEY_ALBUM) ? View.VISIBLE : GONE;
     }
 
     void finishWithResult(JSONObject result) {
