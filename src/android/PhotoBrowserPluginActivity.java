@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -48,7 +49,7 @@ import com.facebook.imagepipeline.image.CloseableBitmap;
 import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
-import com.rengwuxian.materialedittext.MaterialAutoCompleteTextView;
+import com.rengwuxian.materialedittext.MaterialEditText;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import org.json.JSONArray;
@@ -66,6 +67,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import static android.view.View.GONE;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_DESCRIPTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_PHOTOS;
@@ -237,7 +239,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         // Handle item selection
         if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
             mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-            mask.setVisibility(View.GONE);
+            mask.setVisibility(GONE);
 
         }
         int id = item.getItemId();
@@ -414,7 +416,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             Bundle bundle = getIntent().getExtras();
 //            String optionsJsonString = bundle.getString("options");
             photoDetail = PhotoDetail.getInstance();
-            if(photoDetail.getImages() == null){
+            if (photoDetail.getImages() == null) {
                 finishWithResult(new JSONObject());
             }
             //            try {
@@ -470,7 +472,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             public void onClick(View v) {
                 if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                     mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                    mask.setVisibility(View.GONE);
+                    mask.setVisibility(GONE);
                 }
             }
         });
@@ -478,31 +480,36 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         TextView titleTextView = (TextView) findViewById(f.getId("id", "titleTextView"));
         titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
+
         final Button floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
-        floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS_TO_ALBUM" : "ADD_PHOTOS_TO_PLAYLIST")));
-        if (floatingActionButton != null) {
-            floatingActionButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        if(photoDetail.getActionSheet() != null) {
+            floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST")));
+            if (floatingActionButton != null) {
+                floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
-                    if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
-                        try {
-                            sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-
-                        if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                            mask.setVisibility(View.VISIBLE);
+                        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                            try {
+                                sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         } else {
-                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                            mask.setVisibility(View.GONE);
+
+                            if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                                mask.setVisibility(View.VISIBLE);
+                            } else {
+                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                                mask.setVisibility(GONE);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
+        }else{
+            floatingActionButton.setVisibility(GONE);
         }
 
 
@@ -565,7 +572,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                 e.printStackTrace();
                             }
                             mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                            mask.setVisibility(View.GONE);
+                            mask.setVisibility(GONE);
 
                         }
                     });
@@ -649,14 +656,18 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             public void onImageChange(int position) {
                 if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                     mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                    mask.setVisibility(View.GONE);
+                    mask.setVisibility(GONE);
                 }
                 setCurrentPosition(position);
                 String caption = photoDetail.getCaptions().get(position);
-                if(caption.equals("") || caption.equals(" ")){
-                    caption = getString(f.getId("string", "ADD_CAPTION"));
+                if (photoDetail.getType().equals(KEY_ALBUM)) {
+
+                    if (caption.equals("") || caption.equals(" ")) {
+                        caption = getString(f.getId("string", "ADD_CAPTION"));
+                    }
                 }
-                overlayView.setDescription(caption,photoDetail.getCaptions().get(position));
+                overlayView.setDescription(caption, photoDetail.getCaptions().get(position));
+
                 try {
                     overlayView.setData(photoDetail.getData().get(position).toJSON());
                 } catch (JSONException e) {
@@ -827,6 +838,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                                 getRcAdapter().swap(list);
                             }
+                            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+                            if (actionBar != null) {
+                                actionBar.setSubtitle(listener.getSubtitle());
+                            }
                         }
                     })
                     .onNegative(new MaterialDialog.SingleButtonCallback() {
@@ -862,10 +877,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //                getRcAdapter().swap(list);
                 getRcAdapter().remove(position, list);
 
-
-
-
-
+                android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+                if (actionBar != null) {
+                    actionBar.setSubtitle(listener.getSubtitle());
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -974,6 +989,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                 outStream = new FileOutputStream(file);
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100,
                                         outStream);
+//                                MediaStore.Images.Media.insertImage(getContentResolver(),
+//                                        file.getAbsolutePath(), file.getName(), file.getName());
+                                galleryAddPic(file);
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
                                 Error error = new Error(e.getMessage());
@@ -1019,6 +1037,17 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 , executor);
     }
 
+    public void galleryAddPic(File f) {
+        Uri contentUri = Uri.fromFile(f);
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,contentUri);
+        sendBroadcast(mediaScanIntent);
+    }
+
+    public String getApplicationName(Context context) {
+        ApplicationInfo applicationInfo = context.getApplicationInfo();
+        int stringId = applicationInfo.labelRes;
+        return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
+    }
     private String getPicturesPath(String urlString) {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         //TODO dirty handle, may find bettery way handel data type
@@ -1029,9 +1058,16 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             fileName = urlString.substring(slashIndex + 1, jpgIndex);
         }
         String imageFileName = (!fileName.equals("")) ? fileName : "IMG_" + timeStamp + (urlString.contains(".jpg") ? ".jpg" : ".png");
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
+
+        final String appDirectoryName = getApplicationName(getApplicationContext());
+
+        File storageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES),appDirectoryName);
         String galleryPath = storageDir.getAbsolutePath() + "/" + imageFileName;
+        File parentFolder = new File(galleryPath);
+        if(!parentFolder.getParentFile().exists()){
+            parentFolder.getParentFile().mkdir();
+        }
         return galleryPath;
     }
 
@@ -1065,7 +1101,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public void onCaptionChanged(JSONObject data, String caption) {
         //TODO send caption
         photoDetail.setCaption(getCurrentPosition(), caption);
-        overlayView.setDescription(caption,caption);
+        overlayView.setDescription(caption, caption);
         if (photoDetail.setCaption(getCurrentPosition(), caption)) {
 
         } else {
@@ -1109,12 +1145,13 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     @Override
-    public void onInitTextView(final MaterialAutoCompleteTextView editText) {
+    public void onInitTextView(final MaterialEditText editText) {
 
         InputFilter[] filterArray = new InputFilter[1];
         filterArray[0] = new InputFilter.LengthFilter(MAX_CHARACTOR);
         editText.setFilters(filterArray);
         editText.setFloatingLabelText(getString(f.getId("string", "ADD_CAPTION")));
+        editText.setHint(getString(f.getId("string", "ADD_CAPTION")));
         editText.addTextChangedListener(
                 new TextWatcher() {
                     @Override
@@ -1124,6 +1161,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
                     @Override
                     public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        editText.setFloatingLabel(MaterialEditText.FLOATING_LABEL_HIGHLIGHT);
                         editText.setFloatingLabelText(getString(f.getId("string", "ADD_CAPTION")) + "(" + charSequence.length() + "/" + MAX_CHARACTOR + ")");
                     }
 
@@ -1138,7 +1176,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public int downloadButtonVisiblity() {
-        return photoDetail.getType().equals(KEY_ALBUM) ? View.VISIBLE : View.GONE;
+        return photoDetail.getType().equals(KEY_ALBUM) ? View.VISIBLE : GONE;
     }
 
     void finishWithResult(JSONObject result) {
@@ -1199,12 +1237,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     protected void showPicker(int startPosition) {
         isDialogShown = true;
         currentPosition = startPosition;
-        if(photoDetail.getType().equals(KEY_ALBUM)){
+        if (photoDetail.getType().equals(KEY_ALBUM)) {
             overlayView = new ImageOverlayView(this);
-        }else {
+        } else {
             overlayView = new CustomeImageOverlayView(this);
         }
-        imageViewer = new ImageViewer.Builder<>(this, posters)
+        imageViewer = new ImageViewer.Builder<String>(this, posters)
                 .setOverlayView(overlayView)
                 .setStartPosition(startPosition)
                 .setImageChangeListener(getImageChangeListener())
