@@ -130,7 +130,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private BottomSheetBehavior<View> mBottomSheetBehavior;
     private View mask;
     private boolean readOnly;
-//    private OkHttpClient globalOkHttpClient3;
+    private Button floatingActionButton;
 
 
     interface PhotosDownloadListener {
@@ -423,7 +423,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             }
             try {
                 JSONObject jsonObject = new JSONObject(optionsJsonString);
-                if(jsonObject.has("readOnly")){
+                if (jsonObject.has("readOnly")) {
                     readOnly = jsonObject.getBoolean("readOnly");
                 }
 //                JSONArray images = jsonObject.getJSONArray("images");
@@ -486,7 +486,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         TextView titleTextView = (TextView) findViewById(f.getId("id", "titleTextView"));
         titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
 
-        final Button floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
+        floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
         if (photoDetail.getActionSheet() != null) {
             floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST")));
             floatingActionButton.setVisibility(View.VISIBLE);
@@ -495,29 +495,34 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     @Override
                     public void onClick(View v) {
 
-                        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
-                            try {
-                                sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
 
-                            if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                                mask.setVisibility(View.VISIBLE);
-                            } else {
-                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                                mask.setVisibility(GONE);
-                            }
+                        if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                            mask.setVisibility(View.VISIBLE);
+                        } else {
+                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                            mask.setVisibility(GONE);
                         }
+
                     }
                 });
             }
         } else {
             if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
                 floatingActionButton.setVisibility(View.VISIBLE);
-            }else{
+
+                floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        try {
+                            sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+            } else {
                 floatingActionButton.setVisibility(GONE);
             }
         }
@@ -1262,4 +1267,29 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 .show();
     }
 
+    @Override
+    public void onItemClick(View view, int position) {
+        super.onItemClick(view,position);
+        //check any possitive value
+        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+            floatingActionButton.setEnabled(hasItemSelected());
+        }
+    }
+
+    @Override
+    public void onItemLongClick(View view, int position) {
+        super.onItemLongClick(view, position);
+        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+            floatingActionButton.setEnabled(hasItemSelected());
+        }
+    }
+    boolean hasItemSelected(){
+        for (int i = 0; i < selections.size(); i++) {
+            //add to temp lsit if not selected
+            if (selections.get(i).equals("1")) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
