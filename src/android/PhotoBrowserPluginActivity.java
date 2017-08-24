@@ -129,6 +129,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     };
     private BottomSheetBehavior<View> mBottomSheetBehavior;
     private View mask;
+    private boolean readOnly;
 //    private OkHttpClient globalOkHttpClient3;
 
 
@@ -209,6 +210,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
             } else {
+
                 MenuInflater inflater = getMenuInflater();
                 inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
                 setupToolBar();
@@ -414,13 +416,16 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         if (getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
-//            String optionsJsonString = bundle.getString("options");
+            String optionsJsonString = bundle.getString("options");
             photoDetail = PhotoDetail.getInstance();
             if (photoDetail.getImages() == null) {
                 finishWithResult(new JSONObject());
             }
-            //            try {
-//                JSONObject jsonObject = new JSONObject(optionsJsonString);
+            try {
+                JSONObject jsonObject = new JSONObject(optionsJsonString);
+                if(jsonObject.has("readOnly")){
+                    readOnly = jsonObject.getBoolean("readOnly");
+                }
 //                JSONArray images = jsonObject.getJSONArray("images");
 //                JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
 //                JSONArray data = jsonObject.getJSONArray("data");
@@ -452,9 +457,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 //                }
 //
 //
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
         }
         super.init();
@@ -482,8 +487,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
 
         final Button floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
-        if(photoDetail.getActionSheet() != null) {
+        if (photoDetail.getActionSheet() != null) {
             floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST")));
+            floatingActionButton.setVisibility(View.VISIBLE);
             if (floatingActionButton != null) {
                 floatingActionButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -508,8 +514,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     }
                 });
             }
-        }else{
-            floatingActionButton.setVisibility(GONE);
+        } else {
+            if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                floatingActionButton.setVisibility(View.VISIBLE);
+            }else{
+                floatingActionButton.setVisibility(GONE);
+            }
         }
 
 
@@ -1039,7 +1049,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     public void galleryAddPic(File f) {
         Uri contentUri = Uri.fromFile(f);
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,contentUri);
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
         sendBroadcast(mediaScanIntent);
     }
 
@@ -1048,6 +1058,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         int stringId = applicationInfo.labelRes;
         return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
     }
+
     private String getPicturesPath(String urlString) {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         //TODO dirty handle, may find bettery way handel data type
@@ -1062,10 +1073,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         final String appDirectoryName = getApplicationName(getApplicationContext());
 
         File storageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES),appDirectoryName);
+                Environment.DIRECTORY_PICTURES), appDirectoryName);
         String galleryPath = storageDir.getAbsolutePath() + "/" + imageFileName;
         File parentFolder = new File(galleryPath);
-        if(!parentFolder.getParentFile().exists()){
+        if (!parentFolder.getParentFile().exists()) {
             parentFolder.getParentFile().mkdir();
         }
         return galleryPath;
