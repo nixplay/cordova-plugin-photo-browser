@@ -108,6 +108,7 @@ enum Orientation {
     NSDictionary *options = [command.arguments objectAtIndex:0];
     NSArray * imagesUrls = [options objectForKey:@"images"] ;
     _data = [options objectForKey:@"data"];
+    _readOnly = [options objectForKey:@"readOnly"];
     _HTTPResponseHeaderOrientations = [NSMutableDictionary new];
     if(imagesUrls == nil || [imagesUrls count] <= 0 ){
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Argument \"images\" clould not be empty"];
@@ -220,15 +221,17 @@ enum Orientation {
         _gridViewController.selectionMode = _browser.displaySelectionButtons = YES;
         [_gridViewController.collectionView reloadData];
     }else{
-        UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
-        [newAddBackButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
-        newAddBackButton.tag = 0;
-        //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
-        //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
-        browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
-        //        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
-        //    _addAttachButton = addAttachButton;
-        _rightBarbuttonItem = newAddBackButton;
+        if(!_readOnly){
+            UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
+            [newAddBackButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
+            newAddBackButton.tag = 0;
+            //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
+            //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
+            browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
+            //        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
+            //    _addAttachButton = addAttachButton;
+            _rightBarbuttonItem = newAddBackButton;
+        }
     }
     
     _navigationController.delegate = self;
@@ -811,52 +814,32 @@ enum Orientation {
                 [items addObject:flexSpace];
             }
         }else{
-            if([_actionSheetDicArray count] > 0){
-                UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
-                [items addObject:flexSpace];
-                //            UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
-                //            fixedSpace.width = 32; // To balance action button
+            if(!_readOnly){
+                if([_actionSheetDicArray count] > 0){
+                    UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
+                    [items addObject:flexSpace];
+                    float margin = 3;
+                    CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
+                    UIButton *button = [[UIButton alloc] initWithFrame: newFrame];
+                    [button setBackgroundColor:LIGHT_BLUE_COLOR];
+                    button.layer.cornerRadius = 2; // this value vary as per your desire
+                    button.clipsToBounds = YES;
+                    
+                    [button setAttributedTitle:[self attributedString: NSLocalizedString(@"ADD_PHOTOS", nil) WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
+                    
+                    [button addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
+                    UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:button];
+                    [items addObject:addPhotoButton];
+                    [items addObject:flexSpace];
+                    _toolBar.barStyle = UIBarStyleDefault;
+                    _toolBar.barTintColor = [UIColor whiteColor];
+                }
                 
-                float margin = 3;
-                CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
-                UIButton *button = [[UIButton alloc] initWithFrame: newFrame];
-                [button setBackgroundColor:LIGHT_BLUE_COLOR];
-                button.layer.cornerRadius = 2; // this value vary as per your desire
-                button.clipsToBounds = YES;
-                
-                [button setAttributedTitle:[self attributedString: NSLocalizedString(@"ADD_PHOTOS", nil) WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
-                
-                [button addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
-                UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:button];
-                [items addObject:addPhotoButton];
-                [items addObject:flexSpace];
-                _toolBar.barStyle = UIBarStyleDefault;
-                _toolBar.barTintColor = [UIColor whiteColor];;
+            }else{
+                _toolBar.barTintColor = [UIColor clearColor];
             }
         }
-        //
-        //
-        //        UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash
-        //                                                                                          target:self action:@selector(deletePhotos:)];
-        //
-        //        //        UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"SELECT_ALL" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
-        //        //        selectAllButton  .tag = SELECTALL_TAG;
-        //        //        photoBrowser.navigationItem.leftBarButtonItem = selectAllButton;
-        //
-        //
-        //        [items addObject:deleteBarButton];
-        //        if(IS_TYPE_ALBUM){
-        //            [items addObject:flexSpace];
-        //            UIBarButtonItem * downloadPhotosButton = [[UIBarButtonItem alloc] initWithImage:DOWNLOADIMAGE_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(downloadPhotos:)];
-        //            [items addObject:downloadPhotosButton];
-        //            [items addObject:flexSpace];
-        //            UIBarButtonItem * sendtoBarButton = [[UIBarButtonItem alloc] initWithImage:SEND_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(sendTo:)];
-        //            [items addObject:sendtoBarButton];
-        //
-        //        }
-        //        //TODO add Select All at left
-        //
-        return items;
+                return items;
     }else{
         UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
         fixedSpace.width = 32; // To balance action button
@@ -871,8 +854,10 @@ enum Orientation {
             [items addObject:editCaption];
             [items addObject:flexSpace];
         }
-        UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithImage:BIN_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(deletePhoto:)];
-        [items addObject:deleteBarButton];
+        if(!_readOnly){
+            UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithImage:BIN_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(deletePhoto:)];
+            [items addObject:deleteBarButton];
+        }
         _toolBar.translucent = NO;
         _toolBar.barStyle = UIBarStyleDefault;
         _toolBar.tintColor = LIGHT_BLUE_COLOR;

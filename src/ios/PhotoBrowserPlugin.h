@@ -25,7 +25,7 @@
     NSInteger _id;
     NSString *_type;
     NSString* _dateString;
-    
+    BOOL _readOnly;
 }
 @property (copy)   NSString* callbackId;
 @property (nonatomic, retain) NSMutableArray *photos;
