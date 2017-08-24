@@ -68,6 +68,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_DESCRIPTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_PHOTOS;
@@ -175,45 +176,21 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public boolean onCreatePanelMenu(int featureId, Menu menu) {
-
-        if (!selectionMode) {
-            //TODO build aaction menu from custom data
-
-            int index = 0;
-//            if (photoDetail.getActionSheet() != null) {
-//                for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
-//
-//                    String label = actionSheet.getLabel();
-//                    String action = actionSheet.getAction();
-//                    if (action.equals(DEFAULT_ACTION_SELECT)) {
-//                        MenuItem menuItem = menu.add(0, index, 1, label);
-//                        //TODO any better way to create menu/menu icon?
-//
-
-//                        menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add") || action.equals(DEFAULT_ACTION_SELECT)) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
-//                        if (index == 0 && label.toLowerCase().contains("add")) {
-//                            menuItem.setIcon(f.getId("drawable", "ic_action_add"));
-//                        }
-//                    }
-//                    index++;
-//
-//                }
-//            }else{
-            MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
-            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-//            }
-            setupToolBar();
-        } else {
-            if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
-                MenuItem menuItem = menu.add(0, TAG_SELECT_ALL, 1, getString(f.getId("string", "SELECT_ALL")));
-                //TODO any better way to create menu/menu icon?
+        if (!readOnly) {
+            if (!selectionMode) {
+                int index = 0;
+                MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
                 menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-
-            } else {
-
-                MenuInflater inflater = getMenuInflater();
-                inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
                 setupToolBar();
+            } else {
+                if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                    MenuItem menuItem = menu.add(0, TAG_SELECT_ALL, 1, getString(f.getId("string", "SELECT_ALL")));
+                    menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                } else {
+                    MenuInflater inflater = getMenuInflater();
+                    inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
+                    setupToolBar();
+                }
             }
         }
         return true;
@@ -425,38 +402,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 JSONObject jsonObject = new JSONObject(optionsJsonString);
                 if (jsonObject.has("readOnly")) {
                     readOnly = jsonObject.getBoolean("readOnly");
+                } else {
+                    readOnly = false;
                 }
-//                JSONArray images = jsonObject.getJSONArray("images");
-//                JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
-//                JSONArray data = jsonObject.getJSONArray("data");
-//                JSONArray captions = jsonObject.getJSONArray("captions");
-//                String id = jsonObject.getString("id");
-//                name = jsonObject.getString("name");
-//                int count = jsonObject.getInt("count");
-//                String type = jsonObject.getString("type");
-//                try {
-//                    actionSheet = jsonObject.getJSONArray("actionSheet");
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//                _previewUrls = new ArrayList<String>();
-//                _thumbnailUrls = new ArrayList<String>();
-//                _captions = new ArrayList<String>();
-//                _data = new ArrayList<JSONObject>();
-//                for (int i = 0; i < images.length(); i++) {
-//                    _previewUrls.add(images.getString(i));
-//                }
-//                for (int i = 0; i < thumbnails.length(); i++) {
-//                    _thumbnailUrls.add(thumbnails.getString(i));
-//                }
-//                for (int i = 0; i < captions.length(); i++) {
-//                    _captions.add(captions.getString(i));
-//                }
-//                for (int i = 0; i < data.length(); i++) {
-//                    _data.add(data.getJSONObject(i));
-//                }
-//
-//
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -485,45 +434,55 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         TextView titleTextView = (TextView) findViewById(f.getId("id", "titleTextView"));
         titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
-
         floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
-        if (photoDetail.getActionSheet() != null) {
-            floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST")));
-            floatingActionButton.setVisibility(View.VISIBLE);
-            if (floatingActionButton != null) {
-                floatingActionButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-
-                        if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                            mask.setVisibility(View.VISIBLE);
-                        } else {
-                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                            mask.setVisibility(GONE);
-                        }
-
-                    }
-                });
+        if(readOnly){
+            try {
+                View scrollView = findViewById(f.getId("id", "scrollView"));
+                scrollView.setVisibility(GONE);
+            }catch (Exception e){
+                e.printStackTrace();
             }
-        } else {
-            if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+        }else {
+
+            if (photoDetail.getActionSheet() != null) {
+                floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST")));
                 floatingActionButton.setVisibility(View.VISIBLE);
+                if (floatingActionButton != null) {
+                    floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
 
-                floatingActionButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        try {
-                            sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+
+                            if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                                mask.setVisibility(View.VISIBLE);
+                            } else {
+                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                                mask.setVisibility(GONE);
+                            }
+
                         }
-                    }
-                });
-
+                    });
+                }
             } else {
-                floatingActionButton.setVisibility(GONE);
+                if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                    floatingActionButton.setVisibility(View.VISIBLE);
+                    floatingActionButton.setEnabled(false);
+
+                    floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+                } else {
+                    floatingActionButton.setVisibility(GONE);
+                }
             }
         }
 
@@ -1195,6 +1154,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         return photoDetail.getType().equals(KEY_ALBUM) ? View.VISIBLE : GONE;
     }
 
+    @Override
+    public int trashButtonVisiblity() {
+        return (!readOnly) ? VISIBLE : GONE;
+    }
+
     void finishWithResult(JSONObject result) {
         Bundle conData = new Bundle();
         conData.putString(Constants.RESULT, result.toString());
@@ -1269,7 +1233,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public void onItemClick(View view, int position) {
-        super.onItemClick(view,position);
+        super.onItemClick(view, position);
         //check any possitive value
         if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
             floatingActionButton.setEnabled(hasItemSelected());
@@ -1283,7 +1247,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             floatingActionButton.setEnabled(hasItemSelected());
         }
     }
-    boolean hasItemSelected(){
+
+    boolean hasItemSelected() {
         for (int i = 0; i < selections.size(); i++) {
             //add to temp lsit if not selected
             if (selections.get(i).equals("1")) {
