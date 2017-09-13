@@ -328,7 +328,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     private void sendPhotos(String action) throws JSONException {
 
-        ArrayList<String> fetchedDatas = new ArrayList<String>();
+        ArrayList<Integer> fetchedDatas = new ArrayList<Integer>();
 
 
         for (int i = 0; i < selections.size(); i++) {
@@ -336,7 +336,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             if (selections.get(i).equals("1")) {
                 JSONObject object = photoDetail.getData().get(i).toJSON();
                 String id = object.getString(KEY_ID);
-                fetchedDatas.add(id);
+                fetchedDatas.add(Integer.getInteger(id));
             }
         }
 
