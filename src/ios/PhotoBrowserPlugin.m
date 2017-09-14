@@ -100,11 +100,11 @@ enum Orientation {
 }
 
 - (void)showGallery:(CDVInvokedUrlCommand*)command {
-    
+
     [SDWebImageManager sharedManager].delegate = self;
     self.callbackId = command.callbackId;
     [self.callbackIds setValue:command.callbackId forKey:@"showGallery"];
-    
+
     NSDictionary *options = [command.arguments objectAtIndex:0];
     NSArray * imagesUrls = [options objectForKey:@"images"] ;
     _data = [options objectForKey:@"data"];
@@ -141,7 +141,7 @@ enum Orientation {
     if(_name == nil){
         _name = NSLocalizedString(@"UNTITLED",nil);
     }
-    
+
     for (NSString* url in imagesUrls)
     {
         [images addObject:[MWPhoto photoWithURL:[NSURL URLWithString: url]]];
@@ -152,7 +152,7 @@ enum Orientation {
                 photo.caption = [captions objectAtIndex:idx];
             }];
         }
-        
+
     }
     //#define DEBUG_CAPTION
 #ifdef DEBUG_CAPTION
@@ -187,35 +187,35 @@ enum Orientation {
     }else{
         self.thumbs = thumbs;
     }
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSDWebImageDownloadReceiveResponseNotification:) name:@"SDWebImageDownloadReceiveResponseNotification" object:nil];
-    
-    
+
+
     // Create & present browser
     MWPhotoBrowser *browser = [[MWPhotoBrowser alloc] initWithDelegate: self];
     _browser = browser;
     // Set options
-    
+
     browser.displayActionButton = NO; // Show action button to save, copy or email photos (defaults to NO)
     browser.startOnGrid = YES;
     browser.enableGrid = YES;
     browser.displayNavArrows = NO;
     browser.alwaysShowControls = YES;
-    
+
     [browser setCurrentPhotoIndex: photoIndex]; // Example: allows second image to be presented first
-    
+
     // Modal
-    
+
     CustomViewController *nc = [[CustomViewController alloc] initWithRootViewController:browser];
     _navigationController = nc;
-    
+
     //    UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithImage: OPTIONS_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
-    
+
     if(IS_TYPE_NIXALBUM){
         UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT_ALL", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
         [newAddBackButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
         newAddBackButton.tag = 0;
-        
+
         browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
         _rightBarbuttonItem = newAddBackButton;
         _gridViewController.selectionMode = _browser.displaySelectionButtons = YES;
@@ -233,26 +233,26 @@ enum Orientation {
             _rightBarbuttonItem = newAddBackButton;
         }
     }
-    
+
     _navigationController.delegate = self;
-    
+
     CATransition *transition = [CATransition animation];
     transition.duration = VIEWCONTROLLER_TRANSITION_DURATION;
-    
+
     transition.type = kCATransitionPush;
     transition.subtype = kCATransitionFromRight;
     [self.viewController.view.window.layer addAnimation:transition forKey:nil];
     [self.viewController presentViewController:nc animated:NO completion:^{
-        
+
     }];
-    
+
 }
 -(void) selectAllPhotos:(UIBarButtonItem *)sender{
-    
+
     UIBarButtonItem *deselectAllButton = [[UIBarButtonItem alloc] initWithTitle: NSLocalizedString(@"DESELECT_ALL", nil) style:UIBarButtonItemStylePlain target:self action:@selector(deselectAllPhotos:)];
     [deselectAllButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
     deselectAllButton.tag = SELECTALL_TAG;
-    
+
     if(IS_TYPE_NIXALBUM){
         _browser.navigationItem.rightBarButtonItem = deselectAllButton;
     }else{
@@ -262,14 +262,14 @@ enum Orientation {
         [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:YES]];
     }
     [_gridViewController.collectionView reloadData];
-    
-    
+
+
 }
 -(void) deselectAllPhotos:(UIBarButtonItem *)sender{
     UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Select All" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
     selectAllButton.tag = SELECTALL_TAG;
     [selectAllButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
-    
+
     if(IS_TYPE_NIXALBUM){
         _browser.navigationItem.rightBarButtonItem = selectAllButton;
     }else{
@@ -292,7 +292,7 @@ enum Orientation {
                 //                sender.tag = 1;
                 //                [sender setImage:nil];
                 //                [sender setTitle:NSLocalizedString(@"Cancel", nil)];
-                
+
                 UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithImage:BIN_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(deletePhotos:)];
                 deleteBarButton.tintColor = LIGHT_BLUE_COLOR;
                 _browser.navigationItem.rightBarButtonItems = @[deleteBarButton];
@@ -302,8 +302,8 @@ enum Orientation {
                 _browser.navigationItem.leftBarButtonItem = closeButton;
             }
         });
-        
-        
+
+
     }else{
         _browser.navigationItem.leftBarButtonItem = _leftBarbuttonItem;
         _browser.navigationItem.rightBarButtonItems = @[_rightBarbuttonItem];
@@ -318,8 +318,8 @@ enum Orientation {
             for (int i = 0; i < _selections.count; i++) {
                 [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
             }
-            
-            
+
+
         }
         //        _browser.navigationItem.leftBarButtonItem = _leftBarbuttonItem;
         //        _browser.navigationItem.rightBarButtonItems = @[_rightBarbuttonItem, _addAttachButton];
@@ -328,7 +328,7 @@ enum Orientation {
 }
 
 -(void) buildDialogWithCancelText:(NSString*)cancelText confirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
-    
+
     PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
     PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
     overlayAppearance.blurEnabled = NO;
@@ -340,8 +340,8 @@ enum Orientation {
     dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
     dialogAppearance.titleColor            =  TITLE_GRAY_COLOR;
     dialogAppearance.messageColor            =  [UIColor darkGrayColor];
-    
-    
+
+
     PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
                                                     message:text
                                                       image:nil
@@ -349,50 +349,50 @@ enum Orientation {
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
                                            gestureDismissal:YES
                                                  completion:nil];
-    
+
     CancelButton *cancel = [[CancelButton alloc]initWithTitle:cancelText height:60 dismissOnTap:YES action:^{
-        
+
     }];
-    
+
     DefaultButton *ok = [[DefaultButton alloc]initWithTitle:confirmtext  height:60 dismissOnTap:YES action:action];
     [ok setBackgroundColor:LIGHT_BLUE_COLOR];
     [ok setAttributedTitle:[self attributedString:confirmtext WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
     [cancel setAttributedTitle:[self attributedString:cancelText WithSize:TEXT_SIZE color:[UIColor grayColor]] forState:UIControlStateNormal];
-    
+
     [popup addButtons: @[cancel, ok]];
     _dialogView = popup;
     [_browser.navigationController presentViewController:popup animated:YES completion:nil];
-    
+
 }
 
 - (void)popupTextAreaDialogTitle:(NSString*)title message:(NSString*)message placeholder:(NSString*)placeholder action:(void (^ _Nullable)(NSString*))action{
-    
-    
+
+
     __block TextInputViewController* textViewVC = [[TextInputViewController alloc] initWithNibName:@"TextInputViewController" bundle:nil];
     textViewVC.titleString = title;
     textViewVC.messageString = message;
     textViewVC.placeholderString = placeholder;
-    
+
     __weak PhotoBrowserPlugin *weakSelf = self;
     PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES completion:^{
-        
+
     }];
     CancelButton *cancel = [[CancelButton alloc]initWithTitle:NSLocalizedString(@"CANCEL", nil) height:60 dismissOnTap:YES action:^{
-        
+
     }];
-    
+
     DefaultButton *ok = [[DefaultButton alloc]initWithTitle:NSLocalizedString(@"OK", nil)  height:60 dismissOnTap:YES action:^{
         action(textViewVC.textInputField.text);
     }];
-    
+
     [ok setBackgroundColor:LIGHT_BLUE_COLOR];
     [ok setAttributedTitle:[self attributedString:NSLocalizedString(@"OK", nil) WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
     [cancel setAttributedTitle:[self attributedString:NSLocalizedString(@"CANCEL", nil) WithSize:TEXT_SIZE color:[UIColor grayColor]] forState:UIControlStateNormal];
-    
+
     [popup addButtons: @[cancel, ok]];
     _dialogView = popup;
     [_browser.navigationController presentViewController:popup animated:YES completion:^{
-        
+
     }];
 }
 
@@ -402,17 +402,17 @@ enum Orientation {
 
 -(void)textViewDidChange:(UITextView *)textView{
     MWPhoto *photo = [self.photos objectAtIndex:_browser.currentIndex];
-    
+
     [photo setCaption:textView.text];
     [self.photos replaceObjectAtIndex:_browser.currentIndex withObject:photo];
-    
+
 }
 - (BOOL)textViewShouldEndEditing:(UITextView *)textView{
     return YES;
 }
 -(void)textViewDidBeginEditing:(UITextView *)textView
 {
-    
+
     textView.backgroundColor = [UIColor whiteColor];
     textView.textColor = [UIColor blackColor];
 }
@@ -423,7 +423,7 @@ enum Orientation {
     textView.textColor = [UIColor whiteColor];
     [self resignKeyboard:textView];
     [self endEditCaption:textView];
-    
+
 }
 - (BOOL)textViewShouldReturn:(UITextView *)textView{
     NSLog(@"textViewShouldReturn:");
@@ -443,14 +443,14 @@ enum Orientation {
     IQTextView* iqTextView = (IQTextView*)textView;
     iqTextView.shouldHidePlaceholderText = NO;
     iqTextView.placeholderText = [NSString stringWithFormat:@"%lu/%d",(unsigned long)textView.text.length, MAX_CHARACTER];
-    
+
     if(range.length + range.location > textView.text.length)
     {
         return NO;
     }
     if ([text isEqualToString:@"\n"]) {
         [textView resignFirstResponder];
-        
+
         return NO;
     }
     NSUInteger newLength = [textView.text length] + [text length] - range.length;
@@ -481,15 +481,15 @@ enum Orientation {
 
 -(void) photoBrowserDidFinishModalPresentation:(MWPhotoBrowser*) browser{
     CATransition *transition = [CATransition animation];
-    
+
     transition.duration = VIEWCONTROLLER_TRANSITION_DURATION;
     transition.delegate = self;
     transition.type = kCATransitionPush;
     transition.subtype = kCATransitionFromLeft;
     [browser.view.window.layer addAnimation:transition forKey:nil];
     [browser dismissViewControllerAnimated:NO completion:^{
-        
-        
+
+
     }];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[NSDictionary new]];
     [pluginResult setKeepCallbackAsBool:NO];
@@ -503,7 +503,8 @@ enum Orientation {
         _data = nil;
         _navigationController = nil;
         _gridViewController = nil;
-        _browser = nil;
+        //http://crashes.to/s/d93d244b66d heap corruption
+        //_browser = nil;
         _name = nil;
         _dialogView = nil;
         _rightBarbuttonItem = nil;
@@ -517,7 +518,7 @@ enum Orientation {
         _textView.text = [[self.photos objectAtIndex:index] caption];
         [_textView setFrame:[self newRectFromTextView:_textView ]];
     }
-    
+
 }
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser actionButtonPressedForPhotoAtIndex:(NSUInteger)index{
     _browser = photoBrowser;
@@ -536,9 +537,9 @@ enum Orientation {
     //    [photoBrowser hideToolBar];
     _browser = photoBrowser;
     _gridViewController = gridController;
-    
+
     gridController.automaticallyAdjustsScrollViewInsets = YES;
-    
+
     if(_rightBarbuttonItem != nil){
         photoBrowser.navigationItem.rightBarButtonItems = @[_rightBarbuttonItem];
         if(IS_TYPE_NIXALBUM){
@@ -556,7 +557,7 @@ enum Orientation {
     //    [_browser hideToolBar];
     [photoBrowser.navigationItem.leftBarButtonItem setImage:RIGHT_UIIMAGE];
     [photoBrowser.navigationItem.leftBarButtonItem setTintColor:LIGHT_BLUE_COLOR];
-    
+
     [_browser showToolBar];
     return YES;
 }
@@ -565,7 +566,7 @@ enum Orientation {
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser hideGridController:(MWGridViewController*)gridController{
     _browser = photoBrowser;
     _gridViewController = nil;
-    
+
     if(_textView != nil){
         [_textView removeFromSuperview];
     }
@@ -573,14 +574,14 @@ enum Orientation {
     photoBrowser.navigationController.navigationItem.rightBarButtonItems = nil;
     [photoBrowser.navigationItem.leftBarButtonItem setImage:CLOSE_UIIMAGE];
     [photoBrowser.navigationItem.leftBarButtonItem setTintColor:LIGHT_BLUE_COLOR];
-    
+
     [photoBrowser showToolBar];
     return YES;
 }
 
 
 - (void) addPhotos:(id) sender{
-    
+
     //    __weak PhotoBrowserPlugin *weakSelf = self;
     //    __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
     //    __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
@@ -602,7 +603,7 @@ enum Orientation {
      [dictionary setValue:[actions objectAtIndex:idx] forKey: KEY_ACTION];
      [dictionary setValue:@(_id) forKey: KEY_ID];
      [dictionary setValue:_type forKey: KEY_TYPE];
-     
+
      [dictionary setValue:@"add photo to album" forKey: @"description"];
      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
      [pluginResult setKeepCallbackAsBool:NO];
@@ -614,15 +615,15 @@ enum Orientation {
      ASBottomSheet* bottomSheet = [ASBottomSheet menuWithOptions:items];
      [bottomSheet setTitle:NSLocalizedString(@"Options", nil)];
      [bottomSheet setTintColor:[UIColor grayColor]];
-     
+
      [bottomSheet showMenuFromViewController:_browser];
-     
+
      */
     __weak PhotoBrowserPlugin *weakSelf = self;
 #if DEBUG
     __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
     __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
-    
+
 #else
     __block NSArray * titles = [_actionSheetDicArray valueForKey:KEY_LABEL];
     __block NSArray * actions = [_actionSheetDicArray valueForKey:KEY_ACTION];
@@ -633,12 +634,12 @@ enum Orientation {
     for(int i = 0 ;i < [actions count]; i ++){
         GPActivity* activity = [GPActivity customActivity:[actions objectAtIndex:i] actionHandler:^(GPActivity *activity, NSDictionary *userInfo) {
             NSLog(@"Activity done: %@", activity);
-            
+
             NSMutableDictionary *dictionary = [NSMutableDictionary new];
             [dictionary setValue:activity.activityType forKey: KEY_ACTION];
             [dictionary setValue:@(_id) forKey: KEY_ID];
             [dictionary setValue:_type forKey: KEY_TYPE];
-            
+
             [dictionary setValue:@"add photo to album" forKey: @"description"];
             CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
             [pluginResult setKeepCallbackAsBool:NO];
@@ -647,11 +648,11 @@ enum Orientation {
         }];
         activity.title = [titles objectAtIndex:i];
         activity.image = BUNDLE_UIIMAGE([icons objectAtIndex:i%[icons count]]);
-        
+
         [activities addObject:activity];
     }
-    
-    
+
+
     GPActivityViewController *controller = [[GPActivityViewController alloc] initWithActivities:activities completion:^(NSString *activityType, BOOL completed) {
         if (completed) {
             if (activityType) {
@@ -659,20 +660,20 @@ enum Orientation {
             }
         }
     }];
-    
+
     [controller setTitle:([_type isEqualToString:KEY_ALBUM])? NSLocalizedString(@"ADD_PHOTOS_TO_ALBUM", nil) : NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil)];
-    
-    
+
+
     //    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
     //        [controller presentFromBarButton:sender animated:YES];
     //    } else {
     UIButton *button = (UIButton *)sender;
     [controller presentFromRect:button.frame inView:button.superview animated:YES];
     //    }
-    
-    
-    
-    
+
+
+
+
 }
 -(void) addPhotosToPlaylist:(id) sender{
     __block NSMutableArray *fetchArray = [NSMutableArray new];
@@ -690,17 +691,17 @@ enum Orientation {
         [dictionary setValue:fetchArray forKey: KEY_PHOTOS];
         [dictionary setValue:@(_id) forKey: KEY_ID];
         [dictionary setValue:_type forKey: KEY_TYPE];
-        
+
         [dictionary setValue:@"add photo to album" forKey: @"description"];
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
         [pluginResult setKeepCallbackAsBool:NO];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
         [self photoBrowserDidFinishModalPresentation:_browser];
     }
-    
+
 }
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser setNavBarAppearance:(UINavigationBar *)navigationBar{
-    
+
     _browser = photoBrowser;
     [photoBrowser.navigationController setNavigationBarHidden:NO animated:NO];
     navigationBar.barStyle = UIBarStyleDefault;
@@ -712,26 +713,26 @@ enum Orientation {
 
 -(UIView*) setTitle:(NSString*)title subtitle:(NSString*)subtitle {
     UILabel *titleLabel = [[UILabel alloc] initWithFrame: CGRectMake(0,-5,100, 18)];
-    
+
     [titleLabel setAttributedText:[self attributedString:title WithSize:TEXT_SIZE color:TITLE_GRAY_COLOR]];
     titleLabel.backgroundColor = [UIColor clearColor];
     titleLabel.numberOfLines = 1;
     titleLabel.minimumScaleFactor = 0.8f;
     titleLabel.textAlignment = NSTextAlignmentCenter;
     [titleLabel sizeToFit];
-    
+
     UILabel *subtitleLabel = [[UILabel alloc] initWithFrame: CGRectMake(0,18,0,0)];
     [subtitleLabel setAttributedText:[self attributedString:subtitle WithSize:12 color:TITLE_GRAY_COLOR]];
     subtitleLabel.backgroundColor = [UIColor clearColor];
     subtitleLabel.textAlignment = NSTextAlignmentCenter;
     [subtitleLabel sizeToFit];
-    
-    
-    
+
+
+
     UIView *titleView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, fmin((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 200.0f : 150.0f,fmax(titleLabel.frame.size.width, subtitleLabel.frame.size.width)), 30)];
     [titleView addSubview:titleLabel];
     [titleView addSubview:subtitleLabel];
-    
+
     //    float widthDiff = subtitleLabel.frame.size.width - titleLabel.frame.size.width;
     //    [titleLabel addConstraint:];
     //    [subtitleLabel addConstraint:[NSLayoutConstraint constraintWithItem:subtitleLabel
@@ -741,7 +742,7 @@ enum Orientation {
     //                                                              attribute:NSLayoutAttributeCenterX
     //                                                             multiplier:1.f constant:0.f]];
     UIEdgeInsets padding = UIEdgeInsetsMake(-5, 0, 5, 0);
-    
+
     [titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerX.equalTo(titleView);
         make.top.equalTo(titleView.mas_top).with.offset(padding.top);
@@ -752,7 +753,7 @@ enum Orientation {
         make.bottom.equalTo(titleView.mas_bottom).with.offset(padding.bottom);
         make.width.equalTo(titleView.mas_width);
     }];
-    
+
     //    if (widthDiff > 0) {
     //        CGRect frame = titleLabel.frame;
     //        frame.origin.x = widthDiff / 2;
@@ -780,7 +781,7 @@ enum Orientation {
     //                                                                            constant:0.0f];
     ////        [titleView addConstraint:widthConstraint];
     //    }
-    
+
     return titleView;
 }
 
@@ -795,7 +796,7 @@ enum Orientation {
     _toolBar = toolBar;
     if(_gridViewController != nil){
         NSMutableArray *items = [[NSMutableArray alloc] init];
-        
+
         if(_browser.displaySelectionButtons){
             if(IS_TYPE_NIXALBUM){
                 float margin = 3;
@@ -807,7 +808,7 @@ enum Orientation {
                 button.layer.cornerRadius = 2; // this value vary as per your desire
                 button.clipsToBounds = YES;
                 [button setTitle:NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil) forState:UIControlStateNormal];
-                
+
                 [button addTarget:self action:@selector(addPhotosToPlaylist:) forControlEvents:UIControlEventTouchUpInside];
                 UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:button];
                 [items addObject:addPhotoButton];
@@ -824,9 +825,9 @@ enum Orientation {
                     [button setBackgroundColor:LIGHT_BLUE_COLOR];
                     button.layer.cornerRadius = 2; // this value vary as per your desire
                     button.clipsToBounds = YES;
-                    
+
                     [button setAttributedTitle:[self attributedString: NSLocalizedString(@"ADD_PHOTOS", nil) WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
-                    
+
                     [button addTarget:self action:@selector(addPhotos:) forControlEvents:UIControlEventTouchUpInside];
                     UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:button];
                     [items addObject:addPhotoButton];
@@ -834,7 +835,7 @@ enum Orientation {
                     _toolBar.barStyle = UIBarStyleDefault;
                     _toolBar.barTintColor = [UIColor whiteColor];
                 }
-                
+
             }else{
                 _toolBar.barTintColor = [UIColor clearColor];
             }
@@ -847,7 +848,7 @@ enum Orientation {
         NSMutableArray *items = [[NSMutableArray alloc] init];
         if(IS_TYPE_ALBUM){
             UIBarButtonItem * downloadPhotoButton = [[UIBarButtonItem alloc] initWithImage:DOWNLOADIMAGE_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(downloadPhoto:)];
-            
+
             UIBarButtonItem * editCaption = [[UIBarButtonItem alloc] initWithImage:EDIT_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(beginEditCaption:)];
             [items addObject:downloadPhotoButton];
             [items addObject:flexSpace];
@@ -864,8 +865,8 @@ enum Orientation {
         //        _toolBar.barTintColor = [UIColor whiteColor];
         return items;
     }
-    
-    
+
+
 }
 
 -(void) downloadPhoto:(id)sender{
@@ -873,28 +874,28 @@ enum Orientation {
     __block MBProgressHUD *progressHUD = [MBProgressHUD showHUDAddedTo:_browser.view
                                                               animated:YES];
     progressHUD.mode = MBProgressHUDModeDeterminate;
-    
+
     progressHUD.label.text = NSLocalizedString(@"DOWNLOADING",nil);
     [progressHUD showAnimated:YES];
-    
+
     @try{
         NSString *originalUrl = [[_data objectAtIndex:_browser.currentIndex] objectForKey:@"originalUrl"];
         if(originalUrl != nil){
             [[SDWebImageManager sharedManager] loadImageWithURL:[NSURL URLWithString:originalUrl] options:0 progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
                 [progressHUD setProgress:(receivedSize*1.0f)/(expectedSize*1.0f) ];
             } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, SDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
-                
+
                 if ([PHObject class]) {
                     __block PHAssetChangeRequest *assetRequest;
                     __block PHObjectPlaceholder *placeholder;
                     // Save to the album
                     [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-                        
+
                         [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
                             assetRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
                             placeholder = [assetRequest placeholderForCreatedAsset];
                         } completionHandler:^(BOOL success, NSError *error) {
-                            
+
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 NSString *message;
                                 NSString *title;
@@ -914,21 +915,21 @@ enum Orientation {
                                                                       otherButtonTitles:nil];
                                 [alert show];
                             });
-                            
+
                         }];
                     }];
                 }
-                
-                
+
+
             }];
         }else{
             NSString *message;
             NSString *title;
             [progressHUD hideAnimated:YES];
-            
+
             title = NSLocalizedString(@"Error", @"");
             message =  NSLocalizedString(@"Photo is not available", @"");
-            
+
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
                                                             message:message
                                                            delegate:nil
@@ -961,11 +962,11 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         __block MBProgressHUD *progressHUD = [MBProgressHUD showHUDAddedTo:_browser.view
                                                                   animated:YES];
         progressHUD.mode = MBProgressHUDModeDeterminate;
-        
+
         progressHUD.label.text = NSLocalizedString(@"Downloading",nil);
         [progressHUD showAnimated:YES];
-        
-        
+
+
         [self downloadImages:urls total:[urls count] received:0 progress:^(float progress) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [progressHUD setProgress:progress];
@@ -975,7 +976,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                 [progressHUD hideAnimated:YES];
                 NSString *message;
                 NSString *title;
-                
+
                 if (error == nil) {
                     title = NSLocalizedString(@"Images Saved", @"");
                     message = NSLocalizedString(@"The image was placed in your photo album.", @"");
@@ -991,11 +992,11 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                                                       otherButtonTitles:nil];
                 [alert show];
             });
-            
-            
+
+
         } ];
     }
-    
+
 }
 
 -(void) downloadImages:(NSArray*)urls total:(NSInteger)total received:(NSInteger)received progress:(DownloaderProgressBlock) progressBlack complete:(DownloaderCompletedBlock)completeBlock{
@@ -1003,13 +1004,13 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     [manager loadImageWithURL:[NSURL URLWithString:[urls firstObject]] options:0 progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
         float progressOfATask = ((receivedSize*1.0f)/(expectedSize*1.0f))*(1.0f/total*1.0f);
         progressBlack(((received*1.0f)/(total*1.0f))+progressOfATask);
-        
+
     } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, SDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
         if ([PHObject class]) {
             __block PHAssetChangeRequest *assetRequest;
             __block PHObjectPlaceholder *placeholder;
             [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-                
+
                 [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
                     assetRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
                     placeholder = [assetRequest placeholderForCreatedAsset];
@@ -1038,26 +1039,26 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     NSString* docsPath = [NSTemporaryDirectory()stringByStandardizingPath];
     NSFileManager* fileMgr = [[NSFileManager alloc] init]; // recommended by Apple (vs [NSFileManager defaultManager]) to be threadsafe
     NSString* filePath;
-    
+
     // generate unique file name
     int i = 1;
     do {
         filePath = [NSString stringWithFormat:@"%@/%@%03d.%@", docsPath, CDV_PHOTO_PREFIX, i++, extension];
     } while ([fileMgr fileExistsAtPath:filePath]);
-    
+
     return filePath;
 }
 
 
 -(void) beginEditCaption:(UIBarButtonItem*)sender{
-    
+
     if(_browser != nil){
         _browser.alwaysShowControls = YES;
     }
     if(_textView == nil){
         float height = self.navigationController.view.frame.size.height*(1.0f/6.0f);
         float y = self.navigationController.view.frame.size.height - height ;
-        
+
         _textView = [[IQTextView alloc ] initWithFrame:CGRectMake(0, y, self.navigationController.view.frame.size.width, height*.5)];
         _textView.delegate = self;
         _textView.backgroundColor = [UIColor blackColor];
@@ -1068,9 +1069,9 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         [[IQKeyboardManager sharedManager] preventShowingBottomBlankSpace];
     }
     __block MWPhoto *photo = [self.photos objectAtIndex:[_browser currentIndex]];
-    
+
     _textView.text = photo.caption;
-    
+
     _textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
     [_textView setFrame:[self newRectFromTextView:_textView ]];
     [_browser.view addSubview:_textView];
@@ -1085,7 +1086,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 -(void) endEditCaption:(id)sender{
     _browser.alwaysShowControls = NO;
     [[self.photos objectAtIndex:_browser.currentIndex] setCaption: _textView.text];
-    
+
     [_browser reloadData];
     [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
     NSMutableDictionary *dictionary = [NSMutableDictionary new];
@@ -1137,23 +1138,23 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             }
         }
     }];
-    
+
 }
 -(void) deletePhotos:(id)sender{
-    
+
     __block NSMutableArray *fetchArray = [NSMutableArray new];
     __block NSMutableArray* tempPhotos = [NSMutableArray new];
     __block NSMutableArray* tempThumbs = [NSMutableArray new];
     __block NSMutableArray* tempSelections = [NSMutableArray new];
     __block NSMutableArray* tempData = [NSMutableArray new];
-    
+
     [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
             NSDictionary* object = [_data objectAtIndex:idx];
             if([object objectForKey:KEY_ID] != nil){
                 [fetchArray addObject: [object objectForKey:KEY_ID]];
             }
-            
+
         }else{
             [tempPhotos addObject: [_photos objectAtIndex:idx]];
             [tempThumbs addObject: [_thumbs objectAtIndex:idx]];
@@ -1163,8 +1164,8 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     }];
     if([fetchArray count] > 0 ){
         [self buildDialogWithCancelText:NSLocalizedString(@"Cancel", nil) confirmText:NSLocalizedString(@"Delete", nil) title:NSLocalizedString(@"Delete Photos", nil) text:NSLocalizedString(@"Are you sure you want to delete the selected photos?", nil) action:^{
-            
-            
+
+
             self.photos = tempPhotos;
             self.thumbs = tempThumbs;
             _selections = tempSelections;
@@ -1172,7 +1173,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             if([_photos count]>1){
                 [_browser setCurrentPhotoIndex:0];
             }
-            
+
             _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
             NSMutableDictionary *dictionary = [NSMutableDictionary new];
             [dictionary setValue:fetchArray forKey: KEY_PHOTOS];
@@ -1190,10 +1191,10 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             }
         }];
     }
-    
+
 }
 -(void) sendTo:(id)sender{
-    
+
     __block NSMutableArray *fetchArray = [NSMutableArray new];
     [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
@@ -1201,7 +1202,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             if([object objectForKey:KEY_ID] != nil){
                 [fetchArray addObject: [object objectForKey:KEY_ID]];
             }
-            
+
         }
     }];
     if([fetchArray count] > 0 ){
@@ -1216,15 +1217,15 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
         [self photoBrowserDidFinishModalPresentation:_browser];
     }
-    
+
 }
 -(void) actionButtonPressed:(id)sender{
-    
+
 }
 
 
 -(void)onSDWebImageDownloadReceiveResponseNotification:(NSNotification*)notification{
-    
+
     SDWebImageDownloaderOperation *operation = ((SDWebImageDownloaderOperation *)[notification valueForKey:@"object"]);
     NSHTTPURLResponse* response = ((NSHTTPURLResponse*)operation.response);
     NSURL *url = [response URL];
@@ -1245,7 +1246,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         return retImage;
     }
     return image;
-    
+
 }
 
 UIImage* rotate(UIImage* src, enum Orientation orientation)
@@ -1265,19 +1266,19 @@ UIImage* rotate(UIImage* src, enum Orientation orientation)
             rotation = 0;
             break;
     }
-    
+
     CGAffineTransform t = CGAffineTransformMakeRotation(rotation);
     CGRect sizeRect = CGRectMake(0, 0, src.size.width, src.size.height);
     CGRect destRect = CGRectApplyAffineTransform(sizeRect, t);
     CGSize destinationSize = destRect.size;
-    
+
     // Draw image
     UIGraphicsBeginImageContext(destinationSize);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextTranslateCTM(context, destinationSize.width / 2.0f, destinationSize.height / 2.0f);
     CGContextRotateCTM(context, rotation);
     [src drawInRect:CGRectMake(-src.size.width / 2.0f, -src.size.height / 2.0f, src.size.width, src.size.height)];
-    
+
     // Save image
     UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
@@ -1286,7 +1287,7 @@ UIImage* rotate(UIImage* src, enum Orientation orientation)
 
 -(NSAttributedString *) attributedString:(NSString*)string WithSize:(NSInteger)size color:(UIColor*)color{
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc]init];
-    
+
     NSDictionary *dictAttr0 = [self attributedDirectoryWithSize:size color:color];
     NSAttributedString *attr0 = [[NSAttributedString alloc]initWithString:string attributes:dictAttr0];
     [attributedString appendAttributedString:attr0];
