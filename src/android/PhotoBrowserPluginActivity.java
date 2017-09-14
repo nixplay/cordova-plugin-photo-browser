@@ -68,6 +68,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_ACTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_DESCRIPTION;
 import static com.creedon.cordova.plugin.photobrowser.PhotoBrowserPlugin.KEY_PHOTOS;
@@ -129,7 +130,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     };
     private BottomSheetBehavior<View> mBottomSheetBehavior;
     private View mask;
-//    private OkHttpClient globalOkHttpClient3;
+    private boolean readOnly;
+    private Button floatingActionButton;
 
 
     interface PhotosDownloadListener {
@@ -174,44 +176,21 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public boolean onCreatePanelMenu(int featureId, Menu menu) {
-
-        if (!selectionMode) {
-            //TODO build aaction menu from custom data
-
-            int index = 0;
-//            if (photoDetail.getActionSheet() != null) {
-//                for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
-//
-//                    String label = actionSheet.getLabel();
-//                    String action = actionSheet.getAction();
-//                    if (action.equals(DEFAULT_ACTION_SELECT)) {
-//                        MenuItem menuItem = menu.add(0, index, 1, label);
-//                        //TODO any better way to create menu/menu icon?
-//
-
-//                        menuItem.setShowAsAction((index == 0 && label.toLowerCase().contains("add") || action.equals(DEFAULT_ACTION_SELECT)) ? MenuItem.SHOW_AS_ACTION_ALWAYS : MenuItem.SHOW_AS_ACTION_NEVER);
-//                        if (index == 0 && label.toLowerCase().contains("add")) {
-//                            menuItem.setIcon(f.getId("drawable", "ic_action_add"));
-//                        }
-//                    }
-//                    index++;
-//
-//                }
-//            }else{
-            MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
-            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-//            }
-            setupToolBar();
-        } else {
-            if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
-                MenuItem menuItem = menu.add(0, TAG_SELECT_ALL, 1, getString(f.getId("string", "SELECT_ALL")));
-                //TODO any better way to create menu/menu icon?
+        if (!readOnly) {
+            if (!selectionMode) {
+                int index = 0;
+                MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
                 menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-
-            } else {
-                MenuInflater inflater = getMenuInflater();
-                inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
                 setupToolBar();
+            } else {
+                if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                    MenuItem menuItem = menu.add(0, TAG_SELECT_ALL, 1, getString(f.getId("string", "SELECT_ALL")));
+                    menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                } else {
+                    MenuInflater inflater = getMenuInflater();
+                    inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
+                    setupToolBar();
+                }
             }
         }
         return true;
@@ -349,7 +328,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     private void sendPhotos(String action) throws JSONException {
 
-        ArrayList<String> fetchedDatas = new ArrayList<String>();
+        ArrayList<Integer> fetchedDatas = new ArrayList<Integer>();
 
 
         for (int i = 0; i < selections.size(); i++) {
@@ -357,7 +336,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             if (selections.get(i).equals("1")) {
                 JSONObject object = photoDetail.getData().get(i).toJSON();
                 String id = object.getString(KEY_ID);
-                fetchedDatas.add(id);
+                fetchedDatas.add(Integer.parseInt(id));
             }
         }
 
@@ -414,177 +393,175 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
         if (getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
-//            String optionsJsonString = bundle.getString("options");
+            String optionsJsonString = bundle.getString("options");
             photoDetail = PhotoDetail.getInstance();
             if (photoDetail.getImages() == null) {
                 finishWithResult(new JSONObject());
             }
-            //            try {
-//                JSONObject jsonObject = new JSONObject(optionsJsonString);
-//                JSONArray images = jsonObject.getJSONArray("images");
-//                JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
-//                JSONArray data = jsonObject.getJSONArray("data");
-//                JSONArray captions = jsonObject.getJSONArray("captions");
-//                String id = jsonObject.getString("id");
-//                name = jsonObject.getString("name");
-//                int count = jsonObject.getInt("count");
-//                String type = jsonObject.getString("type");
-//                try {
-//                    actionSheet = jsonObject.getJSONArray("actionSheet");
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//                _previewUrls = new ArrayList<String>();
-//                _thumbnailUrls = new ArrayList<String>();
-//                _captions = new ArrayList<String>();
-//                _data = new ArrayList<JSONObject>();
-//                for (int i = 0; i < images.length(); i++) {
-//                    _previewUrls.add(images.getString(i));
-//                }
-//                for (int i = 0; i < thumbnails.length(); i++) {
-//                    _thumbnailUrls.add(thumbnails.getString(i));
-//                }
-//                for (int i = 0; i < captions.length(); i++) {
-//                    _captions.add(captions.getString(i));
-//                }
-//                for (int i = 0; i < data.length(); i++) {
-//                    _data.add(data.getJSONObject(i));
-//                }
-//
-//
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
+            try {
+                JSONObject jsonObject = new JSONObject(optionsJsonString);
+                if (jsonObject.has("readOnly")) {
+                    readOnly = jsonObject.getBoolean("readOnly");
+                } else {
+                    readOnly = false;
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
         }
         super.init();
+        try {
+            if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                setupSelectionMode(true);
+                findViewById(f.getId("id", "floatingButton")).setVisibility(View.VISIBLE);
+            }
 
-        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
-            setupSelectionMode(true);
-            findViewById(f.getId("id", "floatingButton")).setVisibility(View.VISIBLE);
-        }
-
-        View bottomSheet = findViewById(f.getId("id", "bottom_sheet1"));
-        mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-        mask = findViewById(f.getId("id", "mask"));
-        mask.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
-                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                    mask.setVisibility(GONE);
+            View bottomSheet = findViewById(f.getId("id", "bottom_sheet1"));
+            mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+            mask = findViewById(f.getId("id", "mask"));
+            mask.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+                        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                        mask.setVisibility(GONE);
+                    }
                 }
-            }
-        });
-        mBottomSheetBehavior.setHideable(true);
-        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        TextView titleTextView = (TextView) findViewById(f.getId("id", "titleTextView"));
-        titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
-
-        final Button floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
-        if(photoDetail.getActionSheet() != null) {
-            floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST")));
-            if (floatingActionButton != null) {
-                floatingActionButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
-                            try {
-                                sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-
-                            if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                                mask.setVisibility(View.VISIBLE);
-                            } else {
-                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                                mask.setVisibility(GONE);
-                            }
-                        }
-                    }
-                });
-            }
-        }else{
-            floatingActionButton.setVisibility(GONE);
-        }
-
-
-        LinearLayout sheetLinearLayout = (LinearLayout) findViewById(f.getId("id", "sheetLinearLayout"));
-        if (photoDetail.getActionSheet() != null) {
-            int index = 0;
-            float weight = 1.0f / photoDetail.getActionSheet().size();
-            for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
+            });
+            mBottomSheetBehavior.setHideable(true);
+            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            TextView titleTextView = (TextView) findViewById(f.getId("id", "titleTextView"));
+            titleTextView.setText(getString(f.getId("string", "ADD_PHOTOS")));
+            floatingActionButton = (Button) findViewById(f.getId("id", "floatingButton"));
+            if (readOnly) {
                 try {
-                    String label = actionSheet.getLabel();
-                    final String action = actionSheet.getAction();
-                    Button imageButton = new Button(this, null, android.R.style.Widget_Button_Small);//@android:style/Widget.Button.Small
-
-
-                    Drawable drawable = null;
-                    if (index % 3 == 0) {
-                        drawable = getResources().getDrawable(com.creedon.androidphotobrowser.R.drawable.camera);
-
-                    } else if (index % 3 == 1) {
-                        drawable = getResources().getDrawable(com.creedon.androidphotobrowser.R.drawable.photolibrary);
-                    } else if (index % 3 == 2) {
-                        drawable = getResources().getDrawable(com.creedon.androidphotobrowser.R.drawable.nixplayalbum);
-                    }
-                    if (drawable != null) {
-
-                        int h = drawable.getIntrinsicHeight();
-                        int w = drawable.getIntrinsicWidth();
-                        drawable.setBounds(0, 0, w, h);
-                        imageButton.setBackgroundColor(0x00000000);
-                        imageButton.setCompoundDrawables(null, drawable, null, null);
-                        imageButton.setText(label);
-                        imageButton.setTextSize(16);
-                        imageButton.setTextColor(0x4A4A4A);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            imageButton.setTextAppearance(f.getId("style", "AppTheme"));
-                            imageButton.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                        } else {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                                imageButton.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                            }
-                            imageButton.setTextAppearance(this, f.getId("style", "AppTheme"));
-                        }
-
-                    }
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, weight);
-                    layoutParams.setMargins(20, 0, 0, 0);
-                    imageButton.setLayoutParams(layoutParams);
-
-                    imageButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            JSONObject res = new JSONObject();
-                            try {
-                                res.put(KEY_ACTION, action);
-                                res.put(KEY_ID, photoDetail.getId());
-                                res.put(KEY_TYPE, photoDetail.getType());
-                                res.put(KEY_DESCRIPTION, "add photo to album");
-                                finishWithResult(res);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                            mask.setVisibility(GONE);
-
-                        }
-                    });
-
-                    sheetLinearLayout.addView(imageButton);
+                    View scrollView = findViewById(f.getId("id", "scrollView"));
+                    scrollView.setVisibility(GONE);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                index++;
-                if (index == 3)
-                    break;
+            } else {
+
+                if (photoDetail.getActionSheet() != null) {
+                    floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST")));
+                    floatingActionButton.setVisibility(View.VISIBLE);
+                    if (floatingActionButton != null) {
+                        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+
+                                if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                                    mask.setVisibility(View.VISIBLE);
+                                } else {
+                                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                                    mask.setVisibility(GONE);
+                                }
+
+                            }
+                        });
+                    }
+                } else {
+                    if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                        floatingActionButton.setVisibility(View.VISIBLE);
+                        floatingActionButton.setEnabled(false);
+
+                        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                try {
+                                    sendPhotos(DEFAULT_ACTION_ADDTOPLAYLIST);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+
+                    } else {
+                        floatingActionButton.setVisibility(GONE);
+                    }
+                }
             }
+
+
+            LinearLayout sheetLinearLayout = (LinearLayout) findViewById(f.getId("id", "sheetLinearLayout"));
+            if (photoDetail.getActionSheet() != null) {
+                int index = 0;
+                float weight = 1.0f / photoDetail.getActionSheet().size();
+                for (ActionSheet actionSheet : photoDetail.getActionSheet()) {
+                    try {
+                        String label = actionSheet.getLabel();
+                        final String action = actionSheet.getAction();
+                        Button imageButton = new Button(this, null, android.R.style.Widget_Button_Small);//@android:style/Widget.Button.Small
+
+
+                        Drawable drawable = null;
+                        if (index % 3 == 0) {
+                            drawable = getResources().getDrawable(com.creedon.androidphotobrowser.R.drawable.camera);
+
+                        } else if (index % 3 == 1) {
+                            drawable = getResources().getDrawable(com.creedon.androidphotobrowser.R.drawable.photolibrary);
+                        } else if (index % 3 == 2) {
+                            drawable = getResources().getDrawable(com.creedon.androidphotobrowser.R.drawable.nixplayalbum);
+                        }
+                        if (drawable != null) {
+
+                            int h = drawable.getIntrinsicHeight();
+                            int w = drawable.getIntrinsicWidth();
+                            drawable.setBounds(0, 0, w, h);
+                            imageButton.setBackgroundColor(0x00000000);
+                            imageButton.setCompoundDrawables(null, drawable, null, null);
+                            imageButton.setText(label);
+                            imageButton.setTextSize(16);
+                            imageButton.setTextColor(0x4A4A4A);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                imageButton.setTextAppearance(f.getId("style", "AppTheme"));
+                                imageButton.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                            } else {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                                    imageButton.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                                }
+                                imageButton.setTextAppearance(this, f.getId("style", "AppTheme"));
+                            }
+
+                        }
+                        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, weight);
+                        layoutParams.setMargins(20, 0, 0, 0);
+                        imageButton.setLayoutParams(layoutParams);
+
+                        imageButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                JSONObject res = new JSONObject();
+                                try {
+                                    res.put(KEY_ACTION, action);
+                                    res.put(KEY_ID, photoDetail.getId());
+                                    res.put(KEY_TYPE, photoDetail.getType());
+                                    res.put(KEY_DESCRIPTION, "add photo to album");
+                                    finishWithResult(res);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                                mask.setVisibility(GONE);
+
+                            }
+                        });
+
+                        sheetLinearLayout.addView(imageButton);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    index++;
+                    if (index == 3)
+                        break;
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -1039,7 +1016,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     public void galleryAddPic(File f) {
         Uri contentUri = Uri.fromFile(f);
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,contentUri);
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
         sendBroadcast(mediaScanIntent);
     }
 
@@ -1048,6 +1025,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         int stringId = applicationInfo.labelRes;
         return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
     }
+
     private String getPicturesPath(String urlString) {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         //TODO dirty handle, may find bettery way handel data type
@@ -1062,10 +1040,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         final String appDirectoryName = getApplicationName(getApplicationContext());
 
         File storageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES),appDirectoryName);
+                Environment.DIRECTORY_PICTURES), appDirectoryName);
         String galleryPath = storageDir.getAbsolutePath() + "/" + imageFileName;
         File parentFolder = new File(galleryPath);
-        if(!parentFolder.getParentFile().exists()){
+        if (!parentFolder.getParentFile().exists()) {
             parentFolder.getParentFile().mkdir();
         }
         return galleryPath;
@@ -1179,6 +1157,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         return photoDetail.getType().equals(KEY_ALBUM) ? View.VISIBLE : GONE;
     }
 
+    @Override
+    public int trashButtonVisiblity() {
+        return (!readOnly) ? VISIBLE : GONE;
+    }
+
     void finishWithResult(JSONObject result) {
         Bundle conData = new Bundle();
         conData.putString(Constants.RESULT, result.toString());
@@ -1251,4 +1234,30 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 .show();
     }
 
+    @Override
+    public void onItemClick(View view, int position) {
+        super.onItemClick(view, position);
+        //check any possitive value
+        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+            floatingActionButton.setEnabled(hasItemSelected());
+        }
+    }
+
+    @Override
+    public void onItemLongClick(View view, int position) {
+        super.onItemLongClick(view, position);
+        if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+            floatingActionButton.setEnabled(hasItemSelected());
+        }
+    }
+
+    boolean hasItemSelected() {
+        for (int i = 0; i < selections.size(); i++) {
+            //add to temp lsit if not selected
+            if (selections.get(i).equals("1")) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
