@@ -473,6 +473,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     }
                 } else {
                     if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                        floatingActionButton.setText(ctaText);
                         floatingActionButton.setVisibility(View.VISIBLE);
                         floatingActionButton.setEnabled(false);
 
