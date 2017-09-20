@@ -10,6 +10,7 @@
 #import "MWPhotoBrowser.h"
 #import "CustomViewController.h"
 #import "MWGridViewController.h"
+#import "MWCommon.h"
 #import "TextInputViewController.h"
 #import <Cordova/CDVViewController.h>
 #import "UIImage+MWPhotoBrowser.h"
@@ -740,17 +741,7 @@ enum Orientation {
     UIView *titleView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, fmin((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 200.0f : 150.0f,fmax(titleLabel.frame.size.width, subtitleLabel.frame.size.width)), 30)];
     [titleView addSubview:titleLabel];
     [titleView addSubview:subtitleLabel];
-    
-    //    float widthDiff = subtitleLabel.frame.size.width - titleLabel.frame.size.width;
-    //    [titleLabel addConstraint:];
-    //    [subtitleLabel addConstraint:[NSLayoutConstraint constraintWithItem:subtitleLabel
-    //                                                              attribute:NSLayoutAttributeCenterX
-    //                                                              relatedBy:NSLayoutRelationEqual
-    //                                                                 toItem:titleView
-    //                                                              attribute:NSLayoutAttributeCenterX
-    //                                                             multiplier:1.f constant:0.f]];
-    UIEdgeInsets padding = UIEdgeInsetsMake(-5, 0, 5, 0);
-    
+    UIEdgeInsets padding = UIEdgeInsetsMake(SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"11.0")?0:-5, 0, SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"11.0")?0:5, 0);
     [titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerX.equalTo(titleView);
         make.top.equalTo(titleView.mas_top).with.offset(padding.top);
