@@ -26,7 +26,7 @@
     NSString *_type;
     NSString* _dateString;
     BOOL _readOnly;
-    NSString *ctaText;
+    NSString *_ctaText;
 }
 @property (copy)   NSString* callbackId;
 @property (nonatomic, retain) NSMutableArray *photos;
