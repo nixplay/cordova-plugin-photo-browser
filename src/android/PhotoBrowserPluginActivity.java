@@ -132,6 +132,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     private View mask;
     private boolean readOnly;
     private Button floatingActionButton;
+    private String ctaText;
 
 
     interface PhotosDownloadListener {
@@ -394,6 +395,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         if (getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
             String optionsJsonString = bundle.getString("options");
+
             photoDetail = PhotoDetail.getInstance();
             if (photoDetail.getImages() == null) {
                 finishWithResult(new JSONObject());
@@ -404,6 +406,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     readOnly = jsonObject.getBoolean("readOnly");
                 } else {
                     readOnly = false;
+                }
+                if(jsonObject.has("ctaText")){
+                    ctaText = jsonObject.getString("ctaText");
+                }else{
+                    ctaText = getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST"));
                 }
 
             } catch (JSONException e) {
@@ -445,7 +452,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             } else {
 
                 if (photoDetail.getActionSheet() != null) {
-                    floatingActionButton.setText(getString(f.getId("string", photoDetail.getType().equals(KEY_ALBUM) ? "ADD_PHOTOS" : "ADD_PHOTOS_TO_PLAYLIST")));
+                    floatingActionButton.setText(ctaText);
                     floatingActionButton.setVisibility(View.VISIBLE);
                     if (floatingActionButton != null) {
                         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -466,6 +473,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                     }
                 } else {
                     if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                        floatingActionButton.setText(ctaText);
                         floatingActionButton.setVisibility(View.VISIBLE);
                         floatingActionButton.setEnabled(false);
 
