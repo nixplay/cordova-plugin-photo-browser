@@ -421,13 +421,14 @@ enum Orientation {
 }
 -(void)textViewDidBeginEditing:(UITextView *)textView
 {
-    
+    _browser.alwaysShowControls = YES;
     textView.backgroundColor = [UIColor whiteColor];
     textView.textColor = [UIColor blackColor];
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
+    _browser.alwaysShowControls = NO;
     textView.backgroundColor = [UIColor blackColor];
     textView.textColor = [UIColor whiteColor];
     [self resignKeyboard:textView];
@@ -1064,7 +1065,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         _textView.textColor = [UIColor whiteColor];
         _textView.font = [UIFont systemFontOfSize:17];
         _textView.returnKeyType = UIReturnKeyDone;
-        [_textView addRightButtonOnKeyboardWithImage:EDIT_UIIMAGE target:self action:@selector(resignKeyboard:) shouldShowPlaceholder:nil];
+//        [_textView addRightButtonOnKeyboardWithImage:EDIT_UIIMAGE target:self action:@selector(resignKeyboard:) shouldShowPlaceholder:nil];
         [[IQKeyboardManager sharedManager] preventShowingBottomBlankSpace];
     }
     __block MWPhoto *photo = [self.photos objectAtIndex:[_browser currentIndex]];
