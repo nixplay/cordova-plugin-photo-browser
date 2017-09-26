@@ -72,7 +72,7 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
                 public void onSetName(String s, String id, String type) {
                     JSONObject res = new JSONObject();
                     try {
-                        
+
                         res.put(KEY_ACTION,DEFAULT_ACTION_RENAME);
                         res.put(KEY_ID,id);
                         res.put(KEY_TYPE,type);
@@ -169,7 +169,11 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
                 JSONObject res = null;
                 try {
                     res = new JSONObject(result);
-                    this.callbackContext.success(res);
+                    if(res != null){
+                        this.callbackContext.success(res);
+                    }else{
+                        this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR));
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
