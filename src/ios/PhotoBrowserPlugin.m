@@ -108,6 +108,7 @@ enum Orientation {
     
     NSDictionary *options = [command.arguments objectAtIndex:0];
     NSArray * imagesUrls = [options objectForKey:@"images"] ;
+    NSArray * videoUrls = [options objectForKey:@"videos"] ;
     _data = [options objectForKey:@"data"];
     _readOnly = [options objectForKey:@"readOnly"];
     _ctaText = [options objectForKey:@"ctaText"];
@@ -125,7 +126,7 @@ enum Orientation {
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
         return;
     }
-    if( _data == nil || [_data count] == 0 || [_data count] != [imagesUrls count] ){
+    if( _data == nil || [_data count] == 0 || [_data count] != [imagesUrls count] || [videoUrls count]!= [imagesUrls count] ){
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Argument \"data\" clould not be empty"];
         [pluginResult setKeepCallbackAsBool:NO];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
@@ -151,18 +152,17 @@ enum Orientation {
         _name = NSLocalizedString(@"UNTITLED",nil);
     }
     
-    for (NSString* url in imagesUrls)
-    {
-        [images addObject:[MWPhoto photoWithURL:[NSURL URLWithString: url]]];
-    }
-    if(captions != nil){
+    [imagesUrls enumerateObjectsUsingBlock:^(NSString*  _Nonnull url, NSUInteger idx, BOOL * _Nonnull stop) {
+        MWPhoto *photo = [MWPhoto photoWithURL:[NSURL URLWithString:url]];
         if([captions count] == [images count] ){
-            [images enumerateObjectsUsingBlock:^(MWPhoto*  _Nonnull photo, NSUInteger idx, BOOL * _Nonnull stop) {
-                photo.caption = [captions objectAtIndex:idx];
-            }];
+            photo.caption = [captions objectAtIndex:idx];
         }
-        
-    }
+        if([videoUrls count] < idx && [videoUrls count] == [images count]){
+            photo.videoURL = [NSURL URLWithString:[videoUrls objectAtIndex:idx]];
+        }
+        [images addObject:photo];
+    }];
+    
     //#define DEBUG_CAPTION
 #ifdef DEBUG_CAPTION
     else{
@@ -1065,7 +1065,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         _textView.textColor = [UIColor whiteColor];
         _textView.font = [UIFont systemFontOfSize:17];
         _textView.returnKeyType = UIReturnKeyDone;
-//        [_textView addRightButtonOnKeyboardWithImage:EDIT_UIIMAGE target:self action:@selector(resignKeyboard:) shouldShowPlaceholder:nil];
+        //        [_textView addRightButtonOnKeyboardWithImage:EDIT_UIIMAGE target:self action:@selector(resignKeyboard:) shouldShowPlaceholder:nil];
         [[IQKeyboardManager sharedManager] preventShowingBottomBlankSpace];
     }
     __block MWPhoto *photo = [self.photos objectAtIndex:[_browser currentIndex]];
