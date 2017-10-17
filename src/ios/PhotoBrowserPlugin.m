@@ -485,7 +485,7 @@ enum Orientation {
 - (MWCaptionView *)photoBrowser:(MWPhotoBrowser *)photoBrowser captionViewForPhotoAtIndex:(NSUInteger)index {
     MWPhoto *photo = [self.photos objectAtIndex:index];
     MWCaptionView *captionView = [[MWCaptionView alloc] initWithPhoto:photo];
-    captionView.backgroundColor = [UIColor clearColor];
+    captionView.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.3f];
     return captionView;
 }
 
