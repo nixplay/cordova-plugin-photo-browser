@@ -126,7 +126,7 @@ enum Orientation {
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
         return;
     }
-    if( _data == nil || [_data count] == 0 || [_data count] != [imagesUrls count] || [videoUrls count]!= [imagesUrls count] ){
+    if( _data == nil || [_data count] == 0 || [_data count] != [imagesUrls count] ){
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Argument \"data\" clould not be empty"];
         [pluginResult setKeepCallbackAsBool:NO];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
