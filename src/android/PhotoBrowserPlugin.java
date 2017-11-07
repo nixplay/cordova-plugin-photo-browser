@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 
 import com.creedon.cordova.plugin.photobrowser.metadata.Datum;
 import com.creedon.cordova.plugin.photobrowser.metadata.PhotoDetail;
@@ -39,12 +40,13 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
     private CallbackContext callbackContext;
     private PhotoDetail photoDetail;
 
+
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
         if (action.equals("showGallery")) {
-            JSONObject options = args.getJSONObject(0);
-            photoDetail = PhotoDetail.getInstance(options);
+            JSONObject jsonOptions = args.getJSONObject(0);
+            photoDetail = PhotoDetail.getInstance(jsonOptions);
             photoDetail.setOnCaptionChangeListener(new PhotoDetail.PhotoDataListener(){
 
                 @Override
@@ -110,7 +112,7 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
 
             });
 
-            this.showGallery(options, callbackContext);
+            this.showGallery(jsonOptions, callbackContext);
             return true;
         }
         if (action.equals("showBrowser")) {
@@ -165,7 +167,7 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
         else if (resultCode == Activity.RESULT_OK && data != null) {
 
             String result = data.getStringExtra(Constants.RESULT);
-            if(result != null) {
+            if(result != null && this.callbackContext != null)  {
                 JSONObject res = null;
                 try {
                     res = new JSONObject(result);
@@ -204,5 +206,21 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
 
     }
 
+    public Bundle onSaveInstanceState() {
+        Bundle state = new Bundle();
+
+
+        state.putParcelable("photoDetail", this.photoDetail);
+
+        return state;
+    }
+
+    public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext) {
+
+        this.photoDetail = state.getParcelable("photoDetail");
+
+
+        this.callbackContext = callbackContext;
+    }
 
 }
