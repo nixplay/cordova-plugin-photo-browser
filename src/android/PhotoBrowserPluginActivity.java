@@ -243,6 +243,9 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 }
                 rcAdapter.notifyDataSetChanged();
             }
+            if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                floatingActionButton.setEnabled(hasItemSelected());
+            }
 
         } else if (id == android.R.id.home) {
             if (!selectionMode || photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
