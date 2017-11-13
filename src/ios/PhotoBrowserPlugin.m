@@ -157,8 +157,10 @@ enum Orientation {
         if([captions count] == [images count] ){
             photo.caption = [captions objectAtIndex:idx];
         }
-        if([videoUrls count] < idx && [videoUrls count] == [images count]){
-            photo.videoURL = [NSURL URLWithString:[videoUrls objectAtIndex:idx]];
+        if([videoUrls count] > idx && [videoUrls count] == [imagesUrls count]){
+            if(![[videoUrls objectAtIndex:idx] isEqualToString:@""]){
+                photo.videoURL = [NSURL URLWithString:[videoUrls objectAtIndex:idx]];
+            }
         }
         [images addObject:photo];
     }];
@@ -182,10 +184,15 @@ enum Orientation {
         }];
     }
 #endif
-    for (NSString* url in [options objectForKey:@"thumbnails"])
-    {
-        [thumbs addObject:[MWPhoto photoWithURL:[NSURL URLWithString: url]]];
-    }
+    NSArray* thumbnailUrls = [options objectForKey:@"thumbnails"];
+    [thumbnailUrls enumerateObjectsUsingBlock:^(NSString*  _Nonnull url, NSUInteger idx, BOOL * _Nonnull stop) {
+        MWPhoto *thumb = [MWPhoto photoWithURL:[NSURL URLWithString: url]];
+        if(![[videoUrls objectAtIndex:idx] isEqualToString:@""]){
+            thumb.isVideo = YES;
+        }
+        [thumbs addObject:thumb];
+        
+    }];
     _selections = [NSMutableArray new];
     for (int i = 0; i < images.count; i++) {
         [_selections addObject:[NSNumber numberWithBool:NO]];
