@@ -187,8 +187,8 @@ enum Orientation {
     NSArray* thumbnailUrls = [options objectForKey:@"thumbnails"];
     [thumbnailUrls enumerateObjectsUsingBlock:^(NSString*  _Nonnull url, NSUInteger idx, BOOL * _Nonnull stop) {
         MWPhoto *thumb = [MWPhoto photoWithURL:[NSURL URLWithString: url]];
-        if(![[videoUrls objectAtIndex:idx] isEqualToString:@""]){
-            thumb.isVideo = YES;
+        if([videoUrls count] > idx && [videoUrls count] == [imagesUrls count]){
+            thumb.isVideo = ![[videoUrls objectAtIndex:idx] isEqualToString:@""];
         }
         [thumbs addObject:thumb];
         
