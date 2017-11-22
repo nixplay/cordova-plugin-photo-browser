@@ -364,6 +364,7 @@ enum Orientation {
                                             buttonAlignment:UILayoutConstraintAxisHorizontal
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
                                            gestureDismissal:YES
+                                              hideStatusBar:NO
                                                  completion:nil];
     
     CancelButton *cancel = [[CancelButton alloc]initWithTitle:cancelText height:60 dismissOnTap:YES action:^{
@@ -390,9 +391,10 @@ enum Orientation {
     textViewVC.placeholderString = placeholder;
     
     __weak PhotoBrowserPlugin *weakSelf = self;
-    PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES completion:^{
+    PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES hideStatusBar:NO completion:^{
         
     }];
+    
     CancelButton *cancel = [[CancelButton alloc]initWithTitle:NSLocalizedString(@"CANCEL", nil) height:60 dismissOnTap:YES action:^{
         
     }];
