@@ -562,7 +562,6 @@ enum Orientation {
     }
     if(_textView != nil){
         [self resignKeyboard:_textView];
-        [self endEditCaption:_textView];
     }
     //    [_browser hideToolBar];
     [photoBrowser.navigationItem.leftBarButtonItem setImage:RIGHT_UIIMAGE];
@@ -1086,6 +1085,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 -(void) endEditCaption:(id)sender{
     _browser.alwaysShowControls = NO;
     [[self.photos objectAtIndex:_browser.currentIndex] setCaption: _textView.text];
+    [[_data objectAtIndex:_browser.currentIndex] setValue:_textView.text forKey: @"caption"];
     
     [_browser reloadData];
     [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
