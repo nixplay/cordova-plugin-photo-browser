@@ -110,7 +110,7 @@ enum Orientation {
     NSArray * imagesUrls = [options objectForKey:@"images"] ;
     NSArray * videoUrls = [options objectForKey:@"videos"] ;
     _data = [options objectForKey:@"data"];
-    _readOnly = [options objectForKey:@"readOnly"];
+    _readOnly = [[options objectForKey:@"readOnly"] boolValue];
     _ctaText = [options objectForKey:@"ctaText"];
     if(_ctaText == nil){
         if(_readOnly){
@@ -154,7 +154,7 @@ enum Orientation {
     
     [imagesUrls enumerateObjectsUsingBlock:^(NSString*  _Nonnull url, NSUInteger idx, BOOL * _Nonnull stop) {
         MWPhoto *photo = [MWPhoto photoWithURL:[NSURL URLWithString:url]];
-        if([captions count] == [images count] ){
+        if([captions count] == [imagesUrls count] ){
             photo.caption = [captions objectAtIndex:idx];
         }
         if([videoUrls count] > idx && [videoUrls count] == [imagesUrls count]){
