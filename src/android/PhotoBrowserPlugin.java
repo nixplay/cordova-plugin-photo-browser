@@ -209,16 +209,10 @@ public class PhotoBrowserPlugin extends CordovaPlugin {
     public Bundle onSaveInstanceState() {
         Bundle state = new Bundle();
 
-
-        state.putParcelable("photoDetail", this.photoDetail);
-
         return state;
     }
 
     public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext) {
-
-        this.photoDetail = state.getParcelable("photoDetail");
-
 
         this.callbackContext = callbackContext;
     }
