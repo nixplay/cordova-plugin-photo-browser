@@ -63,6 +63,9 @@ public class PhotoDetail implements Serializable, Parcelable {
     @SerializedName("images")
     @Expose
     private List<String> images = null;
+    @SerializedName("videos")
+    @Expose
+    private List<String> videos = null;
     @SerializedName("thumbnails")
     @Expose
     private List<String> thumbnails = null;
@@ -99,6 +102,7 @@ public class PhotoDetail implements Serializable, Parcelable {
         public PhotoDetail createFromParcel(Parcel in) {
             PhotoDetail instance = new PhotoDetail();
             in.readList(instance.images, (java.lang.String.class.getClassLoader()));
+            in.readList(instance.videos, (java.lang.String.class.getClassLoader()));
             in.readList(instance.thumbnails, (java.lang.String.class.getClassLoader()));
             in.readList(instance.data, (com.creedon.cordova.plugin.photobrowser.metadata.Datum.class.getClassLoader()));
             in.readList(instance.captions, (java.lang.String.class.getClassLoader()));
@@ -125,6 +129,14 @@ public class PhotoDetail implements Serializable, Parcelable {
 
     public void setImages(List<String> images) {
         this.images = images;
+    }
+
+    public List<String> getVideos() {
+        return videos;
+    }
+
+    public void setVideos(List<String> videos) {
+        this.videos = videos;
     }
 
     public List<String> getThumbnails() {
@@ -197,6 +209,7 @@ public class PhotoDetail implements Serializable, Parcelable {
 
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeList(images);
+        dest.writeList(videos);
         dest.writeList(thumbnails);
         dest.writeList(data);
         dest.writeList(captions);
