@@ -368,8 +368,8 @@ enum Orientation {
     dialogAppearance.messageTextAlignment   = NSTextAlignmentLeft;
     dialogAppearance.titleFont              = [UIFont systemFontOfSize:TEXT_SIZE];
     dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
-    dialogAppearance.titleColor            =  TITLE_GRAY_COLOR;
-    dialogAppearance.messageColor            =  [UIColor darkGrayColor];
+    dialogAppearance.titleColor             =  TITLE_GRAY_COLOR;
+    dialogAppearance.messageColor           =  [UIColor darkGrayColor];
     
     PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
                                                     message:text
@@ -454,10 +454,9 @@ enum Orientation {
 
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
-    _browser.alwaysShowControls = NO;
+    _browser.alwaysShowControls = YES;
     textView.backgroundColor = [UIColor blackColor];
     textView.textColor = [UIColor whiteColor];
-    [self endEditCaption:textView];
     [self resignKeyboard:textView];
     
 }
@@ -468,7 +467,7 @@ enum Orientation {
         [textView becomeFirstResponder];
     }
     else {
-        [self endEditCaption:textView];
+        [self resignKeyboard:textView];
     }
     return YES;
 }
@@ -553,7 +552,7 @@ enum Orientation {
     if(_textView.superview != nil){
         
         [self endEditCaption:_textView];
-        _currentCaptionIndex = index;
+        self.currentCaptionIndex = index;
         _textView.text = [[self.photos objectAtIndex:index] caption];
         [_textView setFrame:[self newRectFromTextView:_textView ]];
         
@@ -719,7 +718,6 @@ enum Orientation {
 }
 
 -(void) setCurrentCaptionIndex:(NSInteger) index{
-    NSLog(@"CurrentCaptionIndex Updated %lu",index);
     _currentCaptionIndex = index;
 }
 -(void) addPhotosToPlaylist:(id) sender{
@@ -1127,6 +1125,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     self.currentCaptionIndex = [_browser currentIndex];
 }
 -(void) resignKeyboard:(id)sender{
+    [self endEditCaption:sender];
     if(_textView && _textView.superview != nil){
         [_textView resignFirstResponder];
         [_textView removeFromSuperview];
@@ -1134,24 +1133,31 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     }
 }
 -(void) endEditCaption:(id)sender{
-    if(self.currentCaptionIndex != NSIntegerMax){
-        _browser.alwaysShowControls = NO;
-        [[self.photos objectAtIndex:self.currentCaptionIndex] setCaption: _textView.text];
-        [[_data objectAtIndex:self.currentCaptionIndex] setValue:_textView.text forKey: @"caption"];
-        
-        [_browser reloadData];
-        [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
-        NSMutableDictionary *dictionary = [NSMutableDictionary new];
-        [dictionary setValue:[_data objectAtIndex:self.currentCaptionIndex] forKey: @"photo"];
-        [dictionary setValue:[[_photos objectAtIndex:self.currentCaptionIndex] caption] forKey: @"caption"];
-        [dictionary setValue:@"editCaption" forKey: KEY_ACTION];
-        [dictionary setValue:@(_id) forKey: KEY_ID];
-        [dictionary setValue:_type forKey: KEY_TYPE];
-        [dictionary setValue:@"edit caption of photo" forKey: @"description"];
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-        [pluginResult setKeepCallbackAsBool:YES];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-    }
+    PhotoBrowserPlugin __weak* weakSelf = self;
+    //thread safe?
+    __block NSInteger captionIndex = self.currentCaptionIndex;
+    
+    [[self.photos objectAtIndex:captionIndex] setCaption: _textView.text];
+    NSDictionary *data = [self.data objectAtIndex:captionIndex];
+    NSString *caption = [[self.photos objectAtIndex:captionIndex] caption];
+    [self.commandDelegate runInBackground:^{
+        if(weakSelf.currentCaptionIndex != NSIntegerMax){
+            //background therad data modification only
+            
+            [[_data objectAtIndex:captionIndex] setValue:caption forKey: @"caption"];
+            [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
+            NSMutableDictionary *dictionary = [NSMutableDictionary new];
+            [dictionary setValue:data forKey: @"photo"];
+            [dictionary setValue:caption forKey: @"caption"];
+            [dictionary setValue:@"editCaption" forKey: KEY_ACTION];
+            [dictionary setValue:@(_id) forKey: KEY_ID];
+            [dictionary setValue:_type forKey: KEY_TYPE];
+            [dictionary setValue:@"edit caption of photo" forKey: @"description"];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+            [pluginResult setKeepCallbackAsBool:YES];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:weakSelf.callbackId];
+        }
+    }];
 }
 -(CGRect) newRectFromTextView:(UITextView*) inTextView{
     float labelPadding = 10;
