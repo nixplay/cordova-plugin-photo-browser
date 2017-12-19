@@ -1136,19 +1136,24 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     if(_textView && _textView.superview != nil){
         [_textView resignFirstResponder];
         [_textView removeFromSuperview];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.browser reloadData];
+        });
         self.currentCaptionIndex = NSIntegerMax;
     }
 }
 -(void) endEditCaption:(id)sender{
-    PhotoBrowserPlugin __weak* weakSelf = self;
-    //thread safe?
-    __block NSInteger captionIndex = self.currentCaptionIndex;
-    
-    [[self.photos objectAtIndex:captionIndex] setCaption: _textView.text];
-    NSDictionary *data = [self.data objectAtIndex:captionIndex];
-    NSString *caption = [[self.photos objectAtIndex:captionIndex] caption];
-    [self.commandDelegate runInBackground:^{
-        if(weakSelf.currentCaptionIndex != NSIntegerMax){
+    if(self.currentCaptionIndex != NSIntegerMax){
+        PhotoBrowserPlugin __weak* weakSelf = self;
+        //thread safe?
+        __block NSInteger captionIndex = self.currentCaptionIndex;
+        
+        [[self.photos objectAtIndex:captionIndex] setCaption: _textView.text];
+        NSDictionary *data = [self.data objectAtIndex:captionIndex];
+        NSString *caption = [[self.photos objectAtIndex:captionIndex] caption];
+        
+        [self.commandDelegate runInBackground:^{
+            
             //background therad data modification only
             
             [[_data objectAtIndex:captionIndex] setValue:caption forKey: @"caption"];
@@ -1163,8 +1168,9 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
             [pluginResult setKeepCallbackAsBool:YES];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:weakSelf.callbackId];
-        }
-    }];
+            
+        }];
+    }
 }
 -(CGRect) newRectFromTextView:(UITextView*) inTextView{
     float labelPadding = 10;
@@ -1366,3 +1372,4 @@ UIImage* rotate(UIImage* src, enum Orientation orientation)
     return dictAttr0;
 }
 @end
+
