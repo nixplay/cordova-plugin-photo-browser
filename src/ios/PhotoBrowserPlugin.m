@@ -343,6 +343,7 @@ enum Orientation {
                                                       image:nil
                                             buttonAlignment:UILayoutConstraintAxisHorizontal
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
+                                             preferredWidth:340
                                            gestureDismissal:YES
                                               hideStatusBar:NO
                                                  completion:nil];
@@ -370,12 +371,12 @@ enum Orientation {
     dialogAppearance.titleColor            =  TITLE_GRAY_COLOR;
     dialogAppearance.messageColor            =  [UIColor darkGrayColor];
     
-    
     PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
                                                     message:text
                                                       image:nil
                                             buttonAlignment:UILayoutConstraintAxisHorizontal
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
+                                             preferredWidth:340
                                            gestureDismissal:YES
                                               hideStatusBar:NO
                                                  completion:nil];
@@ -403,9 +404,13 @@ enum Orientation {
     textViewVC.messageString = message;
     textViewVC.placeholderString = placeholder;
     
-    PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES hideStatusBar:NO completion:^{
-        
-    }];
+    PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC
+                                                     buttonAlignment:UILayoutConstraintAxisHorizontal
+                                                     transitionStyle:PopupDialogTransitionStyleFadeIn
+                                                      preferredWidth:340
+                                                    gestureDismissal:YES
+                                                       hideStatusBar:NO
+                                                          completion:nil];
     
     CancelButton *cancel = [[CancelButton alloc]initWithTitle:NSLocalizedString(@"CANCEL", nil) height:60 dismissOnTap:YES action:^{
         
