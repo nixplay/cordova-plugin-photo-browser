@@ -261,6 +261,7 @@ enum Orientation {
     [self.viewController presentViewController:nc animated:NO completion:^{
         
     }];
+    _currentCaptionIndex = NSUIntegerMax;
     
 }
 -(void) selectAllPhotos:(UIBarButtonItem *)sender{
@@ -343,8 +344,28 @@ enum Orientation {
     }
 }
 
--(void) buildDialogWithCancelText:(NSString*)cancelText confirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
+-(void) buildDialogWithConfirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
+    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
+                                                    message:text
+                                                      image:nil
+                                            buttonAlignment:UILayoutConstraintAxisHorizontal
+                                            transitionStyle:PopupDialogTransitionStyleFadeIn
+                                             preferredWidth:340
+                                           gestureDismissal:YES
+                                              hideStatusBar:NO
+                                                 completion:nil];
     
+    
+    DefaultButton *ok = [[DefaultButton alloc]initWithTitle:NSLocalizedString(@"OK", nil])  height:60 dismissOnTap:YES action:action];
+    [ok setBackgroundColor:LIGHT_BLUE_COLOR];
+    [ok setAttributedTitle:[self attributedString:confirmtext WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
+    
+    [popup addButtons: @[ok]];
+    _dialogView = popup;
+    [_browser.navigationController presentViewController:popup animated:YES completion:nil];
+    
+}
+-(void) buildDialogWithCancelText:(NSString*)cancelText confirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
     PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
     PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
     overlayAppearance.blurEnabled = NO;
@@ -354,15 +375,15 @@ enum Orientation {
     dialogAppearance.messageTextAlignment   = NSTextAlignmentLeft;
     dialogAppearance.titleFont              = [UIFont systemFontOfSize:TEXT_SIZE];
     dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
-    dialogAppearance.titleColor            =  TITLE_GRAY_COLOR;
-    dialogAppearance.messageColor            =  [UIColor darkGrayColor];
-    
+    dialogAppearance.titleColor             =  TITLE_GRAY_COLOR;
+    dialogAppearance.messageColor           =  [UIColor darkGrayColor];
     
     PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
                                                     message:text
                                                       image:nil
                                             buttonAlignment:UILayoutConstraintAxisHorizontal
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
+                                             preferredWidth:340
                                            gestureDismissal:YES
                                               hideStatusBar:NO
                                                  completion:nil];
@@ -390,10 +411,13 @@ enum Orientation {
     textViewVC.messageString = message;
     textViewVC.placeholderString = placeholder;
     
-    __weak PhotoBrowserPlugin *weakSelf = self;
-    PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES hideStatusBar:NO completion:^{
-        
-    }];
+    PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC
+                                                     buttonAlignment:UILayoutConstraintAxisHorizontal
+                                                     transitionStyle:PopupDialogTransitionStyleFadeIn
+                                                      preferredWidth:340
+                                                    gestureDismissal:YES
+                                                       hideStatusBar:NO
+                                                          completion:nil];
     
     CancelButton *cancel = [[CancelButton alloc]initWithTitle:NSLocalizedString(@"CANCEL", nil) height:60 dismissOnTap:YES action:^{
         
@@ -437,11 +461,10 @@ enum Orientation {
 
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
-    _browser.alwaysShowControls = NO;
+    _browser.alwaysShowControls = YES;
     textView.backgroundColor = [UIColor blackColor];
     textView.textColor = [UIColor whiteColor];
     [self resignKeyboard:textView];
-    [self endEditCaption:textView];
     
 }
 - (BOOL)textViewShouldReturn:(UITextView *)textView{
@@ -451,7 +474,7 @@ enum Orientation {
         [textView becomeFirstResponder];
     }
     else {
-        [self endEditCaption:textView];
+        [self resignKeyboard:textView];
     }
     return YES;
 }
@@ -460,8 +483,8 @@ enum Orientation {
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
     // Prevent crashing undo bug – see note below.
     IQTextView* iqTextView = (IQTextView*)textView;
-    iqTextView.shouldHidePlaceholderText = NO;
-    iqTextView.placeholderText = [NSString stringWithFormat:@"%lu/%d",(unsigned long)textView.text.length, MAX_CHARACTER];
+    iqTextView.shouldHideToolbarPlaceholder = NO;
+    iqTextView.toolbarPlaceholder = [NSString stringWithFormat:@"%lu/%d",(unsigned long)textView.text.length, MAX_CHARACTER];
     
     if(range.length + range.location > textView.text.length)
     {
@@ -534,8 +557,12 @@ enum Orientation {
     _browser = photoBrowser;
     NSLog(@"didDisplayPhotoAtIndex %lu", (unsigned long)index);
     if(_textView.superview != nil){
+        
+        [self endEditCaption:_textView];
+        self.currentCaptionIndex = index;
         _textView.text = [[self.photos objectAtIndex:index] caption];
         [_textView setFrame:[self newRectFromTextView:_textView ]];
+        
     }
     
 }
@@ -637,7 +664,7 @@ enum Orientation {
      [bottomSheet showMenuFromViewController:_browser];
      
      */
-    __weak PhotoBrowserPlugin *weakSelf = self;
+    //    __weak PhotoBrowserPlugin *weakSelf = self;
 #if DEBUG
     __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
     __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
@@ -692,6 +719,13 @@ enum Orientation {
     
     
     
+}
+-(NSInteger) currentCaptionIndex{
+    return _currentCaptionIndex;
+}
+
+-(void) setCurrentCaptionIndex:(NSInteger) index{
+    _currentCaptionIndex = index;
 }
 -(void) addPhotosToPlaylist:(id) sender{
     __block NSMutableArray *fetchArray = [NSMutableArray new];
@@ -890,7 +924,9 @@ enum Orientation {
         NSString *originalUrl = [[_data objectAtIndex:_browser.currentIndex] objectForKey:@"originalUrl"];
         if(originalUrl != nil){
             [[SDWebImageManager sharedManager] loadImageWithURL:[NSURL URLWithString:originalUrl] options:0 progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
-                [progressHUD setProgress:(receivedSize*1.0f)/(expectedSize*1.0f) ];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [progressHUD setProgress:(receivedSize*1.0f)/(expectedSize*1.0f) ];
+                });
             } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, SDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
                 
                 if ([PHObject class]) {
@@ -916,12 +952,12 @@ enum Orientation {
                                     title = NSLocalizedString(@"Error", @"");
                                     message = [error description];
                                 }
-                                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-                                                                                message:message
-                                                                               delegate:nil
-                                                                      cancelButtonTitle:@"OK"
-                                                                      otherButtonTitles:nil];
-                                [alert show];
+                                //replace popup
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                                        
+                                    }];
+                                });
                             });
                             
                         }];
@@ -931,19 +967,24 @@ enum Orientation {
                 
             }];
         }else{
-            NSString *message;
-            NSString *title;
-            [progressHUD hideAnimated:YES];
             
-            title = NSLocalizedString(@"Error", @"");
-            message =  NSLocalizedString(@"Photo is not available", @"");
-            
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-                                                            message:message
-                                                           delegate:nil
-                                                  cancelButtonTitle:@"OK"
-                                                  otherButtonTitles:nil];
-            [alert show];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSString *message;
+                NSString *title;
+                [progressHUD hideAnimated:YES];
+                
+                title = NSLocalizedString(@"Error", @"");
+                message =  NSLocalizedString(@"Photo is not available", @"");
+                [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                    
+                }];
+            });
+            //            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
+            //                                                            message:message
+            //                                                           delegate:nil
+            //                                                  cancelButtonTitle:@"OK"
+            //                                                  otherButtonTitles:nil];
+            //            [alert show];
         }
         //download
     }@catch(NSException * exception){
@@ -993,12 +1034,17 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                     title = NSLocalizedString(@"Error", @"");
                     message = [error description];
                 }
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-                                                                message:message
-                                                               delegate:nil
-                                                      cancelButtonTitle:@"OK"
-                                                      otherButtonTitles:nil];
-                [alert show];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                        
+                    }];
+                });
+                //                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
+                //                                                                message:message
+                //                                                               delegate:nil
+                //                                                      cancelButtonTitle:@"OK"
+                //                                                      otherButtonTitles:nil];
+                //                [alert show];
             });
             
             
@@ -1073,7 +1119,6 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         _textView.textColor = [UIColor whiteColor];
         _textView.font = [UIFont systemFontOfSize:17];
         _textView.returnKeyType = UIReturnKeyDone;
-        //        [_textView addRightButtonOnKeyboardWithImage:EDIT_UIIMAGE target:self action:@selector(resignKeyboard:) shouldShowPlaceholder:nil];
         [[IQKeyboardManager sharedManager] preventShowingBottomBlankSpace];
     }
     __block MWPhoto *photo = [self.photos objectAtIndex:[_browser currentIndex]];
@@ -1084,30 +1129,42 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     [_textView setFrame:[self newRectFromTextView:_textView ]];
     [_browser.view addSubview:_textView];
     [_textView becomeFirstResponder];
+    self.currentCaptionIndex = [_browser currentIndex];
 }
 -(void) resignKeyboard:(id)sender{
+    [self endEditCaption:sender];
     if(_textView && _textView.superview != nil){
         [_textView resignFirstResponder];
         [_textView removeFromSuperview];
+        self.currentCaptionIndex = NSIntegerMax;
     }
 }
 -(void) endEditCaption:(id)sender{
-    _browser.alwaysShowControls = NO;
-    [[self.photos objectAtIndex:_browser.currentIndex] setCaption: _textView.text];
-    [[_data objectAtIndex:_browser.currentIndex] setValue:_textView.text forKey: @"caption"];
+    PhotoBrowserPlugin __weak* weakSelf = self;
+    //thread safe?
+    __block NSInteger captionIndex = self.currentCaptionIndex;
     
-    [_browser reloadData];
-    [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
-    NSMutableDictionary *dictionary = [NSMutableDictionary new];
-    [dictionary setValue:[_data objectAtIndex:_browser.currentIndex] forKey: @"photo"];
-    [dictionary setValue:[[_photos objectAtIndex:_browser.currentIndex] caption] forKey: @"caption"];
-    [dictionary setValue:@"editCaption" forKey: KEY_ACTION];
-    [dictionary setValue:@(_id) forKey: KEY_ID];
-    [dictionary setValue:_type forKey: KEY_TYPE];
-    [dictionary setValue:@"edit caption of photo" forKey: @"description"];
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-    [pluginResult setKeepCallbackAsBool:YES];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    [[self.photos objectAtIndex:captionIndex] setCaption: _textView.text];
+    NSDictionary *data = [self.data objectAtIndex:captionIndex];
+    NSString *caption = [[self.photos objectAtIndex:captionIndex] caption];
+    [self.commandDelegate runInBackground:^{
+        if(weakSelf.currentCaptionIndex != NSIntegerMax){
+            //background therad data modification only
+            
+            [[_data objectAtIndex:captionIndex] setValue:caption forKey: @"caption"];
+            [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
+            NSMutableDictionary *dictionary = [NSMutableDictionary new];
+            [dictionary setValue:data forKey: @"photo"];
+            [dictionary setValue:caption forKey: @"caption"];
+            [dictionary setValue:@"editCaption" forKey: KEY_ACTION];
+            [dictionary setValue:@(_id) forKey: KEY_ID];
+            [dictionary setValue:_type forKey: KEY_TYPE];
+            [dictionary setValue:@"edit caption of photo" forKey: @"description"];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+            [pluginResult setKeepCallbackAsBool:YES];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:weakSelf.callbackId];
+        }
+    }];
 }
 -(CGRect) newRectFromTextView:(UITextView*) inTextView{
     float labelPadding = 10;
@@ -1309,4 +1366,3 @@ UIImage* rotate(UIImage* src, enum Orientation orientation)
     return dictAttr0;
 }
 @end
-
