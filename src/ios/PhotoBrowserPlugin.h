@@ -14,7 +14,7 @@
 #import <IQKeyboardManager/IQTextView.h>
 #import <SDWebImage/SDWebImageManager.h>
 @interface PhotoBrowserPlugin : CDVPlugin <MWPhotoBrowserDelegate,UINavigationControllerDelegate, CAAnimationDelegate, UITextViewDelegate, SDWebImageManagerDelegate> {
-
+    
     NSMutableDictionary* _callbackIds;
     NSMutableDictionary* _actionSheetDicArray;
     NSMutableArray *_selections;
@@ -27,6 +27,7 @@
     NSString* _dateString;
     BOOL _readOnly;
     NSString *_ctaText;
+    NSInteger _currentCaptionIndex;
 }
 @property (copy)   NSString* callbackId;
 @property (nonatomic, retain) NSMutableArray *photos;
@@ -43,3 +44,4 @@
 - (void)showGallery:(CDVInvokedUrlCommand*)command;
 
 @end
+
