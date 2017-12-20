@@ -101,7 +101,7 @@ enum Orientation {
 }
 
 - (void)showGallery:(CDVInvokedUrlCommand*)command {
-    
+    self.currentCaptionIndex = NSIntegerMax;
     [SDWebImageManager sharedManager].delegate = self;
     self.callbackId = command.callbackId;
     [self.callbackIds setValue:command.callbackId forKey:@"showGallery"];
@@ -261,8 +261,16 @@ enum Orientation {
     [self.viewController presentViewController:nc animated:NO completion:^{
         
     }];
-    _currentCaptionIndex = NSUIntegerMax;
     
+    
+}
+- (void)onReset{
+    _textView = nil;
+    _currentCaptionIndex = NSIntegerMax;
+}
+- (void)dispose{
+    _textView = nil;
+    _currentCaptionIndex = NSIntegerMax;
 }
 -(void) selectAllPhotos:(UIBarButtonItem *)sender{
     
@@ -556,12 +564,12 @@ enum Orientation {
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didDisplayPhotoAtIndex:(NSUInteger)index{
     _browser = photoBrowser;
     NSLog(@"didDisplayPhotoAtIndex %lu", (unsigned long)index);
-    if(_textView.superview != nil){
+    if(self.textView.superview != nil){
         
-        [self endEditCaption:_textView];
+        [self endEditCaption:self.textView];
         self.currentCaptionIndex = index;
-        _textView.text = [[self.photos objectAtIndex:index] caption];
-        [_textView setFrame:[self newRectFromTextView:_textView ]];
+        self.textView.text = [[self.photos objectAtIndex:index] caption];
+        [self.textView setFrame:[self newRectFromTextView:self.textView ]];
         
     }
     
@@ -596,8 +604,8 @@ enum Orientation {
         [_rightBarbuttonItem setTarget:self];
         [_browser showToolBar];
     }
-    if(_textView != nil){
-        [self resignKeyboard:_textView];
+    if(self.textView != nil && self.textView.superview != nil){
+        [self resignKeyboard:self.textView];
     }
     //    [_browser hideToolBar];
     [photoBrowser.navigationItem.leftBarButtonItem setImage:RIGHT_UIIMAGE];
@@ -612,8 +620,8 @@ enum Orientation {
     _browser = photoBrowser;
     _gridViewController = nil;
     
-    if(_textView != nil){
-        [_textView removeFromSuperview];
+    if(self.textView != nil){
+        [self.textView removeFromSuperview];
     }
     photoBrowser.navigationItem.rightBarButtonItems = nil;
     photoBrowser.navigationController.navigationItem.rightBarButtonItems = nil;
@@ -720,13 +728,33 @@ enum Orientation {
     
     
 }
+
 -(NSInteger) currentCaptionIndex{
+    NSLog(@"currentCaptionIndex %lu",(long)_currentCaptionIndex);
     return _currentCaptionIndex;
 }
 
 -(void) setCurrentCaptionIndex:(NSInteger) index{
     _currentCaptionIndex = index;
 }
+
+
+-(IQTextView*) textView{
+    if(_textView == nil){
+        float height = self.navigationController.view.frame.size.height*(1.0f/6.0f);
+        float y = self.navigationController.view.frame.size.height - height ;
+        
+        _textView = [[IQTextView alloc ] initWithFrame:CGRectMake(0, y, self.navigationController.view.frame.size.width, height*.5)];
+        _textView.delegate = self;
+        _textView.backgroundColor = [UIColor blackColor];
+        _textView.textColor = [UIColor whiteColor];
+        _textView.font = [UIFont systemFontOfSize:17];
+        _textView.returnKeyType = UIReturnKeyDone;
+        [[IQKeyboardManager sharedManager] preventShowingBottomBlankSpace];
+    }
+    return _textView;
+}
+
 -(void) addPhotosToPlaylist:(id) sender{
     __block NSMutableArray *fetchArray = [NSMutableArray new];
     [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -1109,33 +1137,23 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     if(_browser != nil){
         _browser.alwaysShowControls = YES;
     }
-    if(_textView == nil){
-        float height = self.navigationController.view.frame.size.height*(1.0f/6.0f);
-        float y = self.navigationController.view.frame.size.height - height ;
-        
-        _textView = [[IQTextView alloc ] initWithFrame:CGRectMake(0, y, self.navigationController.view.frame.size.width, height*.5)];
-        _textView.delegate = self;
-        _textView.backgroundColor = [UIColor blackColor];
-        _textView.textColor = [UIColor whiteColor];
-        _textView.font = [UIFont systemFontOfSize:17];
-        _textView.returnKeyType = UIReturnKeyDone;
-        [[IQKeyboardManager sharedManager] preventShowingBottomBlankSpace];
-    }
+    
     __block MWPhoto *photo = [self.photos objectAtIndex:[_browser currentIndex]];
     
-    _textView.text = photo.caption;
+    self.textView.text = photo.caption;
     
-    _textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
-    [_textView setFrame:[self newRectFromTextView:_textView ]];
-    [_browser.view addSubview:_textView];
-    [_textView becomeFirstResponder];
+    self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
+    [self.textView setFrame:[self newRectFromTextView:self.textView ]];
+    [_browser.view addSubview:self.textView];
+    [self.textView becomeFirstResponder];
     self.currentCaptionIndex = [_browser currentIndex];
 }
 -(void) resignKeyboard:(id)sender{
     [self endEditCaption:sender];
-    if(_textView && _textView.superview != nil){
-        [_textView resignFirstResponder];
-        [_textView removeFromSuperview];
+    if(self.textView && self.textView.superview != nil){
+        [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
+        [self.textView resignFirstResponder];
+        [self.textView removeFromSuperview];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.browser reloadData];
         });
@@ -1148,7 +1166,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         //thread safe?
         __block NSInteger captionIndex = self.currentCaptionIndex;
         
-        [[self.photos objectAtIndex:captionIndex] setCaption: _textView.text];
+        [[self.photos objectAtIndex:captionIndex] setCaption: self.textView.text];
         NSDictionary *data = [self.data objectAtIndex:captionIndex];
         NSString *caption = [[self.photos objectAtIndex:captionIndex] caption];
         
@@ -1157,7 +1175,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             //background therad data modification only
             
             [[_data objectAtIndex:captionIndex] setValue:caption forKey: @"caption"];
-            [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
+            
             NSMutableDictionary *dictionary = [NSMutableDictionary new];
             [dictionary setValue:data forKey: @"photo"];
             [dictionary setValue:caption forKey: @"caption"];
@@ -1174,9 +1192,9 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 }
 -(CGRect) newRectFromTextView:(UITextView*) inTextView{
     float labelPadding = 10;
-    float newHeight =  MAX(MIN(5.0,(_textView.contentSize.height - _textView.textContainerInset.top - _textView.textContainerInset.bottom) / _textView.font.lineHeight), 2) *_textView.font.lineHeight ;
+    float newHeight =  MAX(MIN(5.0,(self.textView.contentSize.height - self.textView.textContainerInset.top - self.textView.textContainerInset.bottom) / self.textView.font.lineHeight), 2) *self.textView.font.lineHeight ;
     newHeight = MAX(newHeight , _toolBar.frame.size.height)  + labelPadding * 2;
-    CGRect originFrame = _textView.frame;
+    CGRect originFrame = self.textView.frame;
     CGRect newFrame = CGRectMake( originFrame.origin.x, self.navigationController.view.frame.size.height - newHeight - _toolBar.frame.size.height, originFrame.size.width, newHeight);
     return newFrame;
 }
@@ -1372,4 +1390,3 @@ UIImage* rotate(UIImage* src, enum Orientation orientation)
     return dictAttr0;
 }
 @end
-
