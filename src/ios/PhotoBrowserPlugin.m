@@ -1144,6 +1144,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 -(void) resignKeyboard:(id)sender{
     [self endEditCaption:sender];
     if(self.textView && self.textView.superview != nil){
+        [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
         [self.textView resignFirstResponder];
         [self.textView removeFromSuperview];
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1167,7 +1168,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             //background therad data modification only
             
             [[_data objectAtIndex:captionIndex] setValue:caption forKey: @"caption"];
-            [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
+            
             NSMutableDictionary *dictionary = [NSMutableDictionary new];
             [dictionary setValue:data forKey: @"photo"];
             [dictionary setValue:caption forKey: @"caption"];
