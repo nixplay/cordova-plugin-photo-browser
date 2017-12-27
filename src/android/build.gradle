@@ -11,7 +11,7 @@ allprojects {
  * @see http://www.gradle.org/docs/current/userguide/userguide_single.html#sec:how_to_declare_your_dependencies
  */
 dependencies {
-	compile 'com.github.nixplay:AndroidPhotoBrowser:0.0.34'
+	compile 'com.github.nixplay:AndroidPhotoBrowser:1.0.0'
 	compile 'com.afollestad.material-dialogs:commons:0.9.4.5'
 	compile 'com.google.code.gson:gson:2.8.1'
 }
