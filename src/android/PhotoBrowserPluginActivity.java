@@ -1242,6 +1242,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 .setImageChangeListener(getImageChangeListener())
                 .setOnDismissListener(getDismissListener())
                 .setOnOrientationListener(getOrientationListener())
+                .setThumbnails(photoDetail.getImages())
                 .show();
     }
 
