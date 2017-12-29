@@ -145,7 +145,7 @@ enum Orientation {
     NSArray *captions = [options objectForKey:@"captions"];
     _dateString = [options objectForKey:@"date"];
     if(_dateString == nil){
-        _dateString = NSLocalizedString(@"Unknown Date",nil);
+        _dateString = NSLocalizedString(@"UNKNOWN_DATE",nil);
     }
     if(_name == nil){
         _name = NSLocalizedString(@"UNTITLED",nil);
@@ -966,11 +966,11 @@ enum Orientation {
                                 NSString *title;
                                 [progressHUD hideAnimated:YES];
                                 if (success) {
-                                    title = NSLocalizedString(@"Image Saved", @"");
-                                    message = NSLocalizedString(@"The image was placed in your photo album.", @"");
+                                    title = NSLocalizedString(@"IMAGE_SAVED", @"");
+                                    message = NSLocalizedString(@"THE_IMAGE_WAS_PLACED_IN_YOUR_PHOTO_ALBUM", @"");
                                 }
                                 else {
-                                    title = NSLocalizedString(@"Error", @"");
+                                    title = NSLocalizedString(@"ERROR", @"");
                                     message = [error description];
                                 }
                                 //replace popup
@@ -994,8 +994,8 @@ enum Orientation {
                 NSString *title;
                 [progressHUD hideAnimated:YES];
                 
-                title = NSLocalizedString(@"Error", @"");
-                message =  NSLocalizedString(@"Photo is not available", @"");
+                title = NSLocalizedString(@"ERROR", @"");
+                message =  NSLocalizedString(@"PHOTO_IS_NOT_AVAILABLE", @"");
                 [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
                     
                 }];
@@ -1033,7 +1033,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                                                                   animated:YES];
         progressHUD.mode = MBProgressHUDModeDeterminate;
         
-        progressHUD.label.text = NSLocalizedString(@"Downloading",nil);
+        progressHUD.label.text = NSLocalizedString(@"DOWNLOADING",nil);
         [progressHUD showAnimated:YES];
         
         
@@ -1048,11 +1048,11 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                 NSString *title;
                 
                 if (error == nil) {
-                    title = NSLocalizedString(@"Images Saved", @"");
-                    message = NSLocalizedString(@"The image was placed in your photo album.", @"");
+                    title = NSLocalizedString(@"IMAGES_SAVED", @"");
+                    message = NSLocalizedString(@"THE_IMAGE_WAS_PLACED_IN_YOUR_PHOTO_ALBUM", @"");
                 }
                 else {
-                    title = NSLocalizedString(@"Error", @"");
+                    title = NSLocalizedString(@"ERROR", @"");
                     message = [error description];
                 }
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -1192,7 +1192,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     return newFrame;
 }
 -(void) deletePhoto:(id)sender{
-    [self buildDialogWithCancelText:NSLocalizedString(@"Cancel", nil) confirmText:NSLocalizedString(@"Delete", nil) title:NSLocalizedString(@"Delete Photos", nil) text:NSLocalizedString(@"Are you sure you want to delete the selected photos?", nil) action:^{
+    [self buildDialogWithCancelText:NSLocalizedString(@"CANCEL", nil) confirmText:NSLocalizedString(@"DELETE", nil) title:NSLocalizedString(@"DELETE_PHOTOS", nil) text:NSLocalizedString(@"ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS", nil) action:^{
         NSMutableArray* tempPhotos = [NSMutableArray arrayWithArray:_photos];
         NSMutableArray* tempThumbs = [NSMutableArray arrayWithArray:_thumbs];
         NSMutableArray* tempSelections = [NSMutableArray arrayWithArray:_selections];
@@ -1246,7 +1246,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         }
     }];
     if([fetchArray count] > 0 ){
-        [self buildDialogWithCancelText:NSLocalizedString(@"Cancel", nil) confirmText:NSLocalizedString(@"Delete", nil) title:NSLocalizedString(@"Delete Photos", nil) text:NSLocalizedString(@"Are you sure you want to delete the selected photos?", nil) action:^{
+        [self buildDialogWithCancelText:NSLocalizedString(@"CANCEL", nil) confirmText:NSLocalizedString(@"DELETE", nil) title:NSLocalizedString(@"DELETE_PHOTOS", nil) text:NSLocalizedString(@"ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS", nil) action:^{
             
             
             self.photos = tempPhotos;
@@ -1383,3 +1383,4 @@ UIImage* rotate(UIImage* src, enum Orientation orientation)
     return dictAttr0;
 }
 @end
+
