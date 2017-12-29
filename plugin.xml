@@ -20,7 +20,7 @@
 		<source-file src="src/ios/TextInputViewController.m"/>
 		<header-file src="src/ios/AppDelegate+LockOrientation.h"/>
 		<source-file src="src/ios/AppDelegate+LockOrientation.m"/>
-		<pod branch="2.1.28" git="https://github.com/nixplay/MWPhotoBrowser" name="MWPhotoBrowser"/>
+		<pod branch="hotfix/2.1.28" git="https://github.com/nixplay/MWPhotoBrowser" name="MWPhotoBrowser"/>
 		<pod name="SDWebImage" version="4.1.0"/>
 		<pod name="PopupDialog" version="0.6.2"/>
 		<pod name="IQKeyboardManager"/>
