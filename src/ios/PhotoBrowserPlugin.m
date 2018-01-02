@@ -512,14 +512,20 @@ enum Orientation {
     return nil;
 }
 - (id <MWPhoto>)photoBrowser:(MWPhotoBrowser *)photoBrowser thumbPhotoAtIndex:(NSUInteger)index{
-    MWPhoto *photo = [self.thumbs objectAtIndex:index];
-    return photo;
+    if (index < _photos.count){
+        MWPhoto *photo = [self.thumbs objectAtIndex:index];
+        return photo;
+    }
+    return nil;
 }
 - (MWCaptionView *)photoBrowser:(MWPhotoBrowser *)photoBrowser captionViewForPhotoAtIndex:(NSUInteger)index {
-    MWPhoto *photo = [self.photos objectAtIndex:index];
-    MWCaptionView *captionView = [[MWCaptionView alloc] initWithPhoto:photo];
-    captionView.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.3f];
-    return captionView;
+    if (index < _photos.count){
+        MWPhoto *photo = [self.photos objectAtIndex:index];
+        MWCaptionView *captionView = [[MWCaptionView alloc] initWithPhoto:photo];
+        captionView.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.3f];
+        return captionView;
+    }
+    return  nil;
 }
 
 -(void) photoBrowserDidFinishModalPresentation:(MWPhotoBrowser*) browser{
@@ -534,7 +540,7 @@ enum Orientation {
         
         
     }];
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[NSDictionary new]];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT messageAsDictionary:[NSDictionary new]];
     [pluginResult setKeepCallbackAsBool:NO];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
 }
@@ -572,8 +578,12 @@ enum Orientation {
     NSLog(@"actionButtonPressedForPhotoAtIndex %lu", (unsigned long)index);
 }
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser isPhotoSelectedAtIndex:(NSUInteger)index{
-    _browser = photoBrowser;
-    return [[_selections objectAtIndex:index] boolValue];
+    if(index < [_selections count]){
+        _browser = photoBrowser;
+        return [[_selections objectAtIndex:index] boolValue];
+    }else{
+        return NO;
+    }
 }
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index selectedChanged:(BOOL)selected{
     _browser = photoBrowser;
@@ -1193,31 +1203,33 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 }
 -(void) deletePhoto:(id)sender{
     [self buildDialogWithCancelText:NSLocalizedString(@"CANCEL", nil) confirmText:NSLocalizedString(@"DELETE", nil) title:NSLocalizedString(@"DELETE_PHOTOS", nil) text:NSLocalizedString(@"ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS", nil) action:^{
-        NSMutableArray* tempPhotos = [NSMutableArray arrayWithArray:_photos];
-        NSMutableArray* tempThumbs = [NSMutableArray arrayWithArray:_thumbs];
-        NSMutableArray* tempSelections = [NSMutableArray arrayWithArray:_selections];
-        NSDictionary* targetPhoto = [_data objectAtIndex:_browser.currentIndex];
-        [tempPhotos removeObjectAtIndex:_browser.currentIndex];
-        [tempThumbs removeObjectAtIndex:_browser.currentIndex];
-        [tempSelections removeObjectAtIndex:_browser.currentIndex];
-        self.photos = tempPhotos;
-        self.thumbs = tempThumbs;
-        _selections = tempSelections;
-        if([targetPhoto valueForKey:KEY_ID] != nil){
-            _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
-            NSMutableDictionary *dictionary = [NSMutableDictionary new];
-            [dictionary setValue:@[[targetPhoto valueForKey:KEY_ID]] forKey: KEY_PHOTOS];
-            [dictionary setValue:KEY_DELETEPHOTOS forKey: KEY_ACTION];
-            [dictionary setValue:@(_id) forKey: KEY_ID];
-            [dictionary setValue:_type forKey: KEY_TYPE];
-            [dictionary setValue:@"delete photo" forKey: @"description"];
-            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-            [pluginResult setKeepCallbackAsBool:YES];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-            if([_photos count] == 0){
-                [self photoBrowserDidFinishModalPresentation:_browser];
-            }else{
-                [_browser reloadData];
+        if(_browser.currentIndex < [_photos count]){
+            NSMutableArray* tempPhotos = [NSMutableArray arrayWithArray:_photos];
+            NSMutableArray* tempThumbs = [NSMutableArray arrayWithArray:_thumbs];
+            NSMutableArray* tempSelections = [NSMutableArray arrayWithArray:_selections];
+            NSDictionary* targetPhoto = [_data objectAtIndex:_browser.currentIndex];
+            [tempPhotos removeObjectAtIndex:_browser.currentIndex];
+            [tempThumbs removeObjectAtIndex:_browser.currentIndex];
+            [tempSelections removeObjectAtIndex:_browser.currentIndex];
+            self.photos = tempPhotos;
+            self.thumbs = tempThumbs;
+            _selections = tempSelections;
+            if([targetPhoto valueForKey:KEY_ID] != nil){
+                _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
+                NSMutableDictionary *dictionary = [NSMutableDictionary new];
+                [dictionary setValue:@[[targetPhoto valueForKey:KEY_ID]] forKey: KEY_PHOTOS];
+                [dictionary setValue:KEY_DELETEPHOTOS forKey: KEY_ACTION];
+                [dictionary setValue:@(_id) forKey: KEY_ID];
+                [dictionary setValue:_type forKey: KEY_TYPE];
+                [dictionary setValue:@"delete photo" forKey: @"description"];
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+                [pluginResult setKeepCallbackAsBool:YES];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+                if([_photos count] == 0){
+                    [self photoBrowserDidFinishModalPresentation:_browser];
+                }else{
+                    [_browser reloadData];
+                }
             }
         }
     }];
