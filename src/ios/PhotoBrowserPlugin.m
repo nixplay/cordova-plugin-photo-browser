@@ -66,7 +66,7 @@
 #define LIGHT_BLUE_COLOR [UIColor colorWithRed:(96.0f/255.0f)  green:(178.0f/255.0f)  blue:(232.0f/255.0f) alpha:1.0]
 #define IS_TYPE_ALBUM ([_type isEqualToString:KEY_TYPE_ALBUM])
 #define IS_TYPE_NIXALBUM ([_type isEqualToString:KEY_TYPE_NIXALBUM])
-#define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil)]
+#define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[self.photos count] , NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[self.photos count] , NSLocalizedString(KEY_PHOTOS,nil)]
 
 
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
@@ -87,6 +87,7 @@ enum Orientation {
 @synthesize photos = _photos;
 @synthesize thumbs = _thumbs;
 @synthesize browser = _browser;
+@synthesize selections = _selections;
 @synthesize data = _data;
 @synthesize navigationController = _navigationController;
 @synthesize albumName = _name;
@@ -188,9 +189,9 @@ enum Orientation {
     }
     _selections = [NSMutableArray new];
     for (int i = 0; i < images.count; i++) {
-        [_selections addObject:[NSNumber numberWithBool:NO]];
+        [self.selections addObject:[NSNumber numberWithBool:NO]];
     }
-    self.photos = images;
+    _photos = images;
     if([thumbs count] == 0){
         self.thumbs = self.photos;
     }else{
@@ -276,8 +277,8 @@ enum Orientation {
     }else{
         _browser.navigationItem.leftBarButtonItem = deselectAllButton;
     }
-    for (int i = 0; i < _selections.count; i++) {
-        [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:YES]];
+    for (int i = 0; i < self.selections.count; i++) {
+        [self.selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:YES]];
     }
     [_gridViewController.collectionView reloadData];
     
@@ -293,8 +294,8 @@ enum Orientation {
     }else{
         _browser.navigationItem.leftBarButtonItem = selectAllButton;
     }
-    for (int i = 0; i < _selections.count; i++) {
-        [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
+    for (int i = 0; i < self.selections.count; i++) {
+        [self.selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
     }
     [_gridViewController.collectionView reloadData];
 }
@@ -333,8 +334,8 @@ enum Orientation {
             //            sender.tag = 0;
             //            [sender setImage:OPTIONS_UIIMAGE];
             //            [sender setTitle:nil];
-            for (int i = 0; i < _selections.count; i++) {
-                [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
+            for (int i = 0; i < self.selections.count; i++) {
+                [self.selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
             }
             
             
@@ -503,23 +504,23 @@ enum Orientation {
 #pragma mark - MWPhotoBrowserDelegate
 
 - (NSUInteger)numberOfPhotosInPhotoBrowser:(MWPhotoBrowser *)photoBrowser {
-    return _photos.count;
+    return self.photos.count;
 }
 
 - (MWPhoto *)photoBrowser:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index {
-    if (index < _photos.count)
-        return [_photos objectAtIndex:index];
+    if (index < self.photos.count)
+        return [self.photos objectAtIndex:index];
     return nil;
 }
 - (id <MWPhoto>)photoBrowser:(MWPhotoBrowser *)photoBrowser thumbPhotoAtIndex:(NSUInteger)index{
-    if (index < _photos.count){
+    if (index < self.photos.count){
         MWPhoto *photo = [self.thumbs objectAtIndex:index];
         return photo;
     }
     return nil;
 }
 - (MWCaptionView *)photoBrowser:(MWPhotoBrowser *)photoBrowser captionViewForPhotoAtIndex:(NSUInteger)index {
-    if (index < _photos.count){
+    if (index < self.photos.count){
         MWPhoto *photo = [self.photos objectAtIndex:index];
         MWCaptionView *captionView = [[MWCaptionView alloc] initWithPhoto:photo];
         captionView.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.3f];
@@ -578,16 +579,16 @@ enum Orientation {
     NSLog(@"actionButtonPressedForPhotoAtIndex %lu", (unsigned long)index);
 }
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser isPhotoSelectedAtIndex:(NSUInteger)index{
-    if(index < [_selections count]){
+    if(index < [self.selections count]){
         _browser = photoBrowser;
-        return [[_selections objectAtIndex:index] boolValue];
+        return [[self.selections objectAtIndex:index] boolValue];
     }else{
         return NO;
     }
 }
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index selectedChanged:(BOOL)selected{
     _browser = photoBrowser;
-    [_selections replaceObjectAtIndex:index withObject:[NSNumber numberWithBool:selected]];
+    [self.selections replaceObjectAtIndex:index withObject:[NSNumber numberWithBool:selected]];
     NSLog(@"photoAtIndex %lu selectedChanged %i", (unsigned long)index , selected);
 }
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser showGridController:(MWGridViewController*)gridController{
@@ -760,7 +761,7 @@ enum Orientation {
 
 -(void) addPhotosToPlaylist:(id) sender{
     __block NSMutableArray *fetchArray = [NSMutableArray new];
-    [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self.selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
             NSDictionary* object = [_data objectAtIndex:idx];
             if([object objectForKey:KEY_ID] != nil){
@@ -1030,7 +1031,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 
 -(void)downloadPhotos:(id)sender{
     NSMutableArray* urls = [NSMutableArray new];
-    [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self.selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
             NSString *originalUrl = [[_data objectAtIndex:idx] objectForKey:@"originalUrl"];
             if(originalUrl != nil){
@@ -1203,16 +1204,16 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 }
 -(void) deletePhoto:(id)sender{
     [self buildDialogWithCancelText:NSLocalizedString(@"CANCEL", nil) confirmText:NSLocalizedString(@"DELETE", nil) title:NSLocalizedString(@"DELETE_PHOTOS", nil) text:NSLocalizedString(@"ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS", nil) action:^{
-        if(_browser.currentIndex < [_photos count]){
-            NSMutableArray* tempPhotos = [NSMutableArray arrayWithArray:_photos];
-            NSMutableArray* tempThumbs = [NSMutableArray arrayWithArray:_thumbs];
-            NSMutableArray* tempSelections = [NSMutableArray arrayWithArray:_selections];
+        if(_browser.currentIndex < [self.photos count]){
+            NSMutableArray* tempPhotos = [NSMutableArray arrayWithArray:self.photos];
+            NSMutableArray* tempThumbs = [NSMutableArray arrayWithArray:self.thumbs];
+            NSMutableArray* tempSelections = [NSMutableArray arrayWithArray:self.selections];
             NSDictionary* targetPhoto = [_data objectAtIndex:_browser.currentIndex];
             [tempPhotos removeObjectAtIndex:_browser.currentIndex];
             [tempThumbs removeObjectAtIndex:_browser.currentIndex];
             [tempSelections removeObjectAtIndex:_browser.currentIndex];
-            self.photos = tempPhotos;
-            self.thumbs = tempThumbs;
+            _photos = tempPhotos;
+            _thumbs = tempThumbs;
             _selections = tempSelections;
             if([targetPhoto valueForKey:KEY_ID] != nil){
                 _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
@@ -1225,7 +1226,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                 CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
                 [pluginResult setKeepCallbackAsBool:YES];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-                if([_photos count] == 0){
+                if([self.photos count] == 0){
                     [self photoBrowserDidFinishModalPresentation:_browser];
                 }else{
                     [_browser reloadData];
@@ -1243,17 +1244,17 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     __block NSMutableArray* tempSelections = [NSMutableArray new];
     __block NSMutableArray* tempData = [NSMutableArray new];
     
-    [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self.selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
-            NSDictionary* object = [_data objectAtIndex:idx];
+            NSDictionary* object = [self.data objectAtIndex:idx];
             if([object objectForKey:KEY_ID] != nil){
                 [fetchArray addObject: [object objectForKey:KEY_ID]];
             }
             
         }else{
-            [tempPhotos addObject: [_photos objectAtIndex:idx]];
-            [tempThumbs addObject: [_thumbs objectAtIndex:idx]];
-            [tempSelections addObject: [_selections objectAtIndex:idx]];
+            [tempPhotos addObject: [self.photos objectAtIndex:idx]];
+            [tempThumbs addObject: [self.thumbs objectAtIndex:idx]];
+            [tempSelections addObject: [self.selections objectAtIndex:idx]];
             [tempData addObject: [_data objectAtIndex:idx]];
         }
     }];
@@ -1261,11 +1262,11 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
         [self buildDialogWithCancelText:NSLocalizedString(@"CANCEL", nil) confirmText:NSLocalizedString(@"DELETE", nil) title:NSLocalizedString(@"DELETE_PHOTOS", nil) text:NSLocalizedString(@"ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS", nil) action:^{
             
             
-            self.photos = tempPhotos;
-            self.thumbs = tempThumbs;
+            _photos = tempPhotos;
+            _thumbs = tempThumbs;
             _selections = tempSelections;
             _data = tempData;
-            if([_photos count]>1){
+            if([self.photos count]>1){
                 [_browser setCurrentPhotoIndex:0];
             }
             
@@ -1279,7 +1280,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
             [pluginResult setKeepCallbackAsBool:YES];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-            if([_photos count] == 0){
+            if([self.photos count] == 0){
                 [self photoBrowserDidFinishModalPresentation:_browser];
             }else{
                 [_browser reloadData];
@@ -1291,7 +1292,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 -(void) sendTo:(id)sender{
     
     __block NSMutableArray *fetchArray = [NSMutableArray new];
-    [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self.selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
             NSDictionary* object = [_data objectAtIndex:idx];
             if([object objectForKey:KEY_ID] != nil){
