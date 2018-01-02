@@ -146,7 +146,7 @@ enum Orientation {
     NSArray *captions = [options objectForKey:@"captions"];
     _dateString = [options objectForKey:@"date"];
     if(_dateString == nil){
-        _dateString = @"Unknown date";
+        _dateString = @"Unknown Date";
     }
     if(_name == nil){
         _name = NSLocalizedString(@"UNTITLED",nil);
