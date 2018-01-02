@@ -49,6 +49,7 @@
 #define KEY_ID @"id"
 #define KEY_TYPE @"type"
 #define KEY_DELETEPHOTOS @"deletePhotos"
+#define KEY_PHOTO @"photo"
 #define KEY_PHOTOS @"photos"
 
 
@@ -66,7 +67,7 @@
 #define LIGHT_BLUE_COLOR [UIColor colorWithRed:(96.0f/255.0f)  green:(178.0f/255.0f)  blue:(232.0f/255.0f) alpha:1.0]
 #define IS_TYPE_ALBUM ([_type isEqualToString:KEY_TYPE_ALBUM])
 #define IS_TYPE_NIXALBUM ([_type isEqualToString:KEY_TYPE_NIXALBUM])
-#define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[self.photos count] , NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[self.photos count] , NSLocalizedString(KEY_PHOTOS,nil)]
+#define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[self.photos count] , ([self.photos count] == 1)? NSLocalizedString(KEY_PHOTO,nil) : NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[self.photos count] , ([self.photos count] == 1)? NSLocalizedString(KEY_PHOTO,nil) : NSLocalizedString(KEY_PHOTOS,nil)]
 
 
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
@@ -285,7 +286,7 @@ enum Orientation {
     
 }
 -(void) deselectAllPhotos:(UIBarButtonItem *)sender{
-    UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Select All" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
+    UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: NSLocalizedString(@"SELECT_ALL",nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
     selectAllButton.tag = SELECTALL_TAG;
     [selectAllButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
     
