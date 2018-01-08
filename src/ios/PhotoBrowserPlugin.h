@@ -17,7 +17,7 @@
     
     NSMutableDictionary* _callbackIds;
     NSMutableDictionary* _actionSheetDicArray;
-    NSMutableArray *_selections;
+    
     UIBarButtonItem *_rightBarbuttonItem;
     UIBarButtonItem *_addAttachButton;
     UIBarButtonItem *_leftBarbuttonItem;
@@ -33,6 +33,7 @@
 @property (nonatomic, retain) NSMutableArray *photos;
 @property (nonatomic, retain) NSArray *thumbs;
 @property (nonatomic, retain) NSMutableArray *data;
+@property (nonatomic, retain) NSMutableArray *selections;
 @property (nonatomic, retain) UIToolbar *toolBar;
 @property (nonatomic, retain) UIColor *titleViewColor;
 @property (nonatomic, retain) UINavigationController *navigationController;
