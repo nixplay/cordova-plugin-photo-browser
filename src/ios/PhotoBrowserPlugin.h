@@ -14,10 +14,10 @@
 #import <IQKeyboardManager/IQTextView.h>
 #import <SDWebImage/SDWebImageManager.h>
 @interface PhotoBrowserPlugin : CDVPlugin <MWPhotoBrowserDelegate,UINavigationControllerDelegate, CAAnimationDelegate, UITextViewDelegate, SDWebImageManagerDelegate> {
-
+    
     NSMutableDictionary* _callbackIds;
     NSMutableDictionary* _actionSheetDicArray;
-    NSMutableArray *_selections;
+    
     UIBarButtonItem *_rightBarbuttonItem;
     UIBarButtonItem *_addAttachButton;
     UIBarButtonItem *_leftBarbuttonItem;
@@ -27,11 +27,13 @@
     NSString* _dateString;
     BOOL _readOnly;
     NSString *_ctaText;
+    NSInteger _currentCaptionIndex;
 }
 @property (copy)   NSString* callbackId;
 @property (nonatomic, retain) NSMutableArray *photos;
 @property (nonatomic, retain) NSArray *thumbs;
 @property (nonatomic, retain) NSMutableArray *data;
+@property (nonatomic, retain) NSMutableArray *selections;
 @property (nonatomic, retain) UIToolbar *toolBar;
 @property (nonatomic, retain) UIColor *titleViewColor;
 @property (nonatomic, retain) UINavigationController *navigationController;
@@ -43,3 +45,4 @@
 - (void)showGallery:(CDVInvokedUrlCommand*)command;
 
 @end
+

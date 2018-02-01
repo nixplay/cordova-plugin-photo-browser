@@ -50,6 +50,7 @@
 #define KEY_ID @"id"
 #define KEY_TYPE @"type"
 #define KEY_DELETEPHOTOS @"deletePhotos"
+#define KEY_PHOTO @"photo"
 #define KEY_PHOTOS @"photos"
 
 
@@ -67,7 +68,7 @@
 #define LIGHT_BLUE_COLOR [UIColor colorWithRed:(96.0f/255.0f)  green:(178.0f/255.0f)  blue:(232.0f/255.0f) alpha:1.0]
 #define IS_TYPE_ALBUM ([_type isEqualToString:KEY_TYPE_ALBUM])
 #define IS_TYPE_NIXALBUM ([_type isEqualToString:KEY_TYPE_NIXALBUM])
-#define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[_photos count] , NSLocalizedString(KEY_PHOTOS,nil)]
+#define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[self.photos count] , ([self.photos count] == 1)? NSLocalizedString(KEY_PHOTO,nil) : NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[self.photos count] , ([self.photos count] == 1)? NSLocalizedString(KEY_PHOTO,nil) : NSLocalizedString(KEY_PHOTOS,nil)]
 
 
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
@@ -88,6 +89,7 @@ enum Orientation {
 @synthesize photos = _photos;
 @synthesize thumbs = _thumbs;
 @synthesize browser = _browser;
+@synthesize selections = _selections;
 @synthesize data = _data;
 @synthesize navigationController = _navigationController;
 @synthesize albumName = _name;
@@ -102,7 +104,7 @@ enum Orientation {
 }
 
 - (void)showGallery:(CDVInvokedUrlCommand*)command {
-    
+    self.currentCaptionIndex = NSIntegerMax;
     [SDWebImageManager sharedManager].delegate = self;
     self.callbackId = command.callbackId;
     [self.callbackIds setValue:command.callbackId forKey:@"showGallery"];
@@ -147,7 +149,7 @@ enum Orientation {
     NSArray *captions = [options objectForKey:@"captions"];
     _dateString = [options objectForKey:@"date"];
     if(_dateString == nil){
-        _dateString = NSLocalizedString(@"Unknown Date",nil);
+        _dateString = @"Unknown Date";
     }
     if(_name == nil){
         _name = NSLocalizedString(@"UNTITLED",nil);
@@ -196,9 +198,9 @@ enum Orientation {
     }];
     _selections = [NSMutableArray new];
     for (int i = 0; i < images.count; i++) {
-        [_selections addObject:[NSNumber numberWithBool:NO]];
+        [self.selections addObject:[NSNumber numberWithBool:NO]];
     }
-    self.photos = images;
+    _photos = images;
     if([thumbs count] == 0){
         self.thumbs = self.photos;
     }else{
@@ -263,6 +265,15 @@ enum Orientation {
         
     }];
     
+    
+}
+- (void)onReset{
+    _textView = nil;
+    _currentCaptionIndex = NSIntegerMax;
+}
+- (void)dispose{
+    _textView = nil;
+    _currentCaptionIndex = NSIntegerMax;
 }
 -(void) selectAllPhotos:(UIBarButtonItem *)sender{
     
@@ -275,15 +286,15 @@ enum Orientation {
     }else{
         _browser.navigationItem.leftBarButtonItem = deselectAllButton;
     }
-    for (int i = 0; i < _selections.count; i++) {
-        [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:YES]];
+    for (int i = 0; i < self.selections.count; i++) {
+        [self.selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:YES]];
     }
     [_gridViewController.collectionView reloadData];
     
     
 }
 -(void) deselectAllPhotos:(UIBarButtonItem *)sender{
-    UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: @"Select All" style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
+    UIBarButtonItem *selectAllButton = [[UIBarButtonItem alloc] initWithTitle: NSLocalizedString(@"SELECT_ALL",nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
     selectAllButton.tag = SELECTALL_TAG;
     [selectAllButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
     
@@ -292,8 +303,8 @@ enum Orientation {
     }else{
         _browser.navigationItem.leftBarButtonItem = selectAllButton;
     }
-    for (int i = 0; i < _selections.count; i++) {
-        [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
+    for (int i = 0; i < self.selections.count; i++) {
+        [self.selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
     }
     [_gridViewController.collectionView reloadData];
 }
@@ -332,8 +343,8 @@ enum Orientation {
             //            sender.tag = 0;
             //            [sender setImage:OPTIONS_UIIMAGE];
             //            [sender setTitle:nil];
-            for (int i = 0; i < _selections.count; i++) {
-                [_selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
+            for (int i = 0; i < self.selections.count; i++) {
+                [self.selections replaceObjectAtIndex:i withObject:[NSNumber numberWithBool:NO]];
             }
             
             
@@ -344,8 +355,28 @@ enum Orientation {
     }
 }
 
--(void) buildDialogWithCancelText:(NSString*)cancelText confirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
+-(void) buildDialogWithConfirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
+    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
+                                                    message:text
+                                                      image:nil
+                                            buttonAlignment:UILayoutConstraintAxisHorizontal
+                                            transitionStyle:PopupDialogTransitionStyleFadeIn
+                                             preferredWidth:340
+                                           gestureDismissal:YES
+                                              hideStatusBar:NO
+                                                 completion:nil];
     
+    
+    DefaultButton *ok = [[DefaultButton alloc]initWithTitle:NSLocalizedString(@"OK", nil])  height:60 dismissOnTap:YES action:action];
+    [ok setBackgroundColor:LIGHT_BLUE_COLOR];
+    [ok setAttributedTitle:[self attributedString:confirmtext WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
+    
+    [popup addButtons: @[ok]];
+    _dialogView = popup;
+    [_browser.navigationController presentViewController:popup animated:YES completion:nil];
+    
+}
+-(void) buildDialogWithCancelText:(NSString*)cancelText confirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
     PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
     PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
     overlayAppearance.blurEnabled = NO;
@@ -355,15 +386,15 @@ enum Orientation {
     dialogAppearance.messageTextAlignment   = NSTextAlignmentLeft;
     dialogAppearance.titleFont              = [UIFont systemFontOfSize:TEXT_SIZE];
     dialogAppearance.messageFont            =  [UIFont systemFontOfSize:16];
-    dialogAppearance.titleColor            =  TITLE_GRAY_COLOR;
-    dialogAppearance.messageColor            =  [UIColor darkGrayColor];
-    
+    dialogAppearance.titleColor             =  TITLE_GRAY_COLOR;
+    dialogAppearance.messageColor           =  [UIColor darkGrayColor];
     
     PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
                                                     message:text
                                                       image:nil
                                             buttonAlignment:UILayoutConstraintAxisHorizontal
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
+                                             preferredWidth:340
                                            gestureDismissal:YES
                                               hideStatusBar:NO
                                                  completion:nil];
@@ -391,10 +422,13 @@ enum Orientation {
     textViewVC.messageString = message;
     textViewVC.placeholderString = placeholder;
     
-    __weak PhotoBrowserPlugin *weakSelf = self;
-    PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES hideStatusBar:NO completion:^{
-        
-    }];
+    PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC
+                                                     buttonAlignment:UILayoutConstraintAxisHorizontal
+                                                     transitionStyle:PopupDialogTransitionStyleFadeIn
+                                                      preferredWidth:340
+                                                    gestureDismissal:YES
+                                                       hideStatusBar:NO
+                                                          completion:nil];
     
     CancelButton *cancel = [[CancelButton alloc]initWithTitle:NSLocalizedString(@"CANCEL", nil) height:60 dismissOnTap:YES action:^{
         
@@ -438,11 +472,10 @@ enum Orientation {
 
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
-    _browser.alwaysShowControls = NO;
+    _browser.alwaysShowControls = YES;
     textView.backgroundColor = [UIColor blackColor];
     textView.textColor = [UIColor whiteColor];
     [self resignKeyboard:textView];
-    [self endEditCaption:textView];
     
 }
 - (BOOL)textViewShouldReturn:(UITextView *)textView{
@@ -452,7 +485,7 @@ enum Orientation {
         [textView becomeFirstResponder];
     }
     else {
-        [self endEditCaption:textView];
+        [self resignKeyboard:textView];
     }
     return YES;
 }
@@ -461,8 +494,8 @@ enum Orientation {
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
     // Prevent crashing undo bug – see note below.
     IQTextView* iqTextView = (IQTextView*)textView;
-    iqTextView.shouldHidePlaceholderText = NO;
-    iqTextView.placeholderText = [NSString stringWithFormat:@"%lu/%d",(unsigned long)textView.text.length, MAX_CHARACTER];
+    iqTextView.shouldHideToolbarPlaceholder = NO;
+    iqTextView.toolbarPlaceholder = [NSString stringWithFormat:@"%lu/%d",(unsigned long)textView.text.length, MAX_CHARACTER];
     
     if(range.length + range.location > textView.text.length)
     {
@@ -480,23 +513,29 @@ enum Orientation {
 #pragma mark - MWPhotoBrowserDelegate
 
 - (NSUInteger)numberOfPhotosInPhotoBrowser:(MWPhotoBrowser *)photoBrowser {
-    return _photos.count;
+    return self.photos.count;
 }
 
 - (MWPhoto *)photoBrowser:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index {
-    if (index < _photos.count)
-        return [_photos objectAtIndex:index];
+    if (index < self.photos.count)
+        return [self.photos objectAtIndex:index];
     return nil;
 }
 - (id <MWPhoto>)photoBrowser:(MWPhotoBrowser *)photoBrowser thumbPhotoAtIndex:(NSUInteger)index{
-    MWPhoto *photo = [self.thumbs objectAtIndex:index];
-    return photo;
+    if (index < self.photos.count){
+        MWPhoto *photo = [self.thumbs objectAtIndex:index];
+        return photo;
+    }
+    return nil;
 }
 - (MWCaptionView *)photoBrowser:(MWPhotoBrowser *)photoBrowser captionViewForPhotoAtIndex:(NSUInteger)index {
-    MWPhoto *photo = [self.photos objectAtIndex:index];
-    MWCaptionView *captionView = [[MWCaptionView alloc] initWithPhoto:photo];
-    captionView.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.3f];
-    return captionView;
+    if (index < self.photos.count){
+        MWPhoto *photo = [self.photos objectAtIndex:index];
+        MWCaptionView *captionView = [[MWCaptionView alloc] initWithPhoto:photo];
+        captionView.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.3f];
+        return captionView;
+    }
+    return  nil;
 }
 
 -(void) photoBrowserDidFinishModalPresentation:(MWPhotoBrowser*) browser{
@@ -511,7 +550,7 @@ enum Orientation {
         
         
     }];
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[NSDictionary new]];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT messageAsDictionary:[NSDictionary new]];
     [pluginResult setKeepCallbackAsBool:NO];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
 }
@@ -541,13 +580,17 @@ enum Orientation {
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didDisplayPhotoAtIndex:(NSUInteger)index{
     _browser = photoBrowser;
     NSLog(@"didDisplayPhotoAtIndex %lu", (unsigned long)index);
+
     UIBarButtonItem *item = [self buttonItemFromToolbar:_toolBar withTag:TAG_EDITCAPTION];
     if(item != nil){
         [item setEnabled:![[self.photos objectAtIndex:index] isVideo]];
     }
-    if(_textView.superview != nil){
-        _textView.text = [[self.photos objectAtIndex:index] caption];
-        [_textView setFrame:[self newRectFromTextView:_textView ]];
+    if(self.textView.superview != nil){
+        
+        [self endEditCaption:self.textView];
+        self.currentCaptionIndex = index;
+        self.textView.text = [[self.photos objectAtIndex:index] caption];
+        [self.textView setFrame:[self newRectFromTextView:self.textView ]];        
     }
     
 }
@@ -556,12 +599,16 @@ enum Orientation {
     NSLog(@"actionButtonPressedForPhotoAtIndex %lu", (unsigned long)index);
 }
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser isPhotoSelectedAtIndex:(NSUInteger)index{
-    _browser = photoBrowser;
-    return [[_selections objectAtIndex:index] boolValue];
+    if(index < [self.selections count]){
+        _browser = photoBrowser;
+        return [[self.selections objectAtIndex:index] boolValue];
+    }else{
+        return NO;
+    }
 }
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index selectedChanged:(BOOL)selected{
     _browser = photoBrowser;
-    [_selections replaceObjectAtIndex:index withObject:[NSNumber numberWithBool:selected]];
+    [self.selections replaceObjectAtIndex:index withObject:[NSNumber numberWithBool:selected]];
     NSLog(@"photoAtIndex %lu selectedChanged %i", (unsigned long)index , selected);
 }
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser showGridController:(MWGridViewController*)gridController{
@@ -581,8 +628,8 @@ enum Orientation {
         [_rightBarbuttonItem setTarget:self];
         [_browser showToolBar];
     }
-    if(_textView != nil){
-        [self resignKeyboard:_textView];
+    if(self.textView != nil && self.textView.superview != nil){
+        [self resignKeyboard:self.textView];
     }
     //    [_browser hideToolBar];
     [photoBrowser.navigationItem.leftBarButtonItem setImage:RIGHT_UIIMAGE];
@@ -597,8 +644,8 @@ enum Orientation {
     _browser = photoBrowser;
     _gridViewController = nil;
     
-    if(_textView != nil){
-        [_textView removeFromSuperview];
+    if(self.textView != nil){
+        [self.textView removeFromSuperview];
     }
     photoBrowser.navigationItem.rightBarButtonItems = nil;
     photoBrowser.navigationController.navigationItem.rightBarButtonItems = nil;
@@ -649,7 +696,7 @@ enum Orientation {
      [bottomSheet showMenuFromViewController:_browser];
      
      */
-    __weak PhotoBrowserPlugin *weakSelf = self;
+    //    __weak PhotoBrowserPlugin *weakSelf = self;
 #if DEBUG
     __block NSArray * titles = @[@"Camera", @"Photo library", @"Nixplay library"] ;//[_actionSheetDicArray valueForKey:KEY_LABEL];
     __block NSArray * actions = @[DEFAULT_ACTION_CAEMRA, DEFAULT_ACTION_ADD, DEFAULT_ACTION_NIXALBUM];// [_actionSheetDicArray valueForKey:KEY_ACTION];
@@ -705,9 +752,36 @@ enum Orientation {
     
     
 }
+
+-(NSInteger) currentCaptionIndex{
+    NSLog(@"currentCaptionIndex %lu",(long)_currentCaptionIndex);
+    return _currentCaptionIndex;
+}
+
+-(void) setCurrentCaptionIndex:(NSInteger) index{
+    _currentCaptionIndex = index;
+}
+
+
+-(IQTextView*) textView{
+    if(_textView == nil){
+        float height = self.navigationController.view.frame.size.height*(1.0f/6.0f);
+        float y = self.navigationController.view.frame.size.height - height ;
+        
+        _textView = [[IQTextView alloc ] initWithFrame:CGRectMake(0, y, self.navigationController.view.frame.size.width, height*.5)];
+        _textView.delegate = self;
+        _textView.backgroundColor = [UIColor blackColor];
+        _textView.textColor = [UIColor whiteColor];
+        _textView.font = [UIFont systemFontOfSize:17];
+        _textView.returnKeyType = UIReturnKeyDone;
+        [[IQKeyboardManager sharedManager] preventShowingBottomBlankSpace];
+    }
+    return _textView;
+}
+
 -(void) addPhotosToPlaylist:(id) sender{
     __block NSMutableArray *fetchArray = [NSMutableArray new];
-    [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self.selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
             NSDictionary* object = [_data objectAtIndex:idx];
             if([object objectForKey:KEY_ID] != nil){
@@ -903,7 +977,9 @@ enum Orientation {
         NSString *originalUrl = [[_data objectAtIndex:_browser.currentIndex] objectForKey:@"originalUrl"];
         if(originalUrl != nil){
             [[SDWebImageManager sharedManager] loadImageWithURL:[NSURL URLWithString:originalUrl] options:0 progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
-                [progressHUD setProgress:(receivedSize*1.0f)/(expectedSize*1.0f) ];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [progressHUD setProgress:(receivedSize*1.0f)/(expectedSize*1.0f) ];
+                });
             } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, SDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
                 
                 if ([PHObject class]) {
@@ -922,19 +998,19 @@ enum Orientation {
                                 NSString *title;
                                 [progressHUD hideAnimated:YES];
                                 if (success) {
-                                    title = NSLocalizedString(@"Image Saved", @"");
-                                    message = NSLocalizedString(@"The image was placed in your photo album.", @"");
+                                    title = NSLocalizedString(@"IMAGE_SAVED", @"");
+                                    message = NSLocalizedString(@"THE_IMAGE_WAS_PLACED_IN_YOUR_PHOTO_ALBUM", @"");
                                 }
                                 else {
-                                    title = NSLocalizedString(@"Error", @"");
+                                    title = NSLocalizedString(@"ERROR", @"");
                                     message = [error description];
                                 }
-                                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-                                                                                message:message
-                                                                               delegate:nil
-                                                                      cancelButtonTitle:@"OK"
-                                                                      otherButtonTitles:nil];
-                                [alert show];
+                                //replace popup
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                                        
+                                    }];
+                                });
                             });
                             
                         }];
@@ -944,19 +1020,24 @@ enum Orientation {
                 
             }];
         }else{
-            NSString *message;
-            NSString *title;
-            [progressHUD hideAnimated:YES];
             
-            title = NSLocalizedString(@"Error", @"");
-            message =  NSLocalizedString(@"Photo is not available", @"");
-            
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-                                                            message:message
-                                                           delegate:nil
-                                                  cancelButtonTitle:@"OK"
-                                                  otherButtonTitles:nil];
-            [alert show];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSString *message;
+                NSString *title;
+                [progressHUD hideAnimated:YES];
+                
+                title = NSLocalizedString(@"ERROR", @"");
+                message =  NSLocalizedString(@"PHOTO_IS_NOT_AVAILABLE", @"");
+                [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                    
+                }];
+            });
+            //            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
+            //                                                            message:message
+            //                                                           delegate:nil
+            //                                                  cancelButtonTitle:@"OK"
+            //                                                  otherButtonTitles:nil];
+            //            [alert show];
         }
         //download
     }@catch(NSException * exception){
@@ -971,7 +1052,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 
 -(void)downloadPhotos:(id)sender{
     NSMutableArray* urls = [NSMutableArray new];
-    [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self.selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
             NSString *originalUrl = [[_data objectAtIndex:idx] objectForKey:@"originalUrl"];
             if(originalUrl != nil){
@@ -984,7 +1065,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                                                                   animated:YES];
         progressHUD.mode = MBProgressHUDModeDeterminate;
         
-        progressHUD.label.text = NSLocalizedString(@"Downloading",nil);
+        progressHUD.label.text = NSLocalizedString(@"DOWNLOADING",nil);
         [progressHUD showAnimated:YES];
         
         
@@ -999,19 +1080,24 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
                 NSString *title;
                 
                 if (error == nil) {
-                    title = NSLocalizedString(@"Images Saved", @"");
-                    message = NSLocalizedString(@"The image was placed in your photo album.", @"");
+                    title = NSLocalizedString(@"IMAGES_SAVED", @"");
+                    message = NSLocalizedString(@"THE_IMAGE_WAS_PLACED_IN_YOUR_PHOTO_ALBUM", @"");
                 }
                 else {
-                    title = NSLocalizedString(@"Error", @"");
+                    title = NSLocalizedString(@"ERROR", @"");
                     message = [error description];
                 }
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-                                                                message:message
-                                                               delegate:nil
-                                                      cancelButtonTitle:@"OK"
-                                                      otherButtonTitles:nil];
-                [alert show];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                        
+                    }];
+                });
+                //                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
+                //                                                                message:message
+                //                                                               delegate:nil
+                //                                                      cancelButtonTitle:@"OK"
+                //                                                      otherButtonTitles:nil];
+                //                [alert show];
             });
             
             
@@ -1076,87 +1162,96 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     if(_browser != nil){
         _browser.alwaysShowControls = YES;
     }
-    if(_textView == nil){
-        float height = self.navigationController.view.frame.size.height*(1.0f/6.0f);
-        float y = self.navigationController.view.frame.size.height - height ;
-        
-        _textView = [[IQTextView alloc ] initWithFrame:CGRectMake(0, y, self.navigationController.view.frame.size.width, height*.5)];
-        _textView.delegate = self;
-        _textView.backgroundColor = [UIColor blackColor];
-        _textView.textColor = [UIColor whiteColor];
-        _textView.font = [UIFont systemFontOfSize:17];
-        _textView.returnKeyType = UIReturnKeyDone;
-        //        [_textView addRightButtonOnKeyboardWithImage:EDIT_UIIMAGE target:self action:@selector(resignKeyboard:) shouldShowPlaceholder:nil];
-        [[IQKeyboardManager sharedManager] preventShowingBottomBlankSpace];
-    }
+    
     __block MWPhoto *photo = [self.photos objectAtIndex:[_browser currentIndex]];
     
-    _textView.text = photo.caption;
+    self.textView.text = photo.caption;
     
-    _textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
-    [_textView setFrame:[self newRectFromTextView:_textView ]];
-    [_browser.view addSubview:_textView];
-    [_textView becomeFirstResponder];
+    self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin;
+    [self.textView setFrame:[self newRectFromTextView:self.textView ]];
+    [_browser.view addSubview:self.textView];
+    [self.textView becomeFirstResponder];
+    self.currentCaptionIndex = [_browser currentIndex];
 }
 -(void) resignKeyboard:(id)sender{
-    if(_textView && _textView.superview != nil){
-        [_textView resignFirstResponder];
-        [_textView removeFromSuperview];
+    [self endEditCaption:sender];
+    if(self.textView && self.textView.superview != nil){
+        [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
+        [self.textView resignFirstResponder];
+        [self.textView removeFromSuperview];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.browser reloadData];
+        });
+        self.currentCaptionIndex = NSIntegerMax;
     }
 }
 -(void) endEditCaption:(id)sender{
-    _browser.alwaysShowControls = NO;
-    [[self.photos objectAtIndex:_browser.currentIndex] setCaption: _textView.text];
-    [[_data objectAtIndex:_browser.currentIndex] setValue:_textView.text forKey: @"caption"];
-    
-    [_browser reloadData];
-    [[IQKeyboardManager sharedManager] setKeyboardDistanceFromTextField:0];
-    NSMutableDictionary *dictionary = [NSMutableDictionary new];
-    [dictionary setValue:[_data objectAtIndex:_browser.currentIndex] forKey: @"photo"];
-    [dictionary setValue:[[_photos objectAtIndex:_browser.currentIndex] caption] forKey: @"caption"];
-    [dictionary setValue:@"editCaption" forKey: KEY_ACTION];
-    [dictionary setValue:@(_id) forKey: KEY_ID];
-    [dictionary setValue:_type forKey: KEY_TYPE];
-    [dictionary setValue:@"edit caption of photo" forKey: @"description"];
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-    [pluginResult setKeepCallbackAsBool:YES];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    if(self.currentCaptionIndex != NSIntegerMax){
+        PhotoBrowserPlugin __weak* weakSelf = self;
+        //thread safe?
+        __block NSInteger captionIndex = self.currentCaptionIndex;
+        
+        [[self.photos objectAtIndex:captionIndex] setCaption: self.textView.text];
+        NSDictionary *data = [self.data objectAtIndex:captionIndex];
+        NSString *caption = [[self.photos objectAtIndex:captionIndex] caption];
+        
+        [self.commandDelegate runInBackground:^{
+            
+            //background therad data modification only
+            
+            [[_data objectAtIndex:captionIndex] setValue:caption forKey: @"caption"];
+            
+            NSMutableDictionary *dictionary = [NSMutableDictionary new];
+            [dictionary setValue:data forKey: @"photo"];
+            [dictionary setValue:caption forKey: @"caption"];
+            [dictionary setValue:@"editCaption" forKey: KEY_ACTION];
+            [dictionary setValue:@(_id) forKey: KEY_ID];
+            [dictionary setValue:_type forKey: KEY_TYPE];
+            [dictionary setValue:@"edit caption of photo" forKey: @"description"];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+            [pluginResult setKeepCallbackAsBool:YES];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:weakSelf.callbackId];
+            
+        }];
+    }
 }
 -(CGRect) newRectFromTextView:(UITextView*) inTextView{
     float labelPadding = 10;
-    float newHeight =  MAX(MIN(5.0,(_textView.contentSize.height - _textView.textContainerInset.top - _textView.textContainerInset.bottom) / _textView.font.lineHeight), 2) *_textView.font.lineHeight ;
+    float newHeight =  MAX(MIN(5.0,(self.textView.contentSize.height - self.textView.textContainerInset.top - self.textView.textContainerInset.bottom) / self.textView.font.lineHeight), 2) *self.textView.font.lineHeight ;
     newHeight = MAX(newHeight , _toolBar.frame.size.height)  + labelPadding * 2;
-    CGRect originFrame = _textView.frame;
+    CGRect originFrame = self.textView.frame;
     CGRect newFrame = CGRectMake( originFrame.origin.x, self.navigationController.view.frame.size.height - newHeight - _toolBar.frame.size.height, originFrame.size.width, newHeight);
     return newFrame;
 }
 -(void) deletePhoto:(id)sender{
-    [self buildDialogWithCancelText:NSLocalizedString(@"Cancel", nil) confirmText:NSLocalizedString(@"Delete", nil) title:NSLocalizedString(@"Delete Photos", nil) text:NSLocalizedString(@"Are you sure you want to delete the selected photos?", nil) action:^{
-        NSMutableArray* tempPhotos = [NSMutableArray arrayWithArray:_photos];
-        NSMutableArray* tempThumbs = [NSMutableArray arrayWithArray:_thumbs];
-        NSMutableArray* tempSelections = [NSMutableArray arrayWithArray:_selections];
-        NSDictionary* targetPhoto = [_data objectAtIndex:_browser.currentIndex];
-        [tempPhotos removeObjectAtIndex:_browser.currentIndex];
-        [tempThumbs removeObjectAtIndex:_browser.currentIndex];
-        [tempSelections removeObjectAtIndex:_browser.currentIndex];
-        self.photos = tempPhotos;
-        self.thumbs = tempThumbs;
-        _selections = tempSelections;
-        if([targetPhoto valueForKey:KEY_ID] != nil){
-            _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
-            NSMutableDictionary *dictionary = [NSMutableDictionary new];
-            [dictionary setValue:@[[targetPhoto valueForKey:KEY_ID]] forKey: KEY_PHOTOS];
-            [dictionary setValue:KEY_DELETEPHOTOS forKey: KEY_ACTION];
-            [dictionary setValue:@(_id) forKey: KEY_ID];
-            [dictionary setValue:_type forKey: KEY_TYPE];
-            [dictionary setValue:@"delete photo" forKey: @"description"];
-            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
-            [pluginResult setKeepCallbackAsBool:YES];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-            if([_photos count] == 0){
-                [self photoBrowserDidFinishModalPresentation:_browser];
-            }else{
-                [_browser reloadData];
+    [self buildDialogWithCancelText:NSLocalizedString(@"CANCEL", nil) confirmText:NSLocalizedString(@"DELETE", nil) title:NSLocalizedString(@"DELETE_PHOTOS", nil) text:NSLocalizedString(@"ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS", nil) action:^{
+        if(_browser.currentIndex < [self.photos count]){
+            NSMutableArray* tempPhotos = [NSMutableArray arrayWithArray:self.photos];
+            NSMutableArray* tempThumbs = [NSMutableArray arrayWithArray:self.thumbs];
+            NSMutableArray* tempSelections = [NSMutableArray arrayWithArray:self.selections];
+            NSDictionary* targetPhoto = [_data objectAtIndex:_browser.currentIndex];
+            [tempPhotos removeObjectAtIndex:_browser.currentIndex];
+            [tempThumbs removeObjectAtIndex:_browser.currentIndex];
+            [tempSelections removeObjectAtIndex:_browser.currentIndex];
+            _photos = tempPhotos;
+            _thumbs = tempThumbs;
+            _selections = tempSelections;
+            if([targetPhoto valueForKey:KEY_ID] != nil){
+                _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
+                NSMutableDictionary *dictionary = [NSMutableDictionary new];
+                [dictionary setValue:@[[targetPhoto valueForKey:KEY_ID]] forKey: KEY_PHOTOS];
+                [dictionary setValue:KEY_DELETEPHOTOS forKey: KEY_ACTION];
+                [dictionary setValue:@(_id) forKey: KEY_ID];
+                [dictionary setValue:_type forKey: KEY_TYPE];
+                [dictionary setValue:@"delete photo" forKey: @"description"];
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+                [pluginResult setKeepCallbackAsBool:YES];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+                if([self.photos count] == 0){
+                    [self photoBrowserDidFinishModalPresentation:_browser];
+                }else{
+                    [_browser reloadData];
+                }
             }
         }
     }];
@@ -1170,29 +1265,29 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
     __block NSMutableArray* tempSelections = [NSMutableArray new];
     __block NSMutableArray* tempData = [NSMutableArray new];
     
-    [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self.selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
-            NSDictionary* object = [_data objectAtIndex:idx];
+            NSDictionary* object = [self.data objectAtIndex:idx];
             if([object objectForKey:KEY_ID] != nil){
                 [fetchArray addObject: [object objectForKey:KEY_ID]];
             }
             
         }else{
-            [tempPhotos addObject: [_photos objectAtIndex:idx]];
-            [tempThumbs addObject: [_thumbs objectAtIndex:idx]];
-            [tempSelections addObject: [_selections objectAtIndex:idx]];
+            [tempPhotos addObject: [self.photos objectAtIndex:idx]];
+            [tempThumbs addObject: [self.thumbs objectAtIndex:idx]];
+            [tempSelections addObject: [self.selections objectAtIndex:idx]];
             [tempData addObject: [_data objectAtIndex:idx]];
         }
     }];
     if([fetchArray count] > 0 ){
-        [self buildDialogWithCancelText:NSLocalizedString(@"Cancel", nil) confirmText:NSLocalizedString(@"Delete", nil) title:NSLocalizedString(@"Delete Photos", nil) text:NSLocalizedString(@"Are you sure you want to delete the selected photos?", nil) action:^{
+        [self buildDialogWithCancelText:NSLocalizedString(@"CANCEL", nil) confirmText:NSLocalizedString(@"DELETE", nil) title:NSLocalizedString(@"DELETE_PHOTOS", nil) text:NSLocalizedString(@"ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_SELECTED_PHOTOS", nil) action:^{
             
             
-            self.photos = tempPhotos;
-            self.thumbs = tempThumbs;
+            _photos = tempPhotos;
+            _thumbs = tempThumbs;
             _selections = tempSelections;
             _data = tempData;
-            if([_photos count]>1){
+            if([self.photos count]>1){
                 [_browser setCurrentPhotoIndex:0];
             }
             
@@ -1206,7 +1301,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
             [pluginResult setKeepCallbackAsBool:YES];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-            if([_photos count] == 0){
+            if([self.photos count] == 0){
                 [self photoBrowserDidFinishModalPresentation:_browser];
             }else{
                 [_browser reloadData];
@@ -1218,7 +1313,7 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
 -(void) sendTo:(id)sender{
     
     __block NSMutableArray *fetchArray = [NSMutableArray new];
-    [_selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [self.selections enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj boolValue]){
             NSDictionary* object = [_data objectAtIndex:idx];
             if([object objectForKey:KEY_ID] != nil){
