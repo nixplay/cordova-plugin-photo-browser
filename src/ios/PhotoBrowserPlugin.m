@@ -31,6 +31,7 @@
 #define MAX_CHARACTER 160
 #define VIEWCONTROLLER_TRANSITION_DURATION 0.2
 #define TEXT_SIZE 16
+#define TAG_EDITCAPTION 0x1011
 #define DEFAULT_ACTION_ADD @"add"
 #define DEFAULT_ACTION_SELECT @"select"
 #define DEFAULT_ACTION_ADDTOPLAYLIST @"addToPlaylist"
@@ -530,9 +531,20 @@ enum Orientation {
         _addAttachButton = nil;
     }
 }
+- (UIBarButtonItem *)buttonItemFromToolbar:(UIToolbar *)toolbar withTag:(NSInteger)tag {
+    for (UIBarButtonItem *item in _toolBar.items) {
+        if ([item tag] == tag)
+            return item;
+    }
+    return nil;
+}
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didDisplayPhotoAtIndex:(NSUInteger)index{
     _browser = photoBrowser;
     NSLog(@"didDisplayPhotoAtIndex %lu", (unsigned long)index);
+    UIBarButtonItem *item = [self buttonItemFromToolbar:_toolBar withTag:TAG_EDITCAPTION];
+    if(item != nil){
+        [item setEnabled:![[self.photos objectAtIndex:index] isVideo]];
+    }
     if(_textView.superview != nil){
         _textView.text = [[self.photos objectAtIndex:index] caption];
         [_textView setFrame:[self newRectFromTextView:_textView ]];
@@ -858,6 +870,7 @@ enum Orientation {
             UIBarButtonItem * downloadPhotoButton = [[UIBarButtonItem alloc] initWithImage:DOWNLOADIMAGE_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(downloadPhoto:)];
             
             UIBarButtonItem * editCaption = [[UIBarButtonItem alloc] initWithImage:EDIT_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(beginEditCaption:)];
+            editCaption.tag = TAG_EDITCAPTION;
             [items addObject:downloadPhotoButton];
             [items addObject:flexSpace];
             [items addObject:editCaption];
