@@ -356,15 +356,17 @@ enum Orientation {
 }
 
 -(void) buildDialogWithConfirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
-    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
-                                                    message:text
-                                                      image:nil
-                                            buttonAlignment:UILayoutConstraintAxisHorizontal
-                                            transitionStyle:PopupDialogTransitionStyleFadeIn
-                                             preferredWidth:340
-                                           gestureDismissal:YES
-                                              hideStatusBar:NO
-                                                 completion:nil];
+    
+    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title message:text image:nil buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES hideStatusBar:NO completion:nil];
+    //    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
+    //                                                    message:text
+    //                                                      image:nil
+    //                                            buttonAlignment:UILayoutConstraintAxisHorizontal
+    //                                            transitionStyle:PopupDialogTransitionStyleFadeIn
+    //                                             preferredWidth:340
+    //                                           gestureDismissal:YES
+    //                                              hideStatusBar:NO
+    //                                                 completion:nil];
     
     
     DefaultButton *ok = [[DefaultButton alloc]initWithTitle:NSLocalizedString(@"OK", nil])  height:60 dismissOnTap:YES action:action];
@@ -394,7 +396,7 @@ enum Orientation {
                                                       image:nil
                                             buttonAlignment:UILayoutConstraintAxisHorizontal
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
-                                             preferredWidth:340
+                          //                                             preferredWidth:340
                                            gestureDismissal:YES
                                               hideStatusBar:NO
                                                  completion:nil];
@@ -425,7 +427,7 @@ enum Orientation {
     PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC
                                                      buttonAlignment:UILayoutConstraintAxisHorizontal
                                                      transitionStyle:PopupDialogTransitionStyleFadeIn
-                                                      preferredWidth:340
+                          //                                                      preferredWidth:340
                                                     gestureDismissal:YES
                                                        hideStatusBar:NO
                                                           completion:nil];
@@ -580,7 +582,7 @@ enum Orientation {
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didDisplayPhotoAtIndex:(NSUInteger)index{
     _browser = photoBrowser;
     NSLog(@"didDisplayPhotoAtIndex %lu", (unsigned long)index);
-
+    
     UIBarButtonItem *item = [self buttonItemFromToolbar:_toolBar withTag:TAG_EDITCAPTION];
     if(item != nil){
         [item setEnabled:![[self.photos objectAtIndex:index] isVideo]];
@@ -590,7 +592,7 @@ enum Orientation {
         [self endEditCaption:self.textView];
         self.currentCaptionIndex = index;
         self.textView.text = [[self.photos objectAtIndex:index] caption];
-        [self.textView setFrame:[self newRectFromTextView:self.textView ]];        
+        [self.textView setFrame:[self newRectFromTextView:self.textView ]];
     }
     
 }
