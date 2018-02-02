@@ -655,6 +655,11 @@ enum Orientation {
     [photoBrowser.navigationItem.leftBarButtonItem setTintColor:LIGHT_BLUE_COLOR];
     
     [photoBrowser showToolBar];
+    UIBarButtonItem *item = [self buttonItemFromToolbar:_toolBar withTag:TAG_EDITCAPTION];
+    if(item != nil){
+        
+        [item setEnabled:![[self.photos objectAtIndex:photoBrowser.currentIndex] isVideo]];
+    }
     return YES;
 }
 
