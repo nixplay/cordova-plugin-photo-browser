@@ -1216,13 +1216,17 @@ typedef void(^DownloaderCompletedBlock)(NSArray *images, NSError *error, BOOL fi
             NSMutableArray* tempPhotos = [NSMutableArray arrayWithArray:self.photos];
             NSMutableArray* tempThumbs = [NSMutableArray arrayWithArray:self.thumbs];
             NSMutableArray* tempSelections = [NSMutableArray arrayWithArray:self.selections];
+            NSMutableArray* tempData = [NSMutableArray arrayWithArray:self.data];
             NSDictionary* targetPhoto = [_data objectAtIndex:_browser.currentIndex];
+            
             [tempPhotos removeObjectAtIndex:_browser.currentIndex];
             [tempThumbs removeObjectAtIndex:_browser.currentIndex];
             [tempSelections removeObjectAtIndex:_browser.currentIndex];
+            [tempData removeObjectAtIndex:_browser.currentIndex];
             _photos = tempPhotos;
             _thumbs = tempThumbs;
             _selections = tempSelections;
+            _data = tempData;
             if([targetPhoto valueForKey:KEY_ID] != nil){
                 _browser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
                 NSMutableDictionary *dictionary = [NSMutableDictionary new];
