@@ -5,7 +5,8 @@
 //  Created by Calvin Lai on 7/11/13.
 //
 //
-
+#import <MobileCoreServices/MobileCoreServices.h>
+#import <sys/xattr.h>
 #import "PhotoBrowserPlugin.h"
 #import "MWPhotoBrowser.h"
 #import "CustomViewController.h"
@@ -27,6 +28,7 @@
 #import "GPActivities.h"
 #import "GPActivityViewController.h"
 #import "Masonry.h"
+#import <AFNetworking/AFNetworking.h>
 #define DEBUG 0
 #define MAX_CHARACTER 160
 #define VIEWCONTROLLER_TRANSITION_DURATION 0.2
@@ -971,6 +973,13 @@ enum Orientation {
     
 }
 
+- (NSString *)MIMETypeFromURL:(NSURL *)localFileURL
+{
+    NSString *extension = [localFileURL pathExtension];
+    NSString *exportedUTI = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)extension, NULL);
+    NSString *mimeType = (__bridge_transfer NSString *)UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)exportedUTI, kUTTagClassMIMEType);
+    return mimeType;
+}
 -(void) downloadPhoto:(id)sender{
     //TODO save photo
     __block MBProgressHUD *progressHUD = [MBProgressHUD showHUDAddedTo:_browser.view
@@ -981,8 +990,71 @@ enum Orientation {
     [progressHUD showAnimated:YES];
     
     @try{
-        NSString *originalUrl = [[_data objectAtIndex:_browser.currentIndex] objectForKey:@"originalUrl"];
-        if(originalUrl != nil){
+        NSDictionary * data = [_data objectAtIndex:_browser.currentIndex];
+        
+        if([data valueForKey:@"video"]){
+            //save video
+            NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+            AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+            
+            NSURL *URL = [NSURL URLWithString:[[data valueForKey:@"video"] valueForKey:@"url"]];
+            NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+            
+            NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:nil destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
+                NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+                return [documentsDirectoryURL URLByAppendingPathComponent:[response suggestedFilename]];
+            } completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
+                if(!error){
+                    NSLog(@"File downloaded to: %@", filePath);
+                    
+                    __block PHAssetChangeRequest *assetRequest;
+                    __block PHObjectPlaceholder *placeholder;
+                    // Save to the album
+                    [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                        
+                        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+                            assetRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:filePath];
+                            placeholder = [assetRequest placeholderForCreatedAsset];
+                        } completionHandler:^(BOOL success, NSError *error) {
+                            
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                NSString *message;
+                                NSString *title;
+                                [progressHUD hideAnimated:YES];
+                                if (success) {
+                                    title = NSLocalizedString(@"IMAGE_SAVED", @"");
+                                    message = NSLocalizedString(@"THE_IMAGE_WAS_PLACED_IN_YOUR_PHOTO_ALBUM", @"");
+                                }
+                                else {
+                                    title = NSLocalizedString(@"ERROR", @"");
+                                    message = [error description];
+                                }
+                                //replace popup
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                                        
+                                    }];
+                                });
+                            });
+                        }];
+                    }];
+                }else{
+                    NSString *message;
+                    NSString *title;
+                    title = NSLocalizedString(@"ERROR", @"");
+                    message = [error description];
+                
+                    //replace popup
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                            
+                        }];
+                    });
+                }
+            }];
+            [downloadTask resume];
+        } else {
+            NSString *originalUrl = [data objectForKey:@"originalUrl"];
             [[SDWebImageManager sharedManager] loadImageWithURL:[NSURL URLWithString:originalUrl] options:0 progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [progressHUD setProgress:(receivedSize*1.0f)/(expectedSize*1.0f) ];
@@ -1026,25 +1098,6 @@ enum Orientation {
                 
                 
             }];
-        }else{
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSString *message;
-                NSString *title;
-                [progressHUD hideAnimated:YES];
-                
-                title = NSLocalizedString(@"ERROR", @"");
-                message =  NSLocalizedString(@"PHOTO_IS_NOT_AVAILABLE", @"");
-                [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
-                    
-                }];
-            });
-            //            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-            //                                                            message:message
-            //                                                           delegate:nil
-            //                                                  cancelButtonTitle:@"OK"
-            //                                                  otherButtonTitles:nil];
-            //            [alert show];
         }
         //download
     }@catch(NSException * exception){
