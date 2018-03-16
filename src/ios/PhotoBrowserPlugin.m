@@ -5,7 +5,8 @@
 //  Created by Calvin Lai on 7/11/13.
 //
 //
-
+#import <MobileCoreServices/MobileCoreServices.h>
+#import <sys/xattr.h>
 #import "PhotoBrowserPlugin.h"
 #import "MWPhotoBrowser.h"
 #import "CustomViewController.h"
@@ -27,10 +28,12 @@
 #import "GPActivities.h"
 #import "GPActivityViewController.h"
 #import "Masonry.h"
+#import <AFNetworking/AFNetworking.h>
 #define DEBUG 0
 #define MAX_CHARACTER 160
 #define VIEWCONTROLLER_TRANSITION_DURATION 0.2
 #define TEXT_SIZE 16
+#define TAG_EDITCAPTION 0x1011
 #define DEFAULT_ACTION_ADD @"add"
 #define DEFAULT_ACTION_SELECT @"select"
 #define DEFAULT_ACTION_ADDTOPLAYLIST @"addToPlaylist"
@@ -110,6 +113,7 @@ enum Orientation {
     
     NSDictionary *options = [command.arguments objectAtIndex:0];
     NSArray * imagesUrls = [options objectForKey:@"images"] ;
+    NSArray * videoUrls = [options objectForKey:@"videos"] ;
     _data = [options objectForKey:@"data"];
     _readOnly = [[options objectForKey:@"readOnly"] boolValue];
     _ctaText = [options objectForKey:@"ctaText"];
@@ -153,18 +157,19 @@ enum Orientation {
         _name = NSLocalizedString(@"UNTITLED",nil);
     }
     
-    for (NSString* url in imagesUrls)
-    {
-        [images addObject:[MWPhoto photoWithURL:[NSURL URLWithString: url]]];
-    }
-    if(captions != nil){
-        if([captions count] == [images count] ){
-            [images enumerateObjectsUsingBlock:^(MWPhoto*  _Nonnull photo, NSUInteger idx, BOOL * _Nonnull stop) {
-                photo.caption = [captions objectAtIndex:idx];
-            }];
+    [imagesUrls enumerateObjectsUsingBlock:^(NSString*  _Nonnull url, NSUInteger idx, BOOL * _Nonnull stop) {
+        MWPhoto *photo = [MWPhoto photoWithURL:[NSURL URLWithString:url]];
+        if([captions count] == [imagesUrls count] ){
+            photo.caption = [captions objectAtIndex:idx];
         }
-        
-    }
+        if([videoUrls count] > idx && [videoUrls count] == [imagesUrls count]){
+            if(![[videoUrls objectAtIndex:idx] isEqualToString:@""]){
+                photo.videoURL = [NSURL URLWithString:[videoUrls objectAtIndex:idx]];
+            }
+        }
+        [images addObject:photo];
+    }];
+    
     //#define DEBUG_CAPTION
 #ifdef DEBUG_CAPTION
     else{
@@ -184,10 +189,15 @@ enum Orientation {
         }];
     }
 #endif
-    for (NSString* url in [options objectForKey:@"thumbnails"])
-    {
-        [thumbs addObject:[MWPhoto photoWithURL:[NSURL URLWithString: url]]];
-    }
+    NSArray* thumbnailUrls = [options objectForKey:@"thumbnails"];
+    [thumbnailUrls enumerateObjectsUsingBlock:^(NSString*  _Nonnull url, NSUInteger idx, BOOL * _Nonnull stop) {
+        MWPhoto *thumb = [MWPhoto photoWithURL:[NSURL URLWithString: url]];
+        if([videoUrls count] > idx && [videoUrls count] == [imagesUrls count]){
+            thumb.isVideo = ![[videoUrls objectAtIndex:idx] isEqualToString:@""];
+        }
+        [thumbs addObject:thumb];
+        
+    }];
     _selections = [NSMutableArray new];
     for (int i = 0; i < images.count; i++) {
         [self.selections addObject:[NSNumber numberWithBool:NO]];
@@ -348,15 +358,17 @@ enum Orientation {
 }
 
 -(void) buildDialogWithConfirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
-    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
-                                                    message:text
-                                                      image:nil
-                                            buttonAlignment:UILayoutConstraintAxisHorizontal
-                                            transitionStyle:PopupDialogTransitionStyleFadeIn
-                                             preferredWidth:340
-                                           gestureDismissal:YES
-                                              hideStatusBar:NO
-                                                 completion:nil];
+    
+    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title message:text image:nil buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES hideStatusBar:NO completion:nil];
+    //    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
+    //                                                    message:text
+    //                                                      image:nil
+    //                                            buttonAlignment:UILayoutConstraintAxisHorizontal
+    //                                            transitionStyle:PopupDialogTransitionStyleFadeIn
+    //                                             preferredWidth:340
+    //                                           gestureDismissal:YES
+    //                                              hideStatusBar:NO
+    //                                                 completion:nil];
     
     
     DefaultButton *ok = [[DefaultButton alloc]initWithTitle:NSLocalizedString(@"OK", nil])  height:60 dismissOnTap:YES action:action];
@@ -386,7 +398,7 @@ enum Orientation {
                                                       image:nil
                                             buttonAlignment:UILayoutConstraintAxisHorizontal
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
-                                             preferredWidth:340
+                          //                                             preferredWidth:340
                                            gestureDismissal:YES
                                               hideStatusBar:NO
                                                  completion:nil];
@@ -417,7 +429,7 @@ enum Orientation {
     PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC
                                                      buttonAlignment:UILayoutConstraintAxisHorizontal
                                                      transitionStyle:PopupDialogTransitionStyleFadeIn
-                                                      preferredWidth:340
+                          //                                                      preferredWidth:340
                                                     gestureDismissal:YES
                                                        hideStatusBar:NO
                                                           completion:nil];
@@ -562,16 +574,27 @@ enum Orientation {
         _addAttachButton = nil;
     }
 }
+- (UIBarButtonItem *)buttonItemFromToolbar:(UIToolbar *)toolbar withTag:(NSInteger)tag {
+    for (UIBarButtonItem *item in _toolBar.items) {
+        if ([item tag] == tag)
+            return item;
+    }
+    return nil;
+}
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didDisplayPhotoAtIndex:(NSUInteger)index{
     _browser = photoBrowser;
     NSLog(@"didDisplayPhotoAtIndex %lu", (unsigned long)index);
+    
+    UIBarButtonItem *item = [self buttonItemFromToolbar:_toolBar withTag:TAG_EDITCAPTION];
+    if(item != nil){
+        [item setEnabled:![[self.photos objectAtIndex:index] isVideo]];
+    }
     if(self.textView.superview != nil){
         
         [self endEditCaption:self.textView];
         self.currentCaptionIndex = index;
         self.textView.text = [[self.photos objectAtIndex:index] caption];
         [self.textView setFrame:[self newRectFromTextView:self.textView ]];
-        
     }
     
 }
@@ -634,6 +657,11 @@ enum Orientation {
     [photoBrowser.navigationItem.leftBarButtonItem setTintColor:LIGHT_BLUE_COLOR];
     
     [photoBrowser showToolBar];
+    UIBarButtonItem *item = [self buttonItemFromToolbar:_toolBar withTag:TAG_EDITCAPTION];
+    if(item != nil){
+        
+        [item setEnabled:![[self.photos objectAtIndex:photoBrowser.currentIndex] isVideo]];
+    }
     return YES;
 }
 
@@ -925,6 +953,7 @@ enum Orientation {
             UIBarButtonItem * downloadPhotoButton = [[UIBarButtonItem alloc] initWithImage:DOWNLOADIMAGE_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(downloadPhoto:)];
             
             UIBarButtonItem * editCaption = [[UIBarButtonItem alloc] initWithImage:EDIT_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(beginEditCaption:)];
+            editCaption.tag = TAG_EDITCAPTION;
             [items addObject:downloadPhotoButton];
             [items addObject:flexSpace];
             [items addObject:editCaption];
@@ -944,6 +973,13 @@ enum Orientation {
     
 }
 
+- (NSString *)MIMETypeFromURL:(NSURL *)localFileURL
+{
+    NSString *extension = [localFileURL pathExtension];
+    NSString *exportedUTI = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)extension, NULL);
+    NSString *mimeType = (__bridge_transfer NSString *)UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)exportedUTI, kUTTagClassMIMEType);
+    return mimeType;
+}
 -(void) downloadPhoto:(id)sender{
     //TODO save photo
     __block MBProgressHUD *progressHUD = [MBProgressHUD showHUDAddedTo:_browser.view
@@ -954,8 +990,71 @@ enum Orientation {
     [progressHUD showAnimated:YES];
     
     @try{
-        NSString *originalUrl = [[_data objectAtIndex:_browser.currentIndex] objectForKey:@"originalUrl"];
-        if(originalUrl != nil){
+        NSDictionary * data = [_data objectAtIndex:_browser.currentIndex];
+        
+        if([data valueForKey:@"video"]){
+            //save video
+            NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+            AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+            
+            NSURL *URL = [NSURL URLWithString:[[data valueForKey:@"video"] valueForKey:@"url"]];
+            NSURLRequest *request = [NSURLRequest requestWithURL:URL];
+            
+            NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:nil destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
+                NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+                return [documentsDirectoryURL URLByAppendingPathComponent:[response suggestedFilename]];
+            } completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
+                if(!error){
+                    NSLog(@"File downloaded to: %@", filePath);
+                    
+                    __block PHAssetChangeRequest *assetRequest;
+                    __block PHObjectPlaceholder *placeholder;
+                    // Save to the album
+                    [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                        
+                        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+                            assetRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:filePath];
+                            placeholder = [assetRequest placeholderForCreatedAsset];
+                        } completionHandler:^(BOOL success, NSError *error) {
+                            
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                NSString *message;
+                                NSString *title;
+                                [progressHUD hideAnimated:YES];
+                                if (success) {
+                                    title = NSLocalizedString(@"IMAGE_SAVED", @"");
+                                    message = NSLocalizedString(@"THE_IMAGE_WAS_PLACED_IN_YOUR_PHOTO_ALBUM", @"");
+                                }
+                                else {
+                                    title = NSLocalizedString(@"ERROR", @"");
+                                    message = [error description];
+                                }
+                                //replace popup
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                                        
+                                    }];
+                                });
+                            });
+                        }];
+                    }];
+                }else{
+                    NSString *message;
+                    NSString *title;
+                    title = NSLocalizedString(@"ERROR", @"");
+                    message = [error description];
+                
+                    //replace popup
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
+                            
+                        }];
+                    });
+                }
+            }];
+            [downloadTask resume];
+        } else {
+            NSString *originalUrl = [data objectForKey:@"originalUrl"];
             [[SDWebImageManager sharedManager] loadImageWithURL:[NSURL URLWithString:originalUrl] options:0 progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [progressHUD setProgress:(receivedSize*1.0f)/(expectedSize*1.0f) ];
@@ -999,25 +1098,6 @@ enum Orientation {
                 
                 
             }];
-        }else{
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSString *message;
-                NSString *title;
-                [progressHUD hideAnimated:YES];
-                
-                title = NSLocalizedString(@"ERROR", @"");
-                message =  NSLocalizedString(@"PHOTO_IS_NOT_AVAILABLE", @"");
-                [self buildDialogWithConfirmText:@"OK" title:title text:message action:^{
-                    
-                }];
-            });
-            //            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
-            //                                                            message:message
-            //                                                           delegate:nil
-            //                                                  cancelButtonTitle:@"OK"
-            //                                                  otherButtonTitles:nil];
-            //            [alert show];
         }
         //download
     }@catch(NSException * exception){
