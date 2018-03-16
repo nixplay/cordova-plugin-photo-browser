@@ -991,8 +991,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                                 photosDownloadListener.onFailed(error);
                             } finally {
                                 try {
-                                    outStream.flush();
-                                    outStream.close();
+                                    if(outStream != null) {
+                                        outStream.flush();
+                                        outStream.close();
+                                    }
                                 } catch (IOException e) {
                                     Error error = new Error(e.getMessage());
                                     photosDownloadListener.onFailed(error);
