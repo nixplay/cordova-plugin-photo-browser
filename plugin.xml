@@ -22,12 +22,13 @@
 		<source-file src="src/ios/AppDelegate+LockOrientation.m"/>
 		<pod name="MWPhotoBrowser" git="https://github.com/nixplay/MWPhotoBrowser" branch="develop" />
 		<pod name="SDWebImage" version="4.2.2"/>
-		<pod name="PopupDialog" version="0.7.0"/>
+		<pod name="PopupDialog" version="0.6.1"/>
 		<pod name="IQKeyboardManager"/>
 		<pod name="MBProgressHUD"/>
 		<pod name="IQKeyboardManager"/>
 		<pod name="GPActivityViewController" git="https://github.com/nixplay/GPActivityViewController"/>
 		<pod name="Masonry"/>
+		<pod name="AFNetworking"/>
 
 		<resource-file src="src/ios/PhotoBrowserPlugin.bundle"/>
 		<resource-file src="src/ios/TextInputViewController.xib"/>
@@ -65,10 +66,7 @@
 		<source-file src="src/android/drawable-hdpi/ic_action_add.png"    target-dir="res/drawable-hdpi" />
 		<source-file src="src/android/drawable-xhdpi/ic_action_add.png"   target-dir="res/drawable-xhdpi" />
 		<source-file src="src/android/drawable-xxhdpi/ic_action_add.png"  target-dir="res/drawable-xxhdpi" />
-
-		<framework src="com.github.fishkingsin:androidphotobrowser:0.0.34"/>
-		<framework src="com.afollestad.material-dialogs:commons:0.9.4.5"/>
-		<framework src="com.google.code.gson:gson:2.8.1"/>
+		<framework src="src/android/build.gradle" custom="true" type="gradleReference" />
 		<config-file target="res/values/styles.xml" parent="/resources">
 			<style name="AppTheme" parent="Theme.AppCompat.Light">
 				<item name="colorPrimary">@color/colorPrimary</item>

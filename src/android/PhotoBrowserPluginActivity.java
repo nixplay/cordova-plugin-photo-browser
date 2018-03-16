@@ -582,6 +582,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     }
 
     @Override
+    public List<String> photoBrowserVideos(PhotoBrowserBasicActivity activity) {
+        return photoDetail.getVideos();
+    }
+
+    @Override
     public List<String> photoBrowserThumbnails(PhotoBrowserBasicActivity activity) {
         return photoDetail.getThumbnails();
     }
@@ -1238,12 +1243,23 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         } else {
             overlayView = new CustomeImageOverlayView(this);
         }
-        imageViewer = new ImageViewer.Builder<String>(this, posters)
+
+        List<String> mediaUrls = new ArrayList<String>();
+        for (int i=0; i<posters.size(); i++) {
+            if (!photoDetail.getVideos().get(i).isEmpty()) {
+                mediaUrls.add(photoDetail.getVideos().get(i));
+            } else {
+                mediaUrls.add(posters.get(i));
+            }
+        }
+
+        imageViewer = new ImageViewer.Builder<String>(this, mediaUrls)
                 .setOverlayView(overlayView)
                 .setStartPosition(startPosition)
                 .setImageChangeListener(getImageChangeListener())
                 .setOnDismissListener(getDismissListener())
                 .setOnOrientationListener(getOrientationListener())
+                .setThumbnails(photoDetail.getImages())
                 .show();
     }
 
