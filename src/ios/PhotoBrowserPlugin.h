@@ -27,6 +27,8 @@
     NSString* _dateString;
     BOOL _readOnly;
     NSString *_ctaText;
+    NSString *_action;
+    NSString *_collectionId;
     NSInteger _currentCaptionIndex;
 }
 @property (copy)   NSString* callbackId;

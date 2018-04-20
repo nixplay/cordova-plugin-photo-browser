@@ -63,9 +63,6 @@ public class PhotoDetail implements Serializable, Parcelable {
     @SerializedName("images")
     @Expose
     private List<String> images = null;
-    @SerializedName("videos")
-    @Expose
-    private List<String> videos = null;
     @SerializedName("thumbnails")
     @Expose
     private List<String> thumbnails = null;
@@ -81,6 +78,9 @@ public class PhotoDetail implements Serializable, Parcelable {
     @SerializedName("name")
     @Expose
     private String name;
+    @SerializedName("action")
+    @Expose
+    private String action;
     @SerializedName("count")
     @Expose
     private Integer count;
@@ -102,12 +102,12 @@ public class PhotoDetail implements Serializable, Parcelable {
         public PhotoDetail createFromParcel(Parcel in) {
             PhotoDetail instance = new PhotoDetail();
             in.readList(instance.images, (java.lang.String.class.getClassLoader()));
-            in.readList(instance.videos, (java.lang.String.class.getClassLoader()));
             in.readList(instance.thumbnails, (java.lang.String.class.getClassLoader()));
             in.readList(instance.data, (com.creedon.cordova.plugin.photobrowser.metadata.Datum.class.getClassLoader()));
             in.readList(instance.captions, (java.lang.String.class.getClassLoader()));
             instance.id = ((String) in.readValue((Integer.class.getClassLoader())));
             instance.name = ((String) in.readValue((String.class.getClassLoader())));
+            instance.action= ((String) in.readValue((String.class.getClassLoader())));
             instance.count = ((Integer) in.readValue((Integer.class.getClassLoader())));
             instance.type = ((String) in.readValue((String.class.getClassLoader())));
             instance.albumType = ((String) in.readValue((String.class.getClassLoader())));
@@ -129,14 +129,6 @@ public class PhotoDetail implements Serializable, Parcelable {
 
     public void setImages(List<String> images) {
         this.images = images;
-    }
-
-    public List<String> getVideos() {
-        return videos;
-    }
-
-    public void setVideos(List<String> videos) {
-        this.videos = videos;
     }
 
     public List<String> getThumbnails() {
@@ -175,6 +167,14 @@ public class PhotoDetail implements Serializable, Parcelable {
         this.name = name;
     }
 
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
     public Integer getCount() {
         return count;
     }
@@ -209,12 +209,12 @@ public class PhotoDetail implements Serializable, Parcelable {
 
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeList(images);
-        dest.writeList(videos);
         dest.writeList(thumbnails);
         dest.writeList(data);
         dest.writeList(captions);
         dest.writeValue(id);
         dest.writeValue(name);
+        dest.writeValue(action);
         dest.writeValue(count);
         dest.writeValue(type);
         dest.writeValue(albumType);

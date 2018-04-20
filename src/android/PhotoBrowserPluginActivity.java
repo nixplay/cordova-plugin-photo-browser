@@ -81,6 +81,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     public static final String KEY_ID = "id";
     private static final String KEY_ALBUM = "album";
     private static final String KEY_TYPE_NIXALBUM = "nixalbum";
+    private static final String KEY_TYPE_SOCIAL_ALBUM = "socialAlbum";
     private static final int TAG_SELECT = 0x401;
     private static final int TAG_SELECT_ALL = 0x501;
     private static final int MAX_CHARACTOR = 160;
@@ -155,6 +156,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     final private static String DEFAULT_ACTION_ADDTOFRAME = "addToFrame";
     final private static String DEFAULT_ACTION_RENAME = "rename";
     final private static String DEFAULT_ACTION_DELETE = "delete";
+
     MaterialDialog progressDialog;
 
     @Override
@@ -178,19 +180,21 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     public boolean onCreatePanelMenu(int featureId, Menu menu) {
         if (!readOnly) {
-            if (!selectionMode) {
-                int index = 0;
-                MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
-                menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                setupToolBar();
-            } else {
-                if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
-                    MenuItem menuItem = menu.add(0, TAG_SELECT_ALL, 1, getString(f.getId("string", "SELECT_ALL")));
+            if (!photoDetail.getType().equals(KEY_TYPE_SOCIAL_ALBUM)) {
+                if (!selectionMode) {
+                    int index = 0;
+                    MenuItem menuItem = menu.add(0, TAG_SELECT, 1, getString(f.getId("string", "SELECT")));
                     menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                } else {
-                    MenuInflater inflater = getMenuInflater();
-                    inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
                     setupToolBar();
+                } else {
+                    if (photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+                        MenuItem menuItem = menu.add(0, TAG_SELECT_ALL, 1, getString(f.getId("string", "SELECT_ALL")));
+                        menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    } else {
+                        MenuInflater inflater = getMenuInflater();
+                        inflater.inflate(com.creedon.androidphotobrowser.R.menu.menu, menu);
+                        setupToolBar();
+                    }
                 }
             }
         }
@@ -247,8 +251,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 floatingActionButton.setEnabled(hasItemSelected());
             }
 
+
         } else if (id == android.R.id.home) {
-            if (!selectionMode || photoDetail.getType().equals(KEY_TYPE_NIXALBUM)) {
+            if (!selectionMode || photoDetail.getType().equals(KEY_TYPE_NIXALBUM)
+                    || photoDetail.getType().equals(KEY_TYPE_SOCIAL_ALBUM)) {
                 finish();
             }
 
@@ -329,6 +335,19 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     }
 
+    private void selectAlbum() {
+        JSONObject res = new JSONObject();
+        try {
+            String action = photoDetail.getAction();
+            res.put(KEY_ACTION, action);
+            res.put(KEY_ID, photoDetail.getId());
+            res.put(KEY_TYPE, photoDetail.getType());
+            res.put(KEY_DESCRIPTION, "add social album");
+            finishWithResult(res);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void sendPhotos(String action) throws JSONException {
 
@@ -428,6 +447,11 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 findViewById(f.getId("id", "floatingButton")).setVisibility(View.VISIBLE);
             }
 
+
+            if (photoDetail.getType().equals(KEY_TYPE_SOCIAL_ALBUM)) {
+                findViewById(f.getId("id", "floatingButton")).setVisibility(View.VISIBLE);
+            }
+
             View bottomSheet = findViewById(f.getId("id", "bottom_sheet1"));
             mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
             mask = findViewById(f.getId("id", "mask"));
@@ -452,6 +476,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
             } else {
 
                 if (photoDetail.getActionSheet() != null) {
@@ -491,6 +516,18 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
                             }
                         });
 
+                    } else if (photoDetail.getType().equals(KEY_TYPE_SOCIAL_ALBUM)) {
+                        floatingActionButton.setText(ctaText);
+                        floatingActionButton.setVisibility(View.VISIBLE);
+                        floatingActionButton.setEnabled(true);
+                        System.out.println(floatingActionButton.isEnabled());
+
+                        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                selectAlbum();
+                            }
+                        });
                     } else {
                         floatingActionButton.setVisibility(GONE);
                     }
@@ -579,11 +616,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
     @Override
     public List<String> photoBrowserPhotos(PhotoBrowserBasicActivity activity) {
         return photoDetail.getImages();
-    }
-
-    @Override
-    public List<String> photoBrowserVideos(PhotoBrowserBasicActivity activity) {
-        return photoDetail.getVideos();
     }
 
     @Override
@@ -1243,23 +1275,12 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
         } else {
             overlayView = new CustomeImageOverlayView(this);
         }
-
-        List<String> mediaUrls = new ArrayList<String>();
-        for (int i=0; i<posters.size(); i++) {
-            if (!photoDetail.getVideos().get(i).isEmpty()) {
-                mediaUrls.add(photoDetail.getVideos().get(i));
-            } else {
-                mediaUrls.add(posters.get(i));
-            }
-        }
-
-        imageViewer = new ImageViewer.Builder<String>(this, mediaUrls)
+        imageViewer = new ImageViewer.Builder<String>(this, posters)
                 .setOverlayView(overlayView)
                 .setStartPosition(startPosition)
                 .setImageChangeListener(getImageChangeListener())
                 .setOnDismissListener(getDismissListener())
                 .setOnOrientationListener(getOrientationListener())
-                .setThumbnails(photoDetail.getImages())
                 .show();
     }
 
