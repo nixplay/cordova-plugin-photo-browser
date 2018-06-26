@@ -354,15 +354,17 @@ enum Orientation {
 }
 
 -(void) buildDialogWithConfirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
-    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
-                                                    message:text
-                                                      image:nil
-                                            buttonAlignment:UILayoutConstraintAxisHorizontal
-                                            transitionStyle:PopupDialogTransitionStyleFadeIn
-                                             preferredWidth:340
-                                           gestureDismissal:YES
-                                              hideStatusBar:NO
-                                                 completion:nil];
+    
+    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title message:text image:nil buttonAlignment:UILayoutConstraintAxisHorizontal transitionStyle:PopupDialogTransitionStyleFadeIn gestureDismissal:YES hideStatusBar:NO completion:nil];
+    //    PopupDialog *popup = [[PopupDialog alloc] initWithTitle:title
+    //                                                    message:text
+    //                                                      image:nil
+    //                                            buttonAlignment:UILayoutConstraintAxisHorizontal
+    //                                            transitionStyle:PopupDialogTransitionStyleFadeIn
+    //                                             preferredWidth:340
+    //                                           gestureDismissal:YES
+    //                                              hideStatusBar:NO
+    //                                                 completion:nil];
     
     
     DefaultButton *ok = [[DefaultButton alloc]initWithTitle:NSLocalizedString(@"OK", nil])  height:60 dismissOnTap:YES action:action];
@@ -374,6 +376,7 @@ enum Orientation {
     [_browser.navigationController presentViewController:popup animated:YES completion:nil];
     
 }
+
 -(void) buildDialogWithCancelText:(NSString*)cancelText confirmText:(NSString*)confirmtext title:(NSString*) title text:(NSString*)text action:(void (^ _Nullable)(void))action {
     PopupDialogDefaultView* dialogAppearance =  [PopupDialogDefaultView appearance];
     PopupDialogOverlayView* overlayAppearance =  [PopupDialogOverlayView appearance];
@@ -392,7 +395,7 @@ enum Orientation {
                                                       image:nil
                                             buttonAlignment:UILayoutConstraintAxisHorizontal
                                             transitionStyle:PopupDialogTransitionStyleFadeIn
-                                             preferredWidth:340
+                          //                                             preferredWidth:340
                                            gestureDismissal:YES
                                               hideStatusBar:NO
                                                  completion:nil];
@@ -423,7 +426,7 @@ enum Orientation {
     PopupDialog *popup = [[PopupDialog alloc] initWithViewController:textViewVC
                                                      buttonAlignment:UILayoutConstraintAxisHorizontal
                                                      transitionStyle:PopupDialogTransitionStyleFadeIn
-                                                      preferredWidth:340
+                          //                                                      preferredWidth:340
                                                     gestureDismissal:YES
                                                        hideStatusBar:NO
                                                           completion:nil];
