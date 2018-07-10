@@ -78,6 +78,9 @@ public class PhotoDetail implements Serializable, Parcelable {
     @SerializedName("name")
     @Expose
     private String name;
+    @SerializedName("action")
+    @Expose
+    private String action;
     @SerializedName("count")
     @Expose
     private Integer count;
@@ -104,6 +107,7 @@ public class PhotoDetail implements Serializable, Parcelable {
             in.readList(instance.captions, (java.lang.String.class.getClassLoader()));
             instance.id = ((String) in.readValue((Integer.class.getClassLoader())));
             instance.name = ((String) in.readValue((String.class.getClassLoader())));
+            instance.action= ((String) in.readValue((String.class.getClassLoader())));
             instance.count = ((Integer) in.readValue((Integer.class.getClassLoader())));
             instance.type = ((String) in.readValue((String.class.getClassLoader())));
             instance.albumType = ((String) in.readValue((String.class.getClassLoader())));
@@ -163,6 +167,14 @@ public class PhotoDetail implements Serializable, Parcelable {
         this.name = name;
     }
 
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
     public Integer getCount() {
         return count;
     }
@@ -202,6 +214,7 @@ public class PhotoDetail implements Serializable, Parcelable {
         dest.writeList(captions);
         dest.writeValue(id);
         dest.writeValue(name);
+        dest.writeValue(action);
         dest.writeValue(count);
         dest.writeValue(type);
         dest.writeValue(albumType);
