@@ -1209,7 +1209,7 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
     @Override
     public int trashButtonVisiblity() {
-        return (!readOnly) ? VISIBLE : GONE;
+        return (!readOnly && !photoDetail.getType().equals(KEY_TYPE_SOCIAL_ALBUM)) ? VISIBLE : GONE;
     }
 
     void finishWithResult(JSONObject result) {
