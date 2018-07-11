@@ -971,7 +971,7 @@ enum Orientation {
             [items addObject:editCaption];
             [items addObject:flexSpace];
         }
-        if(!_readOnly){
+        if(!_readOnly && !IS_TYPE_SOCIAL_ALBUM){
             UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithImage:BIN_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(deletePhoto:)];
             [items addObject:deleteBarButton];
         }
