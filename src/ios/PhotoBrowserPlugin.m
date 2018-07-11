@@ -46,6 +46,7 @@
 #define KEY_TYPE_ALBUM @"album"
 #define KEY_TYPE_PLAYLIST @"playlist"
 #define KEY_TYPE_NIXALBUM  @"nixalbum"
+#define KEY_TYPE_SOCIAL_ALBUM  @"socialAlbum"
 #define KEY_TYPE_EMAIL  @"Email"
 #define KEY_LABEL  @"label"
 #define KEY_NAME @"name"
@@ -70,6 +71,7 @@
 #define LIGHT_BLUE_COLOR [UIColor colorWithRed:(96.0f/255.0f)  green:(178.0f/255.0f)  blue:(232.0f/255.0f) alpha:1.0]
 #define IS_TYPE_ALBUM ([_type isEqualToString:KEY_TYPE_ALBUM])
 #define IS_TYPE_NIXALBUM ([_type isEqualToString:KEY_TYPE_NIXALBUM])
+#define IS_TYPE_SOCIAL_ALBUM ([_type isEqualToString:KEY_TYPE_SOCIAL_ALBUM])
 #define SUBTITLESTRING_FOR_TITLEVIEW(dateString) (IS_TYPE_ALBUM && ![_dateString isEqualToString:@"Unknown Date"] ) ? [NSString stringWithFormat:@"%lu %@ - %@", (unsigned long)[self.photos count] , ([self.photos count] == 1)? NSLocalizedString(KEY_PHOTO,nil) : NSLocalizedString(KEY_PHOTOS,nil) , dateString] : [NSString stringWithFormat:@"%lu %@", (unsigned long)[self.photos count] , ([self.photos count] == 1)? NSLocalizedString(KEY_PHOTO,nil) : NSLocalizedString(KEY_PHOTOS,nil)]
 
 
@@ -117,6 +119,7 @@ enum Orientation {
     _data = [options objectForKey:@"data"];
     _readOnly = [[options objectForKey:@"readOnly"] boolValue];
     _ctaText = [options objectForKey:@"ctaText"];
+    _action = [options objectForKey:@"action"];
     if(_ctaText == nil){
         if(_readOnly){
             _ctaText = NSLocalizedString(@"ADD_PHOTOS_TO_PLAYLIST", nil);
@@ -231,27 +234,28 @@ enum Orientation {
     _navigationController = nc;
     
     //    UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithImage: OPTIONS_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
-    
-    if(IS_TYPE_NIXALBUM){
-        UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT_ALL", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
-        [newAddBackButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
-        newAddBackButton.tag = 0;
-        
-        browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
-        _rightBarbuttonItem = newAddBackButton;
-        _gridViewController.selectionMode = _browser.displaySelectionButtons = YES;
-        [_gridViewController.collectionView reloadData];
-    }else{
-        if(!_readOnly){
-            UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
+    if (!IS_TYPE_SOCIAL_ALBUM) {
+        if(IS_TYPE_NIXALBUM){
+            UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT_ALL", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectAllPhotos:)];
             [newAddBackButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
             newAddBackButton.tag = 0;
-            //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
-            //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
+            
             browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
-            //        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
-            //    _addAttachButton = addAttachButton;
             _rightBarbuttonItem = newAddBackButton;
+            _gridViewController.selectionMode = _browser.displaySelectionButtons = YES;
+            [_gridViewController.collectionView reloadData];
+        }else{
+            if(!_readOnly){
+                UIBarButtonItem *newAddBackButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"SELECT", nil) style:UIBarButtonItemStylePlain target:self action:@selector(selectPhotos:)];
+                [newAddBackButton setTitleTextAttributes:[self attributedDirectoryWithSize:TEXT_SIZE color:LIGHT_BLUE_COLOR] forState:UIControlStateNormal];
+                newAddBackButton.tag = 0;
+                //    UIBarButtonItem *addAttachButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPhotos:)];
+                //    addAttachButton.tintColor = LIGHT_BLUE_COLOR;
+                browser.navigationController.navigationItem.rightBarButtonItems =  @[newAddBackButton];
+                //        browser.navigationController.navigationItem.leftBarButtonItem.tintColor = LIGHT_BLUE_COLOR;
+                //    _addAttachButton = addAttachButton;
+                _rightBarbuttonItem = newAddBackButton;
+            }
         }
     }
     
@@ -666,6 +670,22 @@ enum Orientation {
 }
 
 
+- (void) selectSocialAlbum:(id) sender{
+    NSLog(@"Select this social album");
+    NSMutableDictionary *dictionary = [NSMutableDictionary new];
+    [dictionary setValue:_action forKey: KEY_ACTION];
+    [dictionary setValue:_collectionId forKey: KEY_ID];
+    [dictionary setValue:_type forKey: KEY_TYPE];
+    
+    [dictionary setValue:@"select google album" forKey: @"description"];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
+    [pluginResult setKeepCallbackAsBool:NO];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    [self photoBrowserDidFinishModalPresentation:_browser];
+    
+}
+
+
 - (void) addPhotos:(id) sender{
     
     //    __weak PhotoBrowserPlugin *weakSelf = self;
@@ -937,6 +957,24 @@ enum Orientation {
                     [items addObject:flexSpace];
                     _toolBar.barStyle = UIBarStyleDefault;
                     _toolBar.barTintColor = [UIColor whiteColor];
+                } else if (IS_TYPE_SOCIAL_ALBUM) {
+                    UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
+                    [items addObject:flexSpace];
+                    float margin = 3;
+                    CGRect newFrame = CGRectMake(toolBar.frame.origin.x - margin, toolBar.frame.origin.y - margin, toolBar.frame.size.width - margin*2, toolBar.frame.size.height - margin*2 );
+                    UIButton *button = [[UIButton alloc] initWithFrame: newFrame];
+                    [button setBackgroundColor:LIGHT_BLUE_COLOR];
+                    button.layer.cornerRadius = 2; // this value vary as per your desire
+                    button.clipsToBounds = YES;
+                    
+                    [button setAttributedTitle:[self attributedString: _ctaText WithSize:TEXT_SIZE color:[UIColor whiteColor]] forState:UIControlStateNormal];
+                    
+                    [button addTarget:self action:@selector(selectSocialAlbum:) forControlEvents:UIControlEventTouchUpInside];
+                    UIBarButtonItem *addPhotoButton = [[UIBarButtonItem alloc] initWithCustomView:button];
+                    [items addObject:addPhotoButton];
+                    [items addObject:flexSpace];
+                    _toolBar.barStyle = UIBarStyleDefault;
+                    _toolBar.barTintColor = [UIColor whiteColor];
                 }
                 
             }else{
@@ -959,7 +997,7 @@ enum Orientation {
             [items addObject:editCaption];
             [items addObject:flexSpace];
         }
-        if(!_readOnly){
+        if(!_readOnly && !IS_TYPE_SOCIAL_ALBUM){
             UIBarButtonItem * deleteBarButton = [[UIBarButtonItem alloc] initWithImage:BIN_UIIMAGE style:UIBarButtonItemStylePlain target:self action:@selector(deletePhoto:)];
             [items addObject:deleteBarButton];
         }
