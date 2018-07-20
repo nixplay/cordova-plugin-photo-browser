@@ -644,6 +644,8 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             return "0" +
                     " " +
                     context.getResources().getString(f.getId("string", "PHOTOS"));
+        } else if  (photoDetail.getType().equals(KEY_TYPE_SOCIAL_ALBUM))  {
+            return "";
         } else {
             return String.valueOf(this.photoDetail.getImages().size()) +
                     " " +
