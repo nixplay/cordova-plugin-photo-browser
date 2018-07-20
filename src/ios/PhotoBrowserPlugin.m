@@ -840,7 +840,10 @@ enum Orientation {
     navigationBar.barStyle = UIBarStyleDefault;
     //    navigationBar.translucent = YES;
     navigationBar.barTintColor = [UIColor whiteColor];
-    photoBrowser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
+    if (IS_TYPE_SOCIAL_ALBUM)
+        photoBrowser.navigationItem.titleView = [self setTitle:_name subtitle:@""];
+    else
+        photoBrowser.navigationItem.titleView = [self setTitle:_name subtitle:SUBTITLESTRING_FOR_TITLEVIEW(_dateString)];
     return YES;
 }
 
