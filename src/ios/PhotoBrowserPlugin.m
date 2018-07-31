@@ -128,13 +128,13 @@ enum Orientation {
         }
     }
     _HTTPResponseHeaderOrientations = [NSMutableDictionary new];
-    if(imagesUrls == nil || [imagesUrls count] <= 0 ){
+    if(!_readOnly && (imagesUrls == nil || [imagesUrls count] <= 0 )){
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Argument \"images\" clould not be empty"];
         [pluginResult setKeepCallbackAsBool:NO];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
         return;
     }
-    if( _data == nil || [_data count] == 0 || [_data count] != [imagesUrls count] ){
+    if(!_readOnly && (_data == nil || [_data count] == 0 || [_data count] != [imagesUrls count] )){
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Argument \"data\" clould not be empty"];
         [pluginResult setKeepCallbackAsBool:NO];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
