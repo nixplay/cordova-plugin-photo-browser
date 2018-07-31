@@ -419,9 +419,6 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
             String optionsJsonString = bundle.getString("options");
 
             photoDetail = PhotoDetail.getInstance();
-            if (photoDetail.getImages() == null) {
-                finishWithResult(new JSONObject());
-            }
             try {
                 JSONObject jsonObject = new JSONObject(optionsJsonString);
                 if (jsonObject.has("readOnly")) {
@@ -437,6 +434,10 @@ public class PhotoBrowserPluginActivity extends PhotoBrowserActivity implements 
 
             } catch (JSONException e) {
                 e.printStackTrace();
+            }
+
+            if (!readOnly && photoDetail.getImages() == null) {
+                finishWithResult(new JSONObject());
             }
 
         }
