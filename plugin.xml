@@ -22,9 +22,9 @@
 		<source-file src="src/ios/AppDelegate+LockOrientation.m"/>
 		<pod name="MWPhotoBrowser" git="https://github.com/nixplay/MWPhotoBrowser" branch="develop" />
 		<pod name="SDWebImage" version="4.2.2"/>
-		<pod name="PopupDialog" version="5.0.8"/>
+		<pod name="PopupDialog" version="0.6.1"/>
 		<pod name="MBProgressHUD"/>
-		<pod name="IQKeyboardManager" version="0.6.1"/>
+		<pod name="IQKeyboardManager" version="5.0.8"/>
 		<pod name="GPActivityViewController" git="https://github.com/nixplay/GPActivityViewController"/>
 		<pod name="Masonry"/>
 		<pod name="AFNetworking"/>
